@@ -10,7 +10,7 @@ Finn Wessel\
 finn.wessel@stud.hs-flensburg.de\
 Hochschule Flensburg
 
-Florian Arens 
+Florian Arens\ 
 florian.arens@stud.hs-flensburg.de\
 Hochschule Flensburg
 
