@@ -12,14 +12,13 @@ type route struct {
 	handler http.HandlerFunc
 	params  []string
 }
+
 type Router struct {
 	routes []route
 }
 
-func (router Router) New() *Router {
-	newRouter := Router{}
-
-	return &newRouter
+func New() *Router {
+	return &Router{}
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +72,6 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 		handler: handler,
 		params:  params,
 	})
-
 }
 
 func (router *Router) GET(pattern string, handler http.HandlerFunc) {
