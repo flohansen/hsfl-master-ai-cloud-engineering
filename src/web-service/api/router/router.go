@@ -11,15 +11,15 @@ type Router struct {
 }
 
 func New() *Router {
-	router := router.New()
+	r := router.New()
 
-	// router.GET("/api/v1/products")
-	// router.POST("/api/v1/products")
-	// router.GET("/api/v1/products/:productid")
-	// router.PUT("/api/v1/products/:productid")
-	// router.DELETE("/api/v1/products/:productid")
+	// r.GET("/api/v1/products")
+	// r.POST("/api/v1/products")
+	// r.GET("/api/v1/products/:productid")
+	// r.PUT("/api/v1/products/:productid")
+	// r.DELETE("/api/v1/products/:productid")
 
-	return &Router{router}
+	return &Router{r}
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
