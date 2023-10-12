@@ -10,7 +10,7 @@ type DemoRepository struct {
 	users map[uint64]*model.User
 }
 
-func New() *DemoRepository {
+func NewDemoRepository() *DemoRepository {
 	return &DemoRepository{users: make(map[uint64]*model.User)}
 }
 
