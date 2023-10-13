@@ -1,0 +1,11 @@
+package books
+
+import "github.com/akatranlp/hsfl-master-ai-cloud-engineering/book-service/books/model"
+
+type ChapterRepository interface {
+	Migrate() error
+	Create([]*model.Chapter) error
+	FindAll() ([]*model.Chapter, error)
+	FindById(id int64) (*model.Chapter, error)
+	Delete([]*model.Chapter) error
+}
