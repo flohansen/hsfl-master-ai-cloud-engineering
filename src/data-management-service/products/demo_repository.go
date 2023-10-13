@@ -6,15 +6,15 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
 )
 
-type ProductsRepository struct {
+type DemoRepository struct {
 	products map[uint64]*model.Product
 }
 
-func NewProductsRepository() *ProductsRepository {
-	return &ProductsRepository{products: make(map[uint64]*model.Product)}
+func NewDemoRepository() *DemoRepository {
+	return &DemoRepository{products: make(map[uint64]*model.Product)}
 }
 
-func (repo *ProductsRepository) Create(product *model.Product) (*model.Product, error) {
+func (repo *DemoRepository) Create(product *model.Product) (*model.Product, error) {
 	_, found := repo.products[product.Id]
 	if found {
 		return nil, errors.New("product already exists")
@@ -24,7 +24,7 @@ func (repo *ProductsRepository) Create(product *model.Product) (*model.Product, 
 	return product, nil
 }
 
-func (repo *ProductsRepository) Delete(product *model.Product) error {
+func (repo *DemoRepository) Delete(product *model.Product) error {
 	_, found := repo.products[product.Id]
 	if found {
 		delete(repo.products, product.Id)
@@ -34,16 +34,16 @@ func (repo *ProductsRepository) Delete(product *model.Product) error {
 	return errors.New("product could not be deleted")
 }
 
-func (repo *ProductsRepository) FindById(id uint64) (*model.Product, error) {
+func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
 	product, found := repo.products[id]
 	if found {
 		return product, nil
 	}
 
-	return nil, errors.New("user could not be found")
+	return nil, errors.New("product could not be found")
 }
 
-func (repo *ProductsRepository) Update(product *model.Product) (*model.Product, error) {
+func (repo *DemoRepository) Update(product *model.Product) (*model.Product, error) {
 	product, foundError := repo.FindById(product.Id)
 
 	if foundError != nil {

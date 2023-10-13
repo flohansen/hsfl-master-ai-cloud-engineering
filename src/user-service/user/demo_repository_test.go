@@ -167,7 +167,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 
 	// Test for deletion
 	err = demoRepository.Delete(&fakeUser)
-	if err.Error() != "user could not be found" {
+	if err.Error() != "user could not be deleted" {
 		t.Errorf("User with id %d was deleted", user.Id)
 	}
 }
