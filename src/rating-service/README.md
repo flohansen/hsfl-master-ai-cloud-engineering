@@ -1,4 +1,4 @@
-### Service for rating chapters
+### Service for rating chapters (unused)
 
 Rate Chapters: The Rating Service allows users to assign ratings to individual chapters, influencing their visibility in search and trend results.
 

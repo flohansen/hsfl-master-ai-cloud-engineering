@@ -1,4 +1,4 @@
-### Service to convert chapters to pdf
+### Service to convert chapters to pdf (unused)
 
 Download as PDF: The PDF Service allows users to effortlessly convert and download chapters into PDF format, enabling convenient offline reading.
 

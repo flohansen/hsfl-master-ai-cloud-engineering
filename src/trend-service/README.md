@@ -1,4 +1,4 @@
-### Service to adapt the homepage depending on current trends
+### Service to adapt the homepage depending on current trends (unused)
 
 Homepage Curation: The Trend Service curates content displayed on the home page, ensuring that it features engaging and relevant suggestions for users.
 

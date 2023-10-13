@@ -1,4 +1,4 @@
-### Service for financial transaction management
+### Service for financial transaction management (unused)
 
 Purchase Your Own Currency with Real Money: Our platform allows you to acquire our native currency using real-world currency, giving you the flexibility to engage in various services.
 

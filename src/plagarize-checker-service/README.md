@@ -1,4 +1,4 @@
-### Service to check if the text has plagiarism
+### Service to check if the text has plagiarism (unused)
 
 Check Text Before Publication: The Plagiarism Service performs a comprehensive examination of the chapter before they are published to assess whether they contain any plagiarized content.
 

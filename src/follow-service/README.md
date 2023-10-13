@@ -1,4 +1,4 @@
-### Service for following other users
+### Service for following other users (unused)
 
 Follow a User: This service allows users to d follow authors, resulting in their publications being prominently displayed on the main page of their dashboard for easy access and visibility.
 

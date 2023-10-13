@@ -1,4 +1,4 @@
-### Service for searching specific content
+### Service for searching specific content (unused)
 
 Specify Search Terms and Criteria: Users can input specific search terms and criteria into the service, providing guidance on what they are looking for in content.
 

@@ -1,4 +1,4 @@
-### Service to visualize author earnings
+### Service to visualize author earnings (unused)
 
 Current month financial data: This feature provides you with a clear display of your earnings for the ongoing month, helping you stay updated on your financial progress.
 
