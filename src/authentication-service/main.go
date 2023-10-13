@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/http-router"
 	"net/http"
+
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
 )
 
 func main() {
-	router := http_router.New()
+	router := router.New()
 	router.POST("/login", func(w http.ResponseWriter, r *http.Request) {
 
 	})
