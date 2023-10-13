@@ -1,6 +1,7 @@
 package router
 
 import (
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/web-service/service"
 	"net/http"
 
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
@@ -10,14 +11,15 @@ type Router struct {
 	router http.Handler
 }
 
-func New() *Router {
+func New(
+	serviceController service.Controller,
+) *Router {
 	r := router.New()
 
-	// r.GET("/api/v1/products")
-	// r.POST("/api/v1/products")
-	// r.GET("/api/v1/products/:productid")
-	// r.PUT("/api/v1/products/:productid")
-	// r.DELETE("/api/v1/products/:productid")
+	r.GET("/user/shoppingList", serviceController.GetShoppingList)
+	r.GET("/admin/products", serviceController.GetAdminProducts)
+	r.GET("/merchant/products", serviceController.GetMerchantProducts)
+	r.GET("/ProductCatalogue", serviceController.GetProductCatalogue)
 
 	return &Router{r}
 }
