@@ -8,36 +8,29 @@ import (
 
 type route struct {
 	method  string
-	handler http.HandlerFunc
 	pattern *regexp.Regexp
+	handler http.HandlerFunc
 	params  []string
 }
 
-type router struct {
+type Router struct {
 	routes []route
 }
 
-func New() *router {
-	return &router{}
+func New() *Router {
+	return &Router{}
 }
 
-func createContext(r *http.Request, params []string, paramValues []string) *http.Request {
-	ctx := r.Context()
-	for i, param := range params {
-		ctx = context.WithValue(ctx, param, paramValues[i])
-	}
-
-	return r.WithContext(ctx)
-}
-
-func (router *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, route := range router.routes {
 		if r.Method != route.method {
 			continue
 		}
+
 		matches := route.pattern.FindStringSubmatch(r.URL.Path)
+
 		if len(matches) > 0 {
-			r = createContext(r, route.params, matches[1:])
+			r = createRequestContext(r, route.params, matches[1:])
 			route.handler(w, r)
 			return
 		}
@@ -46,41 +39,53 @@ func (router *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func (router *router) addRoute(method string, target string, handler http.HandlerFunc) {
-	patternMatcher := regexp.MustCompile(":([a-z]+)")
-	matches := patternMatcher.FindAllStringSubmatch(target, -1)
-	params := make([]string, len(matches))
+func createRequestContext(r *http.Request, paramKeys []string, paramValues []string) *http.Request {
+	if len(paramKeys) == 0 {
+		return r
+	}
 
-	var targetPattern string
-	if len(matches) > 0 {
-		targetPattern = patternMatcher.ReplaceAllString(target, "([^/]+)")
-		for i, match := range matches {
+	ctx := r.Context()
+	for i := 0; i < len(paramKeys); i++ {
+		ctx = context.WithValue(ctx, paramKeys[i], paramValues[i])
+	}
+
+	return r.WithContext(ctx)
+}
+
+func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc) {
+	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)")
+	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
+
+	params := make([]string, len(paramMatches))
+
+	if len(paramMatches) > 0 {
+		pattern = paramMatcher.ReplaceAllLiteralString(pattern, "([^/]+)")
+
+		for i, match := range paramMatches {
 			params[i] = match[1]
 		}
-	} else {
-		targetPattern = target
 	}
 
 	router.routes = append(router.routes, route{
 		method:  method,
+		pattern: regexp.MustCompile("^" + pattern + "$"),
 		handler: handler,
-		pattern: regexp.MustCompile("^" + targetPattern + "$"),
 		params:  params,
 	})
 }
 
-func (router *router) GET(target string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodGet, target, handler)
+func (router *Router) GET(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodGet, pattern, handler)
 }
 
-func (router *router) POST(target string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPost, target, handler)
+func (router *Router) POST(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodPost, pattern, handler)
 }
 
-func (router *router) DELETE(target string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodDelete, target, handler)
+func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodPut, pattern, handler)
 }
 
-func (router *router) PUT(target string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPut, target, handler)
+func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodDelete, pattern, handler)
 }
