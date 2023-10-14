@@ -2,7 +2,6 @@ package products
 
 import (
 	"errors"
-
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
 )
 
@@ -32,6 +31,18 @@ func (repo *DemoRepository) Delete(product *model.Product) error {
 	}
 
 	return errors.New("product could not be deleted")
+}
+
+func (repo *DemoRepository) FindAll() ([]*model.Product, error) {
+	if repo.products != nil {
+		r := make([]*model.Product, 0, len(repo.products))
+		for _, v := range repo.products {
+			r = append(r, v)
+		}
+		return r, nil
+	}
+
+	return nil, errors.New("products not found")
 }
 
 func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {

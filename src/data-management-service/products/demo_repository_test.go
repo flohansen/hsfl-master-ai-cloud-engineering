@@ -29,6 +29,53 @@ func TestProductsRepository_Create(t *testing.T) {
 	}
 }
 
+func TestProductsRepository_FindAll(t *testing.T) {
+	// Prepare test
+	demoRepository := NewDemoRepository()
+
+	product1 := model.Product{
+		Id:          1,
+		Description: "Strauchtomaten",
+		Ean:         4014819040771,
+	}
+
+	product2 := model.Product{
+		Id:          2,
+		Description: "Lauchzwiebeln",
+		Ean:         5001819040871,
+	}
+
+	_, err := demoRepository.Create(&product1)
+	if err != nil {
+		t.Error("Failed to add prepare product for test")
+	}
+
+	_, err = demoRepository.Create(&product2)
+	if err != nil {
+		t.Error("Failed to add prepare product for test")
+	}
+
+	// Fetch all products
+	fetchedProducts, err := demoRepository.FindAll()
+	if err != nil {
+		t.Error("Can't fetch products")
+	}
+
+	if len(fetchedProducts) != 2 {
+		t.Errorf("Unexpected product count. Expected 2, got %d", len(fetchedProducts))
+	}
+
+	// Is fetched product matching with added product?
+	if !reflect.DeepEqual(product1, *fetchedProducts[0]) {
+		t.Error("Fetched product does not match original product")
+	}
+
+	// Is fetched product matching with added product?
+	if !reflect.DeepEqual(product2, *fetchedProducts[1]) {
+		t.Error("Fetched product does not match original product")
+	}
+}
+
 func TestProductsRepository_FindById(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()
