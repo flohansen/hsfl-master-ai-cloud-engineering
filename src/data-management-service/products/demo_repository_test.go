@@ -34,7 +34,7 @@ func TestDemoRepository_Create(t *testing.T) {
 
 	t.Run("Check for doublet", func(t *testing.T) {
 		_, err := demoRepository.Create(&product)
-		if err.Error() != "product already exists" {
+		if err.Error() != ErrorProductAlreadyExists {
 			t.Error(err)
 		}
 	})
@@ -130,7 +130,7 @@ func TestDemoRepository_FindById(t *testing.T) {
 
 	t.Run("Non-existing product test", func(t *testing.T) {
 		_, err = demoRepository.FindById(42)
-		if err.Error() != "product could not be found" {
+		if err.Error() != ErrorProductNotFound {
 			t.Error(err)
 		}
 	})
@@ -193,7 +193,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 
 		t.Run("Try to fetch deleted product", func(t *testing.T) {
 			fetchedProduct, err = productsRepository.FindById(product.Id)
-			if err.Error() != "product could not be found" {
+			if err.Error() != ErrorProductNotFound {
 				t.Errorf("Product with id %d was not deleted", product.Id)
 			}
 		})
@@ -207,7 +207,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 		}
 
 		err = productsRepository.Delete(&fakeProduct)
-		if err.Error() != "product could not be deleted" {
+		if err.Error() != ErrorProductDeletion {
 			t.Errorf("Product with id %d was deleted", product.Id)
 		}
 	})
