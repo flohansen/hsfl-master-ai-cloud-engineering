@@ -16,7 +16,7 @@ func NewDemoRepository() *DemoRepository {
 func (repo *DemoRepository) Create(product *model.Product) (*model.Product, error) {
 	_, found := repo.products[product.Id]
 	if found {
-		return nil, errors.New("product already exists")
+		return nil, errors.New(ErrorProductAlreadyExists)
 	}
 	repo.products[product.Id] = product
 
@@ -30,7 +30,7 @@ func (repo *DemoRepository) Delete(product *model.Product) error {
 		return nil
 	}
 
-	return errors.New("product could not be deleted")
+	return errors.New(ErrorProductDeletion)
 }
 
 func (repo *DemoRepository) FindAll() ([]*model.Product, error) {
@@ -42,7 +42,7 @@ func (repo *DemoRepository) FindAll() ([]*model.Product, error) {
 		return r, nil
 	}
 
-	return nil, errors.New("products not found")
+	return nil, errors.New(ErrorProductsList)
 }
 
 func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
@@ -51,14 +51,14 @@ func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
 		return product, nil
 	}
 
-	return nil, errors.New("product could not be found")
+	return nil, errors.New(ErrorProductNotFound)
 }
 
 func (repo *DemoRepository) Update(product *model.Product) (*model.Product, error) {
 	product, foundError := repo.FindById(product.Id)
 
 	if foundError != nil {
-		return nil, errors.New("product can not be updated")
+		return nil, errors.New(ErrorProductUpdate)
 	}
 
 	return product, nil
