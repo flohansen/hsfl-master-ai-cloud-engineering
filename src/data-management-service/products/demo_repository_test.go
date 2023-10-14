@@ -6,7 +6,16 @@ import (
 	"testing"
 )
 
-func TestProductsRepository_Create(t *testing.T) {
+func TestNewDemoRepository(t *testing.T) {
+	t.Run("Demo repository correct initialized", func(t *testing.T) {
+		want := make(map[uint64]*model.Product)
+		if got := NewDemoRepository(); !reflect.DeepEqual(got.products, want) {
+			t.Errorf("NewDemoRepository().products = %v, want %v", got.products, want)
+		}
+	})
+}
+
+func TestDemoRepository_Create(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()
 
@@ -16,20 +25,81 @@ func TestProductsRepository_Create(t *testing.T) {
 		Ean:         4014819040771,
 	}
 
-	// Create product with success
-	_, err := demoRepository.Create(&product)
-	if err != nil {
-		t.Error(err)
+	t.Run("Create product with success", func(t *testing.T) {
+		_, err := demoRepository.Create(&product)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("Check for doublet", func(t *testing.T) {
+		_, err := demoRepository.Create(&product)
+		if err.Error() != "product already exists" {
+			t.Error(err)
+		}
+	})
+}
+
+func TestDemoRepository_FindAll(t *testing.T) {
+	// Prepare test
+	demoRepository := NewDemoRepository()
+
+	products := []*model.Product{
+		{
+			Id:          1,
+			Description: "Strauchtomaten",
+			Ean:         4014819040771,
+		},
+		{
+			Id:          2,
+			Description: "Lauchzwiebeln",
+			Ean:         5001819040871,
+		},
 	}
 
-	// Check for doublet
-	_, err = demoRepository.Create(&product)
-	if err.Error() != "product already exists" {
-		t.Error(err)
+	for _, product := range products {
+		_, err := demoRepository.Create(product)
+		if err != nil {
+			t.Error("Failed to add prepared product for test")
+		}
+	}
+
+	t.Run("Fetch all products", func(t *testing.T) {
+		fetchedProducts, err := demoRepository.FindAll()
+		if err != nil {
+			t.Error("Can't fetch products")
+		}
+
+		if len(fetchedProducts) != len(products) {
+			t.Errorf("Unexpected product count. Expected %d, got %d", len(products), len(fetchedProducts))
+		}
+	})
+
+	productTests := []struct {
+		name string
+		want *model.Product
+	}{
+		{
+			name: "first",
+			want: products[0],
+		},
+		{
+			name: "second",
+			want: products[1],
+		},
+	}
+
+	for i, tt := range productTests {
+		t.Run("Is fetched product matching with "+tt.name+" added product?", func(t *testing.T) {
+			fetchedProducts, _ := demoRepository.FindAll()
+			if !reflect.DeepEqual(tt.want, fetchedProducts[i]) {
+				t.Error("Fetched product does not match original product")
+			}
+		})
 	}
 }
 
-func TestProductsRepository_FindById(t *testing.T) {
+func TestDemoRepository_FindById(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()
 
@@ -41,28 +111,32 @@ func TestProductsRepository_FindById(t *testing.T) {
 
 	_, err := demoRepository.Create(&product)
 	if err != nil {
-		t.Error("Failed to add prepare product for test")
+		t.Fatal("Failed to add prepare product for test")
 	}
 
-	// Fetch product with existing id
-	fetchedProduct, err := demoRepository.FindById(product.Id)
-	if err != nil {
-		t.Errorf("Can't find expected product with id %d", product.Id)
-	}
+	t.Run("Fetch product with existing id", func(t *testing.T) {
+		_, err := demoRepository.FindById(product.Id)
+		if err != nil {
+			t.Errorf("Can't find expected product with id %d", product.Id)
+		}
 
-	// Is fetched product matching with added product?
-	if !reflect.DeepEqual(product, *fetchedProduct) {
-		t.Error("Fetched product does not match original product")
-	}
+		t.Run("Is fetched product matching with added product?", func(t *testing.T) {
+			fetchedProduct, _ := demoRepository.FindById(product.Id)
+			if !reflect.DeepEqual(product, *fetchedProduct) {
+				t.Error("Fetched product does not match original product")
+			}
+		})
+	})
 
-	// Non-existing product test
-	_, err = demoRepository.FindById(42)
-	if err.Error() != "product could not be found" {
-		t.Error(err)
-	}
+	t.Run("Non-existing product test", func(t *testing.T) {
+		_, err = demoRepository.FindById(42)
+		if err.Error() != "product could not be found" {
+			t.Error(err)
+		}
+	})
 }
 
-func TestProductsRepository_Update(t *testing.T) {
+func TestDemoRepository_Update(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()
 
@@ -77,16 +151,26 @@ func TestProductsRepository_Update(t *testing.T) {
 		t.Error("Failed to add prepare product for test")
 	}
 
-	fetchedProduct.Description = "Wittenseer Mineralwasser"
-	updatedProduct, err := demoRepository.Update(fetchedProduct)
+	t.Run("Check if updated product has updated description", func(t *testing.T) {
+		updateProduct := model.Product{
+			Id:          1,
+			Description: "Wittenseer Mineralwasser",
+			Ean:         4014819040771,
+		}
+		updatedProduct, err := demoRepository.Update(&updateProduct)
+		if err != nil {
+			t.Error(err.Error())
+		}
 
-	// Check if returned product has the updated description
-	if fetchedProduct.Description != updatedProduct.Description {
-		t.Error("Failed to update product")
-	}
+		if fetchedProduct.Description != updatedProduct.Description {
+			t.Errorf("Failed to update product description. Got %s, want %s.",
+				fetchedProduct.Description, updateProduct.Description)
+		}
+	})
+
 }
 
-func TestProductsRepository_Delete(t *testing.T) {
+func TestDemoRepository_Delete(t *testing.T) {
 	// Prepare test
 	productsRepository := NewDemoRepository()
 
@@ -101,28 +185,30 @@ func TestProductsRepository_Delete(t *testing.T) {
 		t.Error("Failed to add prepare product for test")
 	}
 
-	// Test for deletion
-	err = productsRepository.Delete(fetchedProduct)
-	if err != nil {
-		t.Errorf("Failed to delete product with id %d", product.Id)
-	}
+	t.Run("Test for deletion", func(t *testing.T) {
+		err = productsRepository.Delete(fetchedProduct)
+		if err != nil {
+			t.Errorf("Failed to delete product with id %d", product.Id)
+		}
 
-	// Fetch product with existing id
-	fetchedProduct, err = productsRepository.FindById(product.Id)
-	if err.Error() != "product could not be found" {
-		t.Errorf("Product with id %d was not deleted", product.Id)
-	}
+		t.Run("Try to fetch deleted product", func(t *testing.T) {
+			fetchedProduct, err = productsRepository.FindById(product.Id)
+			if err.Error() != "product could not be found" {
+				t.Errorf("Product with id %d was not deleted", product.Id)
+			}
+		})
+	})
 
-	// Try to delete non-existing product
-	fakeProduct := model.Product{
-		Id:          1,
-		Description: "Lauchzwiebeln",
-		Ean:         5001819040871,
-	}
+	t.Run("Try to delete non-existing product", func(t *testing.T) {
+		fakeProduct := model.Product{
+			Id:          1,
+			Description: "Lauchzwiebeln",
+			Ean:         5001819040871,
+		}
 
-	// Test for deletion
-	err = productsRepository.Delete(&fakeProduct)
-	if err.Error() != "product could not be deleted" {
-		t.Errorf("Product with id %d was deleted", product.Id)
-	}
+		err = productsRepository.Delete(&fakeProduct)
+		if err.Error() != "product could not be deleted" {
+			t.Errorf("Product with id %d was deleted", product.Id)
+		}
+	})
 }
