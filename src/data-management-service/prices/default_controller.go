@@ -56,7 +56,7 @@ func (controller DefaultController) GetPrice(writer http.ResponseWriter, request
 	}
 }
 
-func (controller DefaultController) PutProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) PutPrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
@@ -81,7 +81,7 @@ func (controller DefaultController) PutProduct(writer http.ResponseWriter, reque
 	}
 }
 
-func (controller DefaultController) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
