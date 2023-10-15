@@ -54,8 +54,13 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 				priceRepository: setupMockRepository(),
 			},
 			args: args{
-				writer:  httptest.NewRecorder(),
-				request: createRequestWithValues("DELETE", "/api/v1/price/2/2", "2", "2"),
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/price/1/1", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+					return request
+				}(),
 			},
 
 			wantStatus: http.StatusOK,

@@ -82,15 +82,18 @@ func (controller defaultController) PutPrice(writer http.ResponseWriter, request
 }
 
 func (controller defaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
-	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+	userIdStr, okUser := request.Context().Value("userId").(string)
+	productIdStr, okProduct := request.Context().Value("productId").(string)
 
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	userId, errUser := strconv.ParseUint(userIdStr, 10, 64)
+	productId, errProduct := strconv.ParseUint(productIdStr, 10, 64)
+
+	if !okUser || !okProduct || errUser != nil || errProduct != nil {
+		http.Error(writer, "Invalid userId or productId", http.StatusBadRequest)
 		return
 	}
 
-	if err := controller.priceRepository.Delete(&model.Price{UserId: userId, ProductId: productId}); err != nil {
+	if err := controller.priceRepository.Delete(&model.Price{UserId: userId, ProductId: productId, Price: 2.99}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
