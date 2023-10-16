@@ -2,9 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/database"
-	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/api/router"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/auth"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/crypto"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/user"
 	"gopkg.in/yaml.v3"
 	"log"
 	"net/http"
@@ -31,7 +34,6 @@ func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
 }
 
 func main() {
-	router := router.New()
 	port := flag.String("port", "8080", "The listening port")
 	configPath := flag.String("config", "config.yaml", "The path to the configuration file")
 	flag.Parse()
@@ -41,59 +43,32 @@ func main() {
 		log.Fatalf("could not load application configuration: %s", err.Error())
 	}
 
+	userRepository, err := user.NewPsqlRepository(config.Database)
+	if err != nil {
+		log.Fatalf("could not create user repository: %s", err.Error())
+	}
+
+	if err := userRepository.Migrate(); err != nil {
+		log.Fatalf("could not migrate: %s", err.Error())
+	}
+
 	tokenGenerator, err := auth.NewJwtTokenGenerator(config.Jwt)
 	if err != nil {
 		log.Fatalf("could not create JWT token generator: %s", err.Error())
 	}
-	claims := make(map[string]interface{})
-	data, err := tokenGenerator.CreateToken(claims)
-	if err != nil {
-		log.Fatalf("could not create JWT token generator: %s", err.Error())
+
+	hasher := crypto.NewBcryptHasher()
+
+	controller := user.NewDefaultController(userRepository, hasher, tokenGenerator)
+
+	handler := router.New(controller)
+
+	if err := userRepository.Migrate(); err != nil {
+		log.Fatalf("could not migrate: %s", err.Error())
 	}
-	_ = data
-	_ = tokenGenerator
-	_ = port
-	_ = config
 
-	// Authentication stuff
-	router.POST("/login", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	router.POST("/register", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	router.GET("/refresh-token", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	router.GET("/logout", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	// user-specific stuff
-	router.GET("/users", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	router.GET("/users/:userId", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("userId").(string)
-		_ = userId
-	})
-
-	router.PUT("/users/:userId", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("userId").(string)
-		_ = userId
-	})
-
-	router.DELETE("/users/:userId", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("userId").(string)
-		_ = userId
-	})
-
-	router.GET("/users/:userId/books", func(w http.ResponseWriter, r *http.Request) {
-		userId := r.Context().Value("userId").(string)
-		_ = userId
-	})
+	addr := fmt.Sprintf("0.0.0.0:%s", *port)
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		log.Fatalf("error while listen and serve: %s", err.Error())
+	}
 }
