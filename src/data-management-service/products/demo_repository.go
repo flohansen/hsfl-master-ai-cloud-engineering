@@ -14,11 +14,18 @@ func NewDemoRepository() *DemoRepository {
 }
 
 func (repo *DemoRepository) Create(product *model.Product) (*model.Product, error) {
-	_, found := repo.products[product.Id]
+	var productId uint64
+	if product.Id == 0 {
+		productId = repo.findNextAvailableID()
+	} else {
+		productId = product.Id
+	}
+
+	_, found := repo.products[productId]
 	if found {
 		return nil, errors.New(ErrorProductAlreadyExists)
 	}
-	repo.products[product.Id] = product
+	repo.products[productId] = product
 
 	return product, nil
 }
@@ -62,4 +69,14 @@ func (repo *DemoRepository) Update(product *model.Product) (*model.Product, erro
 	}
 
 	return product, nil
+}
+
+func (repo *DemoRepository) findNextAvailableID() uint64 {
+	var maxID uint64
+	for id := range repo.products {
+		if id > maxID {
+			maxID = id
+		}
+	}
+	return maxID + 1
 }
