@@ -67,7 +67,9 @@ func main() {
 		log.Fatalf("could not migrate: %s", err.Error())
 	}
 
-	addr := fmt.Sprintf("0.0.0.0:%s", *port)
+	fmt.Println("Server started")
+
+	addr := fmt.Sprintf("127.0.0.1:%s", *port)
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
 	}

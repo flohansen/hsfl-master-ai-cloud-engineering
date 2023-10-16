@@ -17,7 +17,6 @@ type PsqlRepository struct {
 
 func NewPsqlRepository(config database.Config) (*PsqlRepository, error) {
 	dsn := config.Dsn()
-	fmt.Println(dsn)
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err

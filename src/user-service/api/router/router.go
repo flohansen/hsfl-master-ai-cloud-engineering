@@ -15,16 +15,25 @@ func New(
 ) *Router {
 	router := router.New()
 
-	router.POST("/api/v1/login", userController.Login)
-	router.POST("/api/v1/register", userController.Register)
+	router.POST("/api/v1/login", func(w http.ResponseWriter, r *http.Request) {
+		userController.Login(w, r)
+	})
+	router.POST("/api/v1/register", func(w http.ResponseWriter, r *http.Request) {
+		userController.Register(w, r)
+	})
 
 	router.GET("/api/v1/users", func(w http.ResponseWriter, r *http.Request) {
-		// fmt.Println("Hallo, ich bin hiiiiiiiiiiiiiiiiiiiier", r, r.Method)
 		userController.GetUsers(w, r)
 	})
-	router.GET("/api/v1/users/:username", userController.GetUser)
-	router.PUT("/api/v1/users/:username", userController.PutUser)
-	router.DELETE("/api/v1/users/:username", userController.DeleteUser)
+	router.GET("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
+		userController.GetUser(w, r)
+	})
+	router.PUT("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
+		userController.PutUser(w, r)
+	})
+	router.DELETE("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
+		userController.DeleteUser(w, r)
+	})
 
 	return &Router{router}
 }
