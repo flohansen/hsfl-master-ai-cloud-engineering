@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -195,7 +196,127 @@ func TestDefaultController_GetPrice(t *testing.T) {
 	})
 }
 
-func createRequestWithValues(method, path string, productId, userId string) *http.Request {
+func TestDefaultController_PutProduct(t *testing.T) {
+	type fields struct {
+		priceRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		expectedStatus   int
+		expectedResponse string // If you want to check the response content
+	}{
+		{
+			name: "Valid Update",
+			fields: fields{
+				priceRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/prices/1/1",
+						strings.NewReader(`{"userId": 1, "productId": 1, "price": 10.99}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Update (Partly Fields)",
+			fields: fields{
+				priceRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/prices/2/2",
+						strings.NewReader(`{"price": 6.50}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Malformed JSON",
+			fields: fields{
+				priceRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/prices/2/2",
+						strings.NewReader(`{"price": 6.50`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name:   "Incorrect Type for Price (Non-numeric)",
+			fields: fields{
+				// Set up your repository mock or test double here if needed
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/prices/2/2",
+						strings.NewReader(`{"price": "Wrong Type"`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				priceRepository: tt.fields.priceRepository,
+			}
+			controller.PutPrice(tt.args.writer, tt.args.request)
+
+			// You can then assert the response status and content, and check against your expectations.
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+
+			if tt.expectedResponse != "" {
+				actualResponse := tt.args.writer.Body.String()
+				if actualResponse != tt.expectedResponse {
+					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
+				}
+			}
+		})
+	}
+}
+
+func createRequestWithValues(method string, path string, productId string, userId string) *http.Request {
 	request := httptest.NewRequest(method, path, nil)
 	ctx := request.Context()
 	ctx = context.WithValue(ctx, "productId", productId)

@@ -167,7 +167,6 @@ func TestDemoRepository_Update(t *testing.T) {
 				fetchedProduct.Description, updateProduct.Description)
 		}
 	})
-
 }
 
 func TestDemoRepository_Delete(t *testing.T) {
