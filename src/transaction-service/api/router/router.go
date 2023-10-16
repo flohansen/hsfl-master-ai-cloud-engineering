@@ -13,21 +13,12 @@ type Router struct {
 func New(
 	transactionController transactions.Controller,
 ) *Router {
-	router := router.New()
+	transactionsRouter := router.New()
 
-	/*router.GET("/api/v1/books", booksController.GetBooks)
-	router.POST("/api/v1/books", booksController.PostBooks)
-	router.GET("/api/v1/books/:bookid", booksController.GetBook)
-	router.PUT("/api/v1/books/:bookid", booksController.PutBook)
-	router.DELETE("/api/v1/books/:bookid", booksController.DeleteBook)
-
-	router.GET("/api/v1/books/:bookid/chapters", booksController.GetChapters)
-	router.POST("/api/v1/books/:bookid/chapters", booksController.PostChapters)
-	router.GET("/api/v1/books/:bookid/chapters/:chapterid", booksController.GetChapter)
-	router.PUT("/api/v1/books/:bookid/chapters/:chapterid", booksController.PutChapter)
-	router.DELETE("/api/v1/books/:bookid/chapters/:chapterid", booksController.DeleteChapter)
-	*/
-	return &Router{router}
+	transactionsRouter.GET("/api/v1/transactions", transactionController.GetTransactions)
+	transactionsRouter.POST("/api/v1/transactions", transactionController.PostTransactions)
+	transactionsRouter.GET("/api/v1/transactions/:transactionid", transactionController.GetTransaction)
+	return &Router{transactionsRouter}
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
