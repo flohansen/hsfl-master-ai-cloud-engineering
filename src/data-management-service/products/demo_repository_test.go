@@ -212,3 +212,62 @@ func TestDemoRepository_Delete(t *testing.T) {
 		}
 	})
 }
+
+func TestDemoRepository_findNextAvailableID(t *testing.T) {
+	type fields struct {
+		products map[uint64]*model.Product
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   uint64
+	}{
+		{
+			name: "Check if next available id is correct",
+			fields: fields{products: map[uint64]*model.Product{
+				1: {
+					Id:          1,
+					Description: "Strauchtomaten",
+					Ean:         4014819040771,
+				},
+				2: {
+					Id:          2,
+					Description: "Lauchzwiebeln",
+					Ean:         5001819040871,
+				},
+			}},
+			want: 3,
+		},
+		{
+			name: "Check if next available id is correct with gaps in map",
+			fields: fields{products: map[uint64]*model.Product{
+				1: {
+					Id:          1,
+					Description: "Strauchtomaten",
+					Ean:         4014819040771,
+				},
+				3: {
+					Id:          3,
+					Description: "Lauchzwiebeln",
+					Ean:         5001819040871,
+				},
+			}},
+			want: 4,
+		},
+		{
+			name:   "check if next available id is correct with empty map",
+			fields: fields{products: make(map[uint64]*model.Product)},
+			want:   1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &DemoRepository{
+				products: tt.fields.products,
+			}
+			if got := repo.findNextAvailableID(); got != tt.want {
+				t.Errorf("findNextAvailableID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
