@@ -43,6 +43,7 @@ func (controller defaultController) PostProduct(writer http.ResponseWriter, requ
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	writer.WriteHeader(http.StatusCreated)
 }
 
 func (controller defaultController) GetProduct(writer http.ResponseWriter, request *http.Request) {
