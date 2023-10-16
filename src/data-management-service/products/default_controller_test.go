@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -209,28 +210,56 @@ func TestDefaultController_GetProduct(t *testing.T) {
 }
 
 func TestDefaultController_GetProducts(t *testing.T) {
-	type fields struct {
-		productRepository Repository
-	}
-	type args struct {
-		writer  http.ResponseWriter
-		request *http.Request
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				productRepository: tt.fields.productRepository,
+	t.Run("should return all products", func(t *testing.T) {
+		controller := defaultController{
+			productRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+
+		// Test request
+		controller.GetProducts(writer, request)
+
+		res := writer.Result()
+		var response []model.Product
+		err := json.NewDecoder(res.Body).Decode(&response)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		products := setupDemoProductSlice()
+
+		if len(response) != len(products) {
+			t.Errorf("Expected count of product is %d, got %d",
+				2, len(response))
+		}
+
+		for i, product := range products {
+			if product.Id != response[i].Id {
+				t.Errorf("Expected id of product %d, got %d", product.Id, response[i].Id)
 			}
-			controller.GetProducts(tt.args.writer, tt.args.request)
-		})
-	}
+
+			if product.Description != response[i].Description {
+				t.Errorf("Expected description of product %s, got %s", product.Description, response[i].Description)
+			}
+
+			if product.Ean != response[i].Ean {
+				t.Errorf("Expected ean of product %d, got %d", product.Ean, response[i].Ean)
+			}
+		}
+
+	})
 }
 
 func TestDefaultController_PostProduct(t *testing.T) {
@@ -238,22 +267,100 @@ func TestDefaultController_PostProduct(t *testing.T) {
 		productRepository Repository
 	}
 	type args struct {
-		writer  http.ResponseWriter
+		writer  *httptest.ResponseRecorder
 		request *http.Request
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name             string
+		fields           fields
+		args             args
+		expectedStatus   int
+		expectedResponse string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Valid Product",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/product",
+					strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`),
+				),
+			},
+			expectedStatus:   http.StatusCreated,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Product (Partly Fields)",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/product",
+					strings.NewReader(`{"description": "Incomplete Product"}`),
+				),
+			},
+			expectedStatus:   http.StatusCreated,
+			expectedResponse: "",
+		},
+		{
+			name: "Malformed JSON",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/product",
+					strings.NewReader(`{"description": "Incomplete Product"`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name: "Invalid product, incorrect Type for EAN (Non-numeric)",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/product",
+					strings.NewReader(`{"id": 3, "description": "Invalid EAN", "ean": "abc"}`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			controller := defaultController{
 				productRepository: tt.fields.productRepository,
 			}
 			controller.PostProduct(tt.args.writer, tt.args.request)
+
+			// You can then assert the response status and content, and check against your expectations.
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+
+			if tt.expectedResponse != "" {
+				actualResponse := tt.args.writer.Body.String()
+				if actualResponse != tt.expectedResponse {
+					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
+				}
+			}
 		})
 	}
 }
@@ -263,29 +370,129 @@ func TestDefaultController_PutProduct(t *testing.T) {
 		productRepository Repository
 	}
 	type args struct {
-		writer  http.ResponseWriter
+		writer  *httptest.ResponseRecorder
 		request *http.Request
 	}
+
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name             string
+		fields           fields
+		args             args
+		expectedStatus   int
+		expectedResponse string // If you want to check the response content
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Valid Update",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/1",
+						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": 54321}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Update (Partly Fields)",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/2",
+						strings.NewReader(`{"description": "Incomplete Update"}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Malformed JSON",
+			fields: fields{
+				productRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/2",
+						strings.NewReader(`{"description": "Incomplete Update"`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name:   "Incorrect Type for EAN (Non-numeric)",
+			fields: fields{
+				// Set up your repository mock or test double here if needed
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/2",
+						strings.NewReader(`{"ean": "Wrong Type"`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			controller := defaultController{
 				productRepository: tt.fields.productRepository,
 			}
 			controller.PutProduct(tt.args.writer, tt.args.request)
+
+			// You can then assert the response status and content, and check against your expectations.
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+
+			if tt.expectedResponse != "" {
+				actualResponse := tt.args.writer.Body.String()
+				if actualResponse != tt.expectedResponse {
+					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
+				}
+			}
 		})
 	}
 }
 
 func setupMockRepository() Repository {
 	repository := NewDemoRepository()
-	productSlice := []*model.Product{
+	productSlice := setupDemoProductSlice()
+	for _, product := range productSlice {
+		repository.Create(product)
+	}
+
+	return repository
+}
+
+func setupDemoProductSlice() []*model.Product {
+	return []*model.Product{
 		{
 			Id:          1,
 			Description: "Strauchtomaten",
@@ -297,9 +504,4 @@ func setupMockRepository() Repository {
 			Ean:         5001819040871,
 		},
 	}
-	for _, product := range productSlice {
-		repository.Create(product)
-	}
-
-	return repository
 }
