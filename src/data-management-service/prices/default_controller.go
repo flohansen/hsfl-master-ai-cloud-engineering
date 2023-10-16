@@ -82,14 +82,11 @@ func (controller defaultController) PutPrice(writer http.ResponseWriter, request
 }
 
 func (controller defaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
-	userIdStr, okUser := request.Context().Value("userId").(string)
-	productIdStr, okProduct := request.Context().Value("productId").(string)
+	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
-	userId, errUser := strconv.ParseUint(userIdStr, 10, 64)
-	productId, errProduct := strconv.ParseUint(productIdStr, 10, 64)
-
-	if !okUser || !okProduct || errUser != nil || errProduct != nil {
-		http.Error(writer, "Invalid userId or productId", http.StatusBadRequest)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
