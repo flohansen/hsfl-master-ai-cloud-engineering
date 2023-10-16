@@ -82,7 +82,7 @@ func (mr *MockChapterRepositoryMockRecorder) FindAll() *gomock.Call {
 }
 
 // FindById mocks base method.
-func (m *MockChapterRepository) FindById(id int64) (*model.Chapter, error) {
+func (m *MockChapterRepository) FindById(id uint64) (*model.Chapter, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
 	ret0, _ := ret[0].(*model.Chapter)
@@ -108,4 +108,18 @@ func (m *MockChapterRepository) Migrate() error {
 func (mr *MockChapterRepositoryMockRecorder) Migrate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Migrate", reflect.TypeOf((*MockChapterRepository)(nil).Migrate))
+}
+
+// Update mocks base method.
+func (m *MockChapterRepository) Update(id uint64, chapter *model.UpdateChapter) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", id, chapter)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockChapterRepositoryMockRecorder) Update(id, chapter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockChapterRepository)(nil).Update), id, chapter)
 }

@@ -62,7 +62,7 @@ func TestBookDefaultController(t *testing.T) {
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.Len(t, response, 1)
-			assert.Equal(t, int64(999), response[0].ID)
+			assert.Equal(t, uint64(999), response[0].ID)
 		})
 	})
 
@@ -89,7 +89,7 @@ func TestBookDefaultController(t *testing.T) {
 		t.Run("should return 400 BAD REQUEST if payload is incomplete", func(t *testing.T) {
 			tests := []io.Reader{
 				strings.NewReader(`{"description": "amazing book"}`),
-				strings.NewReader(`{"author": "the best author"}`),
+				strings.NewReader(`{"authorid": 1}`),
 			}
 
 			for _, test := range tests {
@@ -109,11 +109,11 @@ func TestBookDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/books",
-				strings.NewReader(`{"name":"test book","author":"the best author"}`))
+				strings.NewReader(`{"name":"test book","authorid":1}`))
 
 			bookRepository.
 				EXPECT().
-				Create([]*model.Book{{Name: "test book", Author: "the best author"}}).
+				Create([]*model.Book{{Name: "test book", AuthorID: 1}}).
 				Return(errors.New("database error"))
 
 			// when
@@ -127,11 +127,11 @@ func TestBookDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/books",
-				strings.NewReader(`{"name":"test book","author":"the best author"}`))
+				strings.NewReader(`{"name":"test book","authorid":1}`))
 
 			bookRepository.
 				EXPECT().
-				Create([]*model.Book{{Name: "test book", Author: "the best author"}}).
+				Create([]*model.Book{{Name: "test book", AuthorID: 1}}).
 				Return(nil)
 
 			// when
@@ -164,7 +164,7 @@ func TestBookDefaultController(t *testing.T) {
 
 			bookRepository.
 				EXPECT().
-				FindById(int64(1)).
+				FindById(uint64(1)).
 				Return(nil, errors.New("database error"))
 
 			// when
@@ -182,8 +182,8 @@ func TestBookDefaultController(t *testing.T) {
 
 			bookRepository.
 				EXPECT().
-				FindById(int64(1)).
-				Return(&model.Book{ID: 1, Name: "test book", Author: "the best author"}, nil)
+				FindById(uint64(1)).
+				Return(&model.Book{ID: 1, Name: "test book", AuthorID: 1}, nil)
 
 			// when
 			controller.GetBook(w, r)
@@ -196,7 +196,8 @@ func TestBookDefaultController(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
-			assert.Equal(t, int64(1), response.ID)
+			assert.Equal(t, uint64(1), response.ID)
+			assert.Equal(t, uint64(1), response.AuthorID)
 			assert.Equal(t, "test book", response.Name)
 		})
 	})
@@ -244,7 +245,7 @@ func TestBookDefaultController(t *testing.T) {
 
 			bookRepository.
 				EXPECT().
-				Create([]*model.Book{{ID: 1}}).
+				Update(uint64(1), &model.UpdateBook{}).
 				Return(errors.New("database error"))
 
 			// when
@@ -263,7 +264,7 @@ func TestBookDefaultController(t *testing.T) {
 
 			bookRepository.
 				EXPECT().
-				Create([]*model.Book{{ID: 1}}).
+				Update(uint64(1), &model.UpdateBook{}).
 				Return(nil)
 
 			// when

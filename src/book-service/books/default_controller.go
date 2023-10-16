@@ -9,38 +9,38 @@ import (
 
 type createBookRequest struct {
 	Name        string `json:"name"`
-	Author      string `json:"author"` //Isnt that for user input, should stuff like author and bookID be included on create?
+	AuthorID    uint64 `json:"authorid"` //Isnt that for user input, should stuff like author and bookID be included on create?
 	Description string `json:"description"`
 }
 
 type updateBookRequest struct {
 	Name        string `json:"name"`
-	Author      string `json:"author"` //Does Update Author make sense?
+	AuthorID    uint64 `json:"authorid"` //Does Update Author make sense?
 	Description string `json:"description"`
 }
 
 type createChapterRequest struct {
-	BookID  int64  `json:"bookid"`
-	Name    string `json:"name"`
-	Author  string `json:"author"`
-	Price   int64  `json:"price"`
-	Content string `json:"content"`
+	BookID   uint64 `json:"bookid"`
+	Name     string `json:"name"`
+	AuthorID uint64 `json:"authorid"`
+	Price    uint64 `json:"price"`
+	Content  string `json:"content"`
 }
 
 type updateChapterRequest struct {
-	BookID  int64  `json:"bookid"` //Does Update BookID and Author make sense? No, right?
-	Name    string `json:"name"`
-	Author  string `json:"author"`
-	Price   int64  `json:"price"`
-	Content string `json:"content"`
+	BookID   uint64 `json:"bookid"` //Does Update BookID and Author make sense? No, right?
+	Name     string `json:"name"`
+	AuthorID uint64 `json:"authorid"`
+	Price    uint64 `json:"price"`
+	Content  string `json:"content"`
 }
 
 func (r createBookRequest) isValid() bool {
-	return r.Name != "" && r.Author != ""
+	return r.Name != ""
 }
 
 func (r createChapterRequest) isValid() bool {
-	return r.Name != "" && r.Author != ""
+	return r.Name != ""
 }
 
 type DefaultController struct {
@@ -80,7 +80,7 @@ func (ctrl *DefaultController) PostBooks(w http.ResponseWriter, r *http.Request)
 
 	if err := ctrl.bookRepository.Create([]*model.Book{{
 		Name:        request.Name,
-		Author:      request.Author,
+		AuthorID:    request.AuthorID,
 		Description: request.Description,
 	}}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -91,7 +91,7 @@ func (ctrl *DefaultController) PostBooks(w http.ResponseWriter, r *http.Request)
 func (ctrl *DefaultController) GetBook(w http.ResponseWriter, r *http.Request) {
 	bookId := r.Context().Value("bookid").(string)
 
-	id, err := strconv.ParseInt(bookId, 10, 64)
+	id, err := strconv.ParseUint(bookId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -110,24 +110,18 @@ func (ctrl *DefaultController) GetBook(w http.ResponseWriter, r *http.Request) {
 func (ctrl *DefaultController) PutBook(w http.ResponseWriter, r *http.Request) {
 	bookId := r.Context().Value("bookid").(string)
 
-	id, err := strconv.ParseInt(bookId, 10, 64)
+	id, err := strconv.ParseUint(bookId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	var request updateBookRequest
+	var request model.UpdateBook
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if err := ctrl.bookRepository.Create([]*model.Book{{
-		ID:          id,
-		Name:        request.Name,
-		Author:      request.Author,
-		Description: request.Description,
-	}}); err != nil {
+	if err := ctrl.bookRepository.Update(id, &request); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -136,7 +130,7 @@ func (ctrl *DefaultController) PutBook(w http.ResponseWriter, r *http.Request) {
 func (ctrl *DefaultController) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	bookId := r.Context().Value("bookid").(string)
 
-	id, err := strconv.ParseInt(bookId, 10, 64)
+	id, err := strconv.ParseUint(bookId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -174,11 +168,11 @@ func (ctrl *DefaultController) PostChapters(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := ctrl.chapterRepository.Create([]*model.Chapter{{
-		BookID:  request.BookID,
-		Name:    request.Name,
-		Author:  request.Author,
-		Price:   request.Price,
-		Content: request.Content,
+		BookID:   request.BookID,
+		Name:     request.Name,
+		AuthorID: request.AuthorID,
+		Price:    request.Price,
+		Content:  request.Content,
 	}}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -188,7 +182,7 @@ func (ctrl *DefaultController) PostChapters(w http.ResponseWriter, r *http.Reque
 func (ctrl *DefaultController) GetChapter(w http.ResponseWriter, r *http.Request) {
 	chapterId := r.Context().Value("chapterid").(string)
 
-	id, err := strconv.ParseInt(chapterId, 10, 64)
+	id, err := strconv.ParseUint(chapterId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -207,26 +201,18 @@ func (ctrl *DefaultController) GetChapter(w http.ResponseWriter, r *http.Request
 func (ctrl *DefaultController) PutChapter(w http.ResponseWriter, r *http.Request) {
 	chapterId := r.Context().Value("chapterid").(string)
 
-	id, err := strconv.ParseInt(chapterId, 10, 64)
+	id, err := strconv.ParseUint(chapterId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	var request updateChapterRequest
+	var request model.UpdateChapter
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if err := ctrl.chapterRepository.Create([]*model.Chapter{{
-		ID:      id,
-		BookID:  request.BookID,
-		Name:    request.Name,
-		Author:  request.Author,
-		Price:   request.Price,
-		Content: request.Content,
-	}}); err != nil {
+	if err := ctrl.chapterRepository.Update(id, &request); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -235,7 +221,7 @@ func (ctrl *DefaultController) PutChapter(w http.ResponseWriter, r *http.Request
 func (ctrl *DefaultController) DeleteChapter(w http.ResponseWriter, r *http.Request) {
 	chapterId := r.Context().Value("chapterid").(string)
 
-	id, err := strconv.ParseInt(chapterId, 10, 64)
+	id, err := strconv.ParseUint(chapterId, 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

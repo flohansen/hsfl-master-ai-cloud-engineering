@@ -1,48 +1,57 @@
 package main
 
+import (
+	"flag"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/book-service/api/router"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/book-service/books"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/database"
+	"gopkg.in/yaml.v3"
+	"log"
+	"net/http"
+	"os"
+)
+
+type ApplicationConfig struct {
+	Database database.PsqlConfig `yaml:"database"`
+}
+
+func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var config ApplicationConfig
+	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
 func main() {
-	/*router := router.New()
+	configPath := flag.String("config", "config.yaml", "The path to the configuration file")
+	flag.Parse()
 
-	router.GET("/books", func(w http.ResponseWriter, r *http.Request) {
+	config, err := LoadConfigFromFile(*configPath)
+	if err != nil {
+		log.Fatalf("could not load application configuration: %s", err.Error())
+	}
 
-	})
+	bookRepository, err := books.NewPsqlBookRepository(config.Database)
+	chapterRepository, err := books.NewPsqlChapterRepository(config.Database)
+	controller := books.NewDefaultController(bookRepository, chapterRepository)
+	handler := router.New(controller)
 
-	router.GET("/books/:bookId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-	})
+	if err := bookRepository.Migrate(); err != nil {
+		log.Fatalf("could not migrate: %s", err.Error())
+	}
 
-	router.GET("/books/:bookId/chapters", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-	})
+	if err := chapterRepository.Migrate(); err != nil {
+		log.Fatalf("could not migrate: %s", err.Error())
+	}
 
-	router.GET("/books/:bookId/chapters/:chapterId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-		chapterId := r.Context().Value("chapterId").(string)
-	})
-
-	router.POST("/books", func(w http.ResponseWriter, r *http.Request) {
-
-	})
-
-	router.PUT("/books/:bookId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-	})
-
-	router.DELETE("/books/:bookId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-	})
-
-	router.POST("/books/:bookId/chapters", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-	})
-
-	router.PUT("/books/:bookId/chapters/:chapterId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-		chapterId := r.Context().Value("chapterId").(string)
-	})
-
-	router.DELETE("/books/:bookId/chapters/:chapterId", func(w http.ResponseWriter, r *http.Request) {
-		bookId := r.Context().Value("bookId").(string)
-		chapterId := r.Context().Value("chapterId").(string)
-	})*/
+	if err := http.ListenAndServe(":3000", handler); err != nil {
+		log.Fatalf("error while listen and serve: %s", err.Error())
+	}
 }

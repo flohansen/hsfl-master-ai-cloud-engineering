@@ -63,7 +63,7 @@ func TestChapterDefaultController(t *testing.T) {
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.Len(t, response, 1)
-			assert.Equal(t, int64(999), response[0].ID)
+			assert.Equal(t, uint64(999), response[0].ID)
 		})
 	})
 
@@ -89,9 +89,9 @@ func TestChapterDefaultController(t *testing.T) {
 
 		t.Run("should return 400 BAD REQUEST if payload is incomplete", func(t *testing.T) {
 			tests := []io.Reader{
-				strings.NewReader(`{"price": 99.99}`),
+				strings.NewReader(`{"price": 100}`),
 				strings.NewReader(`{"description": "amazing chapter"}`),
-				strings.NewReader(`{"author": "the best author"}`),
+				strings.NewReader(`{"authorid": 1}`),
 			}
 
 			for _, test := range tests {
@@ -115,7 +115,7 @@ func TestChapterDefaultController(t *testing.T) {
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{Name: "test chapter", Author: "the best author"}}).
+				Create([]*model.Chapter{{Name: "test chapter", AuthorID: 0}}).
 				Return(errors.New("database error"))
 
 			// when
@@ -129,11 +129,11 @@ func TestChapterDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/books/1/chapters",
-				strings.NewReader(`{"name":"test chapter","author":"the best author"}`))
+				strings.NewReader(`{"name":"test chapter","authorid":1}`))
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{Name: "test chapter", Author: "the best author"}}).
+				Create([]*model.Chapter{{Name: "test chapter", AuthorID: 1}}).
 				Return(nil)
 
 			// when
@@ -166,7 +166,7 @@ func TestChapterDefaultController(t *testing.T) {
 
 			chapterRepository.
 				EXPECT().
-				FindById(int64(1)).
+				FindById(uint64(1)).
 				Return(nil, errors.New("database error"))
 
 			// when
@@ -184,8 +184,8 @@ func TestChapterDefaultController(t *testing.T) {
 
 			chapterRepository.
 				EXPECT().
-				FindById(int64(1)).
-				Return(&model.Chapter{ID: 1, Name: "test chapter", Author: "the best author"}, nil)
+				FindById(uint64(1)).
+				Return(&model.Chapter{ID: 1, Name: "test chapter", AuthorID: 1}, nil)
 
 			// when
 			controller.GetChapter(w, r)
@@ -198,7 +198,7 @@ func TestChapterDefaultController(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
-			assert.Equal(t, int64(1), response.ID)
+			assert.Equal(t, uint64(1), response.ID)
 			assert.Equal(t, "test chapter", response.Name)
 		})
 	})
@@ -246,7 +246,7 @@ func TestChapterDefaultController(t *testing.T) {
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{ID: 1}}).
+				Update(uint64(1), &model.UpdateChapter{}).
 				Return(errors.New("database error"))
 
 			// when
@@ -265,7 +265,7 @@ func TestChapterDefaultController(t *testing.T) {
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{ID: 1}}).
+				Update(uint64(1), &model.UpdateChapter{}).
 				Return(nil)
 
 			// when
