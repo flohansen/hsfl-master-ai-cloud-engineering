@@ -32,6 +32,14 @@ type DefaultController struct {
 	tokenGenerator auth.TokenGenerator
 }
 
+func NewDefaultController(
+	userRepository Repository,
+	hasher crypto.Hasher,
+	tokenGenerator auth.TokenGenerator,
+) *DefaultController {
+	return &DefaultController{userRepository, hasher, tokenGenerator}
+}
+
 func (ctrl *DefaultController) Login(w http.ResponseWriter, r *http.Request) {
 	var request loginRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
