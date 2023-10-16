@@ -66,6 +66,21 @@ func (mr *MockRepositoryMockRecorder) Delete(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), arg0)
 }
 
+// FindAll mocks base method.
+func (m *MockRepository) FindAll() ([]*model.DbUser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll")
+	ret0, _ := ret[0].([]*model.DbUser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll.
+func (mr *MockRepositoryMockRecorder) FindAll() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockRepository)(nil).FindAll))
+}
+
 // FindByEmail mocks base method.
 func (m *MockRepository) FindByEmail(email string) ([]*model.DbUser, error) {
 	m.ctrl.T.Helper()
@@ -81,6 +96,21 @@ func (mr *MockRepositoryMockRecorder) FindByEmail(email any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByEmail", reflect.TypeOf((*MockRepository)(nil).FindByEmail), email)
 }
 
+// FindByUsername mocks base method.
+func (m *MockRepository) FindByUsername(username string) ([]*model.DbUser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByUsername", username)
+	ret0, _ := ret[0].([]*model.DbUser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByUsername indicates an expected call of FindByUsername.
+func (mr *MockRepositoryMockRecorder) FindByUsername(username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUsername", reflect.TypeOf((*MockRepository)(nil).FindByUsername), username)
+}
+
 // Migrate mocks base method.
 func (m *MockRepository) Migrate() error {
 	m.ctrl.T.Helper()
@@ -93,4 +123,18 @@ func (m *MockRepository) Migrate() error {
 func (mr *MockRepositoryMockRecorder) Migrate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Migrate", reflect.TypeOf((*MockRepository)(nil).Migrate))
+}
+
+// Update mocks base method.
+func (m *MockRepository) Update(username string, user *model.UpdateUser) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", username, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockRepositoryMockRecorder) Update(username, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), username, user)
 }
