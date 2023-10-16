@@ -25,6 +25,6 @@ Tiark Millat\
 tiark.millat@stud.hs-flensburg.de\
 Hochschule Flensburg
 
-Finn Wessel
+Finn Wessel\
 finn.wessel@stud.hs-flensburg.de\
 Hochschule Flensburg
