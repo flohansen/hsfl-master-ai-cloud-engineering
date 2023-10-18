@@ -13,6 +13,9 @@ require (
 )
 
 require (
+	github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib v0.0.0-20231018143811-3c7d81c81e29
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
+
+replace github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib => ../../lib

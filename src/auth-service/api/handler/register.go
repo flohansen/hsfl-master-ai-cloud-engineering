@@ -31,7 +31,7 @@ func NewRegisterHandler(
 	return &RegisterHandler{userRepository, hasher}
 }
 
-func (h *RegisterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *RegisterHandler) Register(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var request registerRequest

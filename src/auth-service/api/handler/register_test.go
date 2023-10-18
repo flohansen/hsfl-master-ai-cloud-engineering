@@ -24,18 +24,6 @@ func TestRegisterHandler(t *testing.T) {
 	hasher := mocks.NewMockHasher(ctrl)
 	handler := NewRegisterHandler(userRepository, hasher)
 
-	t.Run("should return 405 METHOD NOT ALLOWED", func(t *testing.T) {
-		// given
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/register", nil)
-
-		// when
-		handler.ServeHTTP(w, r)
-
-		// test
-		assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
-	})
-
 	t.Run("should return 400 BAD REQUEST if payload is not json", func(t *testing.T) {
 		tests := []io.Reader{
 			nil,
@@ -48,7 +36,7 @@ func TestRegisterHandler(t *testing.T) {
 			r := httptest.NewRequest("POST", "/register", test)
 
 			// when
-			handler.ServeHTTP(w, r)
+			handler.Register(w, r)
 
 			// test
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -68,7 +56,7 @@ func TestRegisterHandler(t *testing.T) {
 			r := httptest.NewRequest("POST", "/register", test)
 
 			// when
-			handler.ServeHTTP(w, r)
+			handler.Register(w, r)
 
 			// test
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -86,7 +74,7 @@ func TestRegisterHandler(t *testing.T) {
 			Return(nil, errors.New("database error"))
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Register(w, r)
 
 		// test
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -103,7 +91,7 @@ func TestRegisterHandler(t *testing.T) {
 			Return(&model.DbUser{}, nil)
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Register(w, r)
 
 		// test
 		assert.Equal(t, http.StatusConflict, w.Code)
@@ -125,7 +113,7 @@ func TestRegisterHandler(t *testing.T) {
 			Return(nil, errors.New("hashing error"))
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Register(w, r)
 
 		// test
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -152,7 +140,7 @@ func TestRegisterHandler(t *testing.T) {
 			Return(errors.New("database error"))
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Register(w, r)
 
 		// test
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -179,7 +167,7 @@ func TestRegisterHandler(t *testing.T) {
 			Return(nil)
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Register(w, r)
 
 		// test
 		assert.Equal(t, http.StatusCreated, w.Code)

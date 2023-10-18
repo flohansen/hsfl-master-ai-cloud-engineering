@@ -27,18 +27,6 @@ func TestLoginHandler(t *testing.T) {
 	jwtTokenGenerator := mocks.NewMockTokenGenerator(ctrl)
 	handler := NewLoginHandler(userRepository, hasher, jwtTokenGenerator)
 
-	t.Run("should return 405 METHOD NOT ALLOWED", func(t *testing.T) {
-		// given
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/login", nil)
-
-		// when
-		handler.ServeHTTP(w, r)
-
-		// test
-		assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
-	})
-
 	t.Run("should return 400 BAD REQUEST if payload is not json", func(t *testing.T) {
 		tests := []io.Reader{
 			nil,
@@ -51,7 +39,7 @@ func TestLoginHandler(t *testing.T) {
 			r := httptest.NewRequest("POST", "/login", test)
 
 			// when
-			handler.ServeHTTP(w, r)
+			handler.Login(w, r)
 
 			// test
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -71,7 +59,7 @@ func TestLoginHandler(t *testing.T) {
 			r := httptest.NewRequest("POST", "/login", test)
 
 			// when
-			handler.ServeHTTP(w, r)
+			handler.Login(w, r)
 
 			// test
 			assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -89,7 +77,7 @@ func TestLoginHandler(t *testing.T) {
 			Return(nil, sql.ErrNoRows)
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Login(w, r)
 
 		// test
 		assert.Equal(t, "Basic realm=Restricted", w.Header().Get("WWW-Authenticate"))
@@ -112,7 +100,7 @@ func TestLoginHandler(t *testing.T) {
 			Return(false)
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Login(w, r)
 
 		// test
 		assert.Equal(t, "Basic realm=Restricted", w.Header().Get("WWW-Authenticate"))
@@ -130,7 +118,7 @@ func TestLoginHandler(t *testing.T) {
 			Return(nil, errors.New("database error"))
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Login(w, r)
 
 		// test
 		assert.Equal(t, "Basic realm=Restricted", w.Header().Get("WWW-Authenticate"))
@@ -163,7 +151,7 @@ func TestLoginHandler(t *testing.T) {
 			Return("token", nil)
 
 		// when
-		handler.ServeHTTP(w, r)
+		handler.Login(w, r)
 
 		// test
 		res := w.Result()

@@ -36,67 +36,61 @@ func NewLoginHandler(
 	return &LoginHandler{userRepository, hasher, jwtTokenGenerator}
 }
 
-func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		var request loginRequest
+func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var request loginRequest
 
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-		if !request.isValid() {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	if !request.isValid() {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-		user, err := h.userRepository.FindUserByEmail(request.Email)
+	user, err := h.userRepository.FindUserByEmail(request.Email)
 
-		if err != nil {
-			if err == sql.ErrNoRows {
-				w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		valid := h.hasher.Validate([]byte(request.Password), user.Password)
-
-		if !valid {
+	if err != nil {
+		if err == sql.ErrNoRows {
 			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		expiration := time.Duration(h.jwtTokenGenerator.GetExpiration()) * time.Second
-
-		claims := map[string]interface{}{
-			"sub":   user.ID,
-			"email": user.Email,
-			"exp":   time.Now().Add(expiration).Unix(),
-		}
-
-		token, err := h.jwtTokenGenerator.GenerateToken(claims)
-
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(w).Encode(loginResponse{
-			AccessToken: token,
-			TokenType:   "Bearer",
-			ExpiresIn:   int(expiration.Seconds()),
-		})
-
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	valid := h.hasher.Validate([]byte(request.Password), user.Password)
+
+	if !valid {
+		w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	expiration := time.Duration(h.jwtTokenGenerator.GetExpiration()) * time.Second
+
+	claims := map[string]interface{}{
+		"sub":   user.ID,
+		"email": user.Email,
+		"exp":   time.Now().Add(expiration).Unix(),
+	}
+
+	token, err := h.jwtTokenGenerator.GenerateToken(claims)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(loginResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   int(expiration.Seconds()),
+	})
 }
 
 func (r *loginRequest) isValid() bool {
