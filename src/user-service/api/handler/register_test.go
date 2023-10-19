@@ -35,7 +35,7 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
 				),
 			},
 			expectedStatus:   http.StatusOK,
@@ -51,7 +51,7 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"`),
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -67,7 +67,7 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": 120, "password": 120`),
+					strings.NewReader(`{"email": ada.lovelace@gmail.com, "password": 123456, "name": "Ada Lovelace", "role": 0}`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -94,16 +94,16 @@ func TestRegisterHandler(t *testing.T) {
 		})
 	}
 
-	loginHandler := setupLoginHandler()
+	registerHandler := setUpRegisterHandler()
 
 	writer := httptest.NewRecorder()
 	request := httptest.NewRequest(
 		"POST",
 		"/api/v1/user/register",
-		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
+		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
 	)
 
-	loginHandler.Login(writer, request)
+	registerHandler.Register(writer, request)
 
 	res := writer.Result()
 	var response map[string]interface{}
