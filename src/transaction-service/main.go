@@ -2,11 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/database"
-	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/transaction-service/api/router"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/transaction-service/transactions"
 	"gopkg.in/yaml.v3"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -29,8 +31,7 @@ func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
 }
 
 func main() {
-	router := router.New()
-	port := flag.String("port", "8080", "The listening port")
+	port := flag.String("port", "8082", "The listening port")
 	configPath := flag.String("config", "config.yaml", "The path to the configuration file")
 	flag.Parse()
 
@@ -39,25 +40,23 @@ func main() {
 		log.Fatalf("could not load application configuration: %s", err.Error())
 	}
 
-	userRepository, err := transactions.NewPsqlRepository(config.Database)
+	transactionRepository, err := transactions.NewPsqlRepository(config.Database)
 	if err != nil {
 		log.Fatalf("could not create user repository: %s", err.Error())
 	}
 
-	if err := userRepository.Migrate(); err != nil {
+	controller := transactions.NewDefaultController(transactionRepository)
+
+	handler := router.New(controller)
+
+	if err := transactionRepository.Migrate(); err != nil {
 		log.Fatalf("could not migrate: %s", err.Error())
 	}
 
-	_ = router
-	_ = port
+	fmt.Println("Server started")
 
-	/* handler := router.New(
-		handler.NewRegisterHandler(userRepository, hasher),
-		handler.NewLoginHandler(userRepository, hasher, tokenGenerator),
-	)
-
-	addr := fmt.Sprintf("0.0.0.0:%s", *port)
+	addr := fmt.Sprintf("127.0.0.1:%s", *port)
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
-	} */
+	}
 }
