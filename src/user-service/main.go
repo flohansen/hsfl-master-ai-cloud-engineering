@@ -63,10 +63,6 @@ func main() {
 
 	handler := router.New(controller)
 
-	if err := userRepository.Migrate(); err != nil {
-		log.Fatalf("could not migrate: %s", err.Error())
-	}
-
 	fmt.Println("Server started")
 
 	addr := fmt.Sprintf("127.0.0.1:%s", *port)
