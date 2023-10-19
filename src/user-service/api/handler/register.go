@@ -52,13 +52,13 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		product, err := handler.userRepository.FindByEmail(request.Email)
-		if err != nil {
+		foundUser, err := handler.userRepository.FindByEmail(request.Email)
+		if err != nil && err.Error() != "user could not be found" {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		if product != nil {
+		if foundUser != nil {
 			w.WriteHeader(http.StatusConflict)
 			return
 		}
