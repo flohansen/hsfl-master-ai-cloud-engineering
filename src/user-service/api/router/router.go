@@ -1,6 +1,7 @@
 package router
 
 import (
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/handler"
 	"net/http"
 
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
@@ -10,21 +11,14 @@ type Router struct {
 	router http.Handler
 }
 
-func New() *Router {
+func New(
+	loginHandler *handler.LoginHandler,
+	registerHandler *handler.RegisterHandler,
+) *Router {
 	r := router.New()
 
-	// CRUD User
-
-	// Current User Info
-	r.GET("/api/v1/user/", currentUserInfoHandler)
-	// User Info
-	r.GET("/api/v1/user/:userId", userInfoHandler)
-	// Register User
-	r.PUT("/api/v1/user/register", registerHandler)
-	// Authenticate User
-	r.POST("/api/v1/user/auth", authHandler)
-	// Delete User
-	r.DELETE("/api/v1/user/delete", authHandler)
+	r.POST("/api/v1/user/login", loginHandler.Login)
+	r.POST("/api/v1/user/register", registerHandler.Register)
 
 	return &Router{r}
 }

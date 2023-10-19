@@ -15,11 +15,18 @@ func NewDemoRepository() *DemoRepository {
 }
 
 func (repo *DemoRepository) Create(user *model.User) (*model.User, error) {
-	_, found := repo.users[user.Id]
+	var userId uint64
+	if user.Id == 0 {
+		userId = repo.findNextAvailableID()
+	} else {
+		userId = user.Id
+	}
+
+	_, found := repo.users[userId]
 	if found {
 		return nil, errors.New("user already exists")
 	}
-	repo.users[user.Id] = user
+	repo.users[userId] = user
 
 	return user, nil
 }
@@ -61,4 +68,14 @@ func (repo *DemoRepository) Update(user *model.User) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (repo *DemoRepository) findNextAvailableID() uint64 {
+	var maxID uint64
+	for id := range repo.users {
+		if id > maxID {
+			maxID = id
+		}
+	}
+	return maxID + 1
 }
