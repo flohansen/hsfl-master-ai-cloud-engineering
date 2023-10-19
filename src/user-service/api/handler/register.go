@@ -63,7 +63,6 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 		}
 
 		if _, err := handler.userRepository.Create(&model.User{
-			Id:       1,
 			Email:    request.Email,
 			Password: hashedPassword,
 			Name:     request.Name,
