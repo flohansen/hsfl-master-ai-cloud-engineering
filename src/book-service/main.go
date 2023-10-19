@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/book-service/api/router"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/book-service/books"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/database"
@@ -30,6 +31,7 @@ func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
 }
 
 func main() {
+	port := flag.String("port", "8081", "The listening port")
 	configPath := flag.String("config", "config.yaml", "The path to the configuration file")
 	flag.Parse()
 
@@ -51,7 +53,10 @@ func main() {
 		log.Fatalf("could not migrate: %s", err.Error())
 	}
 
-	if err := http.ListenAndServe(":3000", handler); err != nil {
+	fmt.Println("Server started")
+
+	addr := fmt.Sprintf("127.0.0.1:%s", *port)
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
 	}
 }
