@@ -68,7 +68,7 @@ func TestRouter(t *testing.T) {
 		t.Run("should call POST handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest("POST", "/api/v1/user/register", strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"`))
+			r := httptest.NewRequest("POST", "/api/v1/user/register", strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0}`))
 
 			// when
 			router.ServeHTTP(w, r)
@@ -112,13 +112,6 @@ func setupDemoUserSlice() []*model.User {
 			Email:    "ada.lovelace@gmail.com",
 			Password: hashedPassword,
 			Name:     "Ada Lovelace",
-			Role:     model.Customer,
-		},
-		{
-			Id:       2,
-			Email:    "alan.turin@gmail.com",
-			Password: hashedPassword,
-			Name:     "Alan Turing",
 			Role:     model.Customer,
 		},
 	}
