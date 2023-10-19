@@ -8,16 +8,15 @@ import (
 	"strconv"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
-	"github.com/gorilla/mux"
 )
 
 // PostHandler handles HTTP requests for Post
 type PostHandler struct {
-	PostService *service.PostService
+	PostService service.PostService
 }
 
 // NewPostHandler creates a new PostHandler
-func NewPostHandler(service *service.PostService) *PostHandler {
+func NewPostHandler(service service.PostService) *PostHandler {
 	return &PostHandler{PostService: service}
 }
 
@@ -49,16 +48,20 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, _ *http.Request) {
 
 // GetPost handles the retrieval of a post by ID
 func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := convertToUint(params["id"])
+	idString := r.Context().Value("id").(string)
+	id := convertToUint(idString)
 	post := h.PostService.GetByID(id)
+	if post.ID == 0 {
+		respondWithError(w, http.StatusNotFound, "Post not found")
+		return
+	}
 	respondWithJSON(w, http.StatusOK, post)
 }
 
 // UpdatePost handles the update of a post by ID
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := convertToUint(params["id"])
+	idString := r.Context().Value("id").(string)
+	id := convertToUint(idString)
 
 	var post models.Post
 	decoder := json.NewDecoder(r.Body)
@@ -87,8 +90,8 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 // DeletePost handles the deletion of a post by ID
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id := convertToUint(params["id"])
+	idString := r.Context().Value("id").(string)
+	id := convertToUint(idString)
 
 	post := h.PostService.GetByID(id)
 	if post.ID == 0 {
