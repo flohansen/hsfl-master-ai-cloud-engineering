@@ -14,7 +14,7 @@ Key features:
 
 ## Prototypical architecture
 
-![CE_ Architecture Prototype](./README.assets/CE_ Architecture%20Prototype.svg)
+![Architecture](README.assets/CE_Architecture_Prototype.svg)
 
 ## Authors
 
