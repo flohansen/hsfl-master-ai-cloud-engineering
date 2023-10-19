@@ -19,7 +19,7 @@ func New(
 	r.GET("/user/shoppingList", serviceController.GetShoppingList)
 	r.GET("/admin/products", serviceController.GetAdminProducts)
 	r.GET("/merchant/products", serviceController.GetMerchantProducts)
-	r.GET("/ProductCatalogue", serviceController.GetProductCatalogue)
+	r.GET("/productCatalogue", serviceController.GetProductCatalogue)
 
 	return &Router{r}
 }
