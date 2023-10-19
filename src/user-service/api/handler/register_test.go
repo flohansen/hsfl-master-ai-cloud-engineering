@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"net/http"
 	"net/http/httptest"
@@ -35,10 +33,26 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
+					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0}`),
 				),
 			},
 			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "User already exists",
+			fields: fields{
+				registerHandler: setUpRegisterHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/register",
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
+				),
+			},
+			expectedStatus:   http.StatusConflict,
 			expectedResponse: "",
 		},
 		{
@@ -51,7 +65,7 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0`),
+					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -67,7 +81,7 @@ func TestRegisterHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/register",
-					strings.NewReader(`{"email": ada.lovelace@gmail.com, "password": 123456, "name": "Ada Lovelace", "role": 0}`),
+					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": 123456, "name": "Grace Hopper", "role": false}`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -93,27 +107,6 @@ func TestRegisterHandler(t *testing.T) {
 			}
 		})
 	}
-
-	registerHandler := setUpRegisterHandler()
-
-	writer := httptest.NewRecorder()
-	request := httptest.NewRequest(
-		"POST",
-		"/api/v1/user/register",
-		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
-	)
-
-	registerHandler.Register(writer, request)
-
-	res := writer.Result()
-	var response map[string]interface{}
-	err := json.NewDecoder(res.Body).Decode(&response)
-
-	assert.NoError(t, err)
-	assert.Contains(t, response["access_token"], "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9")
-	assert.Equal(t, "Bearer", response["token_type"])
-	assert.Equal(t, float64(3600), response["expires_in"])
-	assert.Equal(t, http.StatusOK, writer.Code)
 }
 
 func setUpRegisterHandler() *RegisterHandler {
