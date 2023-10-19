@@ -15,6 +15,13 @@ type registerRequest struct {
 	Role     int    `json:"role"`
 }
 
+type registerResponse struct {
+	Id    uint64 `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Role  int    `json:"role"`
+}
+
 func (r *registerRequest) isValid() bool {
 	return r.Email != "" && r.Password != "" && r.Name != ""
 }
@@ -45,13 +52,13 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		product, err := handler.userRepository.FindByEmail(request.Email)
-		if err != nil {
+		foundUser, err := handler.userRepository.FindByEmail(request.Email)
+		if err != nil && err.Error() != "user could not be found" {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		if product != nil {
+		if foundUser != nil {
 			w.WriteHeader(http.StatusConflict)
 			return
 		}
@@ -61,16 +68,31 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		if _, err := handler.userRepository.Create(&model.User{
+		createdUser, err := handler.userRepository.Create(&model.User{
 			Email:    request.Email,
 			Password: hashedPassword,
 			Name:     request.Name,
 			Role:     model.Customer,
-		}); err != nil {
+		})
+
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		response := registerResponse{
+			Id:    createdUser.Id,
+			Name:  createdUser.Name,
+			Email: createdUser.Email,
+			Role:  int(createdUser.Role),
+		}
+
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}

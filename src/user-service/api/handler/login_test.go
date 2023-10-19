@@ -45,6 +45,22 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
+			name: "Wrong password",
+			fields: fields{
+				loginHandler: setupLoginHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/login",
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "98765"}`),
+				),
+			},
+			expectedStatus:   http.StatusUnauthorized,
+			expectedResponse: "",
+		},
+		{
 			name: "Malformed JSON",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
@@ -55,6 +71,22 @@ func TestLoginHandler(t *testing.T) {
 					"POST",
 					"/api/v1/user/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name: "Missing field",
+			fields: fields{
+				loginHandler: setupLoginHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/login",
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com"`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
