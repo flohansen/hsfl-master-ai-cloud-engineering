@@ -86,13 +86,48 @@ func TestIntegrationPsqlRepository(t *testing.T) {
 		})
 	})
 
-	t.Run("FindByID", func(t *testing.T) {
+	t.Run("FindAll", func(t *testing.T) {
+		t.Run("should return all products", func(t *testing.T) {
+			t.Cleanup(clearTables(t, repository.db))
+
+			// given
+			transactions := []*model.Transaction{
+				{
+					ID:              3,
+					ChapterID:       1,
+					PayingUserID:    1,
+					ReceivingUserID: 1,
+					Amount:          0,
+				},
+				{
+					ID:              4,
+					ChapterID:       1,
+					PayingUserID:    1,
+					ReceivingUserID: 1,
+					Amount:          0,
+				},
+			}
+
+			for _, transaction := range transactions {
+				insertTransaction(t, repository.db, transaction)
+			}
+
+			// when
+			transactions, err := repository.FindAll()
+
+			// then
+			assert.NoError(t, err)
+			assert.Len(t, transactions, 2)
+		})
+	})
+
+	t.Run("FindById", func(t *testing.T) {
 		t.Run("should return transaction", func(t *testing.T) {
 			t.Cleanup(clearTables(t, repository.db))
 
 			// given
 			insertTransaction(t, repository.db, &model.Transaction{
-				ID:              3,
+				ID:              5,
 				ChapterID:       1,
 				PayingUserID:    1,
 				ReceivingUserID: 1,
@@ -100,7 +135,7 @@ func TestIntegrationPsqlRepository(t *testing.T) {
 			})
 
 			// when
-			transaction, err := repository.FindByID(3)
+			transaction, err := repository.FindById(5)
 
 			// then
 			assert.NoError(t, err)

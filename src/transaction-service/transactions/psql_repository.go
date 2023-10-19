@@ -63,12 +63,12 @@ func (repo *PsqlRepository) Create(transactions []*model.Transaction) error {
 	return err
 }
 
-const findTransactionbyIDQuery = `
-select id, chapterid, payinguserid, receivinguserid, amount from transactions where id = $1
+const findAllTransactionsQuery = `
+select id, chapterid, payinguserid, receivinguserid, amount from transactions
 `
 
-func (repo *PsqlRepository) FindByID(id int) ([]*model.Transaction, error) {
-	rows, err := repo.db.Query(findTransactionbyIDQuery, id)
+func (repo *PsqlRepository) FindAll() ([]*model.Transaction, error) {
+	rows, err := repo.db.Query(findAllTransactionsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -84,4 +84,18 @@ func (repo *PsqlRepository) FindByID(id int) ([]*model.Transaction, error) {
 	}
 
 	return transactions, nil
+}
+
+const findTransactionbyIDQuery = `
+select id, chapterid, payinguserid, receivinguserid, amount from transactions where id = $1
+`
+
+func (repo *PsqlRepository) FindById(id uint64) (*model.Transaction, error) {
+	row := repo.db.QueryRow(findTransactionbyIDQuery, id)
+	transaction := &model.Transaction{}
+	if err := row.Scan(&transaction.ID, &transaction.ChapterID, &transaction.PayingUserID, &transaction.ReceivingUserID, &transaction.Amount); err != nil {
+		return nil, err
+	}
+
+	return transaction, nil
 }

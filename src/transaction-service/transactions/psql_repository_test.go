@@ -71,26 +71,46 @@ func TestPsqlRepository(t *testing.T) {
 		})
 	})
 
+	t.Run("FindAll", func(t *testing.T) {
+		t.Run("should return all transactions", func(t *testing.T) {
+			// given
+			dbmock.ExpectQuery(`select id, chapterid, payinguserid, receivinguserid, amount from transactions`).
+				WillReturnRows(sqlmock.NewRows([]string{"id", "chapterid", "payinguserid", "receivinguserid", "amount"}).
+					AddRow(1, 1, 1, 1, 0).
+					AddRow(2, 2, 2, 2, 1))
+
+			// when
+			transactions, err := repository.FindAll()
+
+			// then
+			assert.NoError(t, err)
+			assert.NoError(t, dbmock.ExpectationsWereMet())
+			assert.Len(t, transactions, 2)
+			assert.Equal(t, uint64(1), transactions[0].ID)
+			assert.Equal(t, uint64(2), transactions[1].ID)
+		})
+	})
+
 	t.Run("FindByID", func(t *testing.T) {
 		t.Run("should return error if executing query failed", func(t *testing.T) {
 			// given
-			id := 1
+			id := uint64(1)
 
 			dbmock.
 				ExpectQuery(`select id, chapterid, payinguserid, receivinguserid, amount from transactions where id = \$1`).
 				WillReturnError(errors.New("database error"))
 
 			// when
-			transactions, err := repository.FindByID(id)
+			transaction, err := repository.FindById(id)
 
 			// then
 			assert.Error(t, err)
-			assert.Nil(t, transactions)
+			assert.Nil(t, transaction)
 		})
 
 		t.Run("should return transactions by id", func(t *testing.T) {
 			// given
-			id := 1
+			id := uint64(1)
 
 			dbmock.
 				ExpectQuery(`select id, chapterid, payinguserid, receivinguserid, amount from transactions where id = \$1`).
@@ -98,11 +118,11 @@ func TestPsqlRepository(t *testing.T) {
 					AddRow(1, 1, 1, 1, 0))
 
 			// when
-			transactions, err := repository.FindByID(id)
+			transaction, err := repository.FindById(id)
 
 			// then
 			assert.NoError(t, err)
-			assert.Len(t, transactions, 1)
+			assert.Equal(t, transaction.ID, id)
 		})
 	})
 }
