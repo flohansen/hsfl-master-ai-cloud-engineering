@@ -38,10 +38,10 @@ func TestLoginHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/login",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "12345"}`),
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
@@ -54,7 +54,7 @@ func TestLoginHandler(t *testing.T) {
 				request: httptest.NewRequest(
 					"POST",
 					"/api/v1/user/login",
-					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "12345"`),
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"`),
 				),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -103,7 +103,7 @@ func TestLoginHandler(t *testing.T) {
 	request := httptest.NewRequest(
 		"POST",
 		"/api/v1/user/login",
-		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "12345"}`),
+		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
 	)
 
 	loginHandler.Login(writer, request)
@@ -113,7 +113,7 @@ func TestLoginHandler(t *testing.T) {
 	err := json.NewDecoder(res.Body).Decode(&response)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "token", response["access_token"])
+	assert.Contains(t, response["access_token"], "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9")
 	assert.Equal(t, "Bearer", response["token_type"])
 	assert.Equal(t, float64(3600), response["expires_in"])
 	assert.Equal(t, http.StatusOK, writer.Code)
@@ -121,7 +121,7 @@ func TestLoginHandler(t *testing.T) {
 
 func setupLoginHandler() *LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
-		auth.JwtConfig{SignKey: "-----BEGIN EC PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,55D4E42CC38B1EEB2925A48612E432C0\n\n78ZML84hQvNXuIfWKPkzvPsHrEqSGjSgFBbJBWYiDkPHxK3elEKnk8dfXjq0/QVd\nLAf3jQPNLOS0YnZSgGo7GzCCESBvzAKjTt4j8srdJbyybPniw34dfvZr1MTOXNNb\neRsZSh9gCWMt8CA9kROFSnWF/V1MI+0BGOJFXucPOfc=\n-----END EC PRIVATE KEY-----\n"})
+		auth.JwtConfig{SignKey: "../../auth/test-token"})
 
 	return NewLoginHandler(setupMockRepository(),
 		crypto.NewBcryptHasher(), jwtToken)
@@ -129,7 +129,7 @@ func setupLoginHandler() *LoginHandler {
 
 func setupMockRepository() user.Repository {
 	repository := user.NewDemoRepository()
-	userSlice := setupDemoProductSlice()
+	userSlice := setupDemoUserSlice()
 	for _, newUser := range userSlice {
 		_, _ = repository.Create(newUser)
 	}
@@ -137,7 +137,7 @@ func setupMockRepository() user.Repository {
 	return repository
 }
 
-func setupDemoProductSlice() []*model.User {
+func setupDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
 	hashedPassword, _ := bcryptHasher.Hash([]byte("123456"))
 
