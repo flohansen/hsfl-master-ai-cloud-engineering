@@ -18,7 +18,7 @@ func New(
 	r := router.New()
 
 	r.POST("/api/v1/user/login", loginHandler.Login)
-	r.PUT("/api/v1/user/register", registerHandler.Register)
+	r.POST("/api/v1/user/register", registerHandler.Register)
 
 	return &Router{r}
 }

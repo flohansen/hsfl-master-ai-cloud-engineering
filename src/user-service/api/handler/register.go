@@ -66,7 +66,7 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			Email:    request.Email,
 			Password: hashedPassword,
 			Name:     request.Name,
-			Role:     model.Role(request.Role),
+			Role:     model.Customer,
 		}); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
