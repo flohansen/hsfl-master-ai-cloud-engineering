@@ -2,8 +2,6 @@ name: Test bulletin-board-service
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'src/bulletin-board-service/**'
   workflow_dispatch:
