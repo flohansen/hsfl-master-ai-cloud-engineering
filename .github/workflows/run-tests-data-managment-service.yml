@@ -22,7 +22,7 @@ jobs:
 
       - name: Test Go Module
         run: |
-          cd src/data-management
+          cd src/data-management-service
           go test ./...
           test_exit_code=$? # Capture the exit code of the go test command
           if [ $test_exit_code -eq 0 ]; then
