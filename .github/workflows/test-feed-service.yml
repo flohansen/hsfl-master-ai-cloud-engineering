@@ -2,8 +2,6 @@ name: Test feed-service
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'src/feed-service/**'
   workflow_dispatch:
