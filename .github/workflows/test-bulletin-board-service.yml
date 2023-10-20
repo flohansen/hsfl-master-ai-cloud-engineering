@@ -49,5 +49,6 @@ jobs:
         continue-on-error: true
         with:
           token: ${{secrets.CODECOV_TOKEN}}
+          flags: bulletin-board-service
           file: ./src/bulletin-board-service/coverage.txt
           fail_ci_if_error: false
