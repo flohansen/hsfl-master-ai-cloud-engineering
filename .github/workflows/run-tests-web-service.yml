@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test web-service service
+    name: Test web-service
     runs-on: ubuntu-latest
 
     steps:

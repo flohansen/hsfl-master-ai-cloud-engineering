@@ -1,4 +1,4 @@
-name: Run tests for data-management service on path change
+name: Run tests (data-management-service)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Test data-management service
+    name: Test data-management-service
     runs-on: ubuntu-latest
 
     steps:
