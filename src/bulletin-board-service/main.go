@@ -39,7 +39,7 @@ func main() {
 		log.Fatal("Failed to migrate database: ", err)
 	}
 
-	postRepo := repository.NewPostRepository(db)
+	postRepo := repository.NewPostPsqlRepository(db)
 	postService := service.NewPostService(postRepo)
 	postHandler := handler.NewPostHandler(postService)
 
