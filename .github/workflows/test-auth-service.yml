@@ -48,5 +48,5 @@ jobs:
         continue-on-error: true
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          file: ./coverage.txt
+          file: ./src/auth-service/coverage.txt
           fail_ci_if_error: false
