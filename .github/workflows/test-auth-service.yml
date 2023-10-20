@@ -1,0 +1,44 @@
+name: Test auth-service
+
+on:
+  push:
+    paths:
+      - 'src/auth-service/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/auth-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.2'
+
+      - name: Go Format
+        run: gofmt -s -w . && git diff --exit-code
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Go Tidy
+        run: go mod tidy && git diff --exit-code
+
+      - name: Go Mod
+        run: go mod download
+
+      - name: Go Mod Verify
+        run: go mod verify
+
+      - name: Go Build
+        run: go build -o /dev/null ./...
+
+      - name: Go Test
+        run: go test -race -shuffle=on ./...
