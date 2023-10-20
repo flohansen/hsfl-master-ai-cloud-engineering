@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'src/data-management/**'
+  workflow_dispatch:
 
 jobs:
   test:
