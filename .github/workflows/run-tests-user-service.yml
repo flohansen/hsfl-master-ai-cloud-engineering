@@ -1,9 +1,9 @@
-name: Run tests for data-management service on path change
+name: Run tests (data-management-service)
 
 on:
   push:
     paths:
-      - 'src/data-management-service/**'
+      - 'src/user-service/**'
   workflow_dispatch:
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
 
       - name: Test Go Module
         run: |
-          cd src/data-management-service
+          cd src/user-service
           go test ./...
           test_exit_code=$? # Capture the exit code of the go test command
           if [ $test_exit_code -eq 0 ]; then
