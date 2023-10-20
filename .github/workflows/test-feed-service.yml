@@ -1,18 +1,18 @@
-name: Test auth-service
+name: Test feed-service
 
 on:
   push:
     paths:
-      - 'src/auth-service/**'
+      - 'src/feed-service/**'
   workflow_dispatch:
 
 jobs:
   test:
-    name: Test auth-service
+    name: Test feed-service
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: src/auth-service
+        working-directory: src/feed-service
 
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.21.2'
-          cache-dependency-path: src/auth-service/go.sum
+          cache-dependency-path: src/feed-service/go.sum
 
       - name: Go Format
         run: gofmt -s -w . && git diff --exit-code
@@ -49,6 +49,6 @@ jobs:
         continue-on-error: true
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          flags: auth-service
-          file: ./src/auth-service/coverage.txt
+          flags: feed-service
+          file: ./src/feed-service/coverage.txt
           fail_ci_if_error: false
