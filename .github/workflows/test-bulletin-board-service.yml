@@ -1,0 +1,53 @@
+name: Test bulletin-board-service
+
+on:
+  push:
+    paths:
+      - 'src/bulletin-board-service/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test bulletin-board-service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/bulletin-board-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.2'
+          cache-dependency-path: src/bulletin-board-service/go.sum
+
+      - name: Go Format
+        run: gofmt -s -w . && git diff --exit-code
+
+      - name: Go Vet
+        run: go vet ./...
+
+      - name: Go Tidy
+        run: go mod tidy && git diff --exit-code
+
+      - name: Go Mod
+        run: go mod download
+
+      - name: Go Mod Verify
+        run: go mod verify
+
+      - name: Go Build
+        run: go build -o /dev/null ./...
+
+      - name: Go Test
+        run: go test -race -shuffle=on -coverprofile=coverage.txt ./...
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./src/bulletin-board-service/coverage.txt
+          fail_ci_if_error: false
