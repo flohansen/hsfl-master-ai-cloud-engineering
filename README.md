@@ -1,3 +1,7 @@
+![User Service Badge](https://github.com/akatranlp/hsfl-master-ai-cloud-engineering/actions/workflows/user-service-test.yml/badge.svg)
+![Book Service Badge](https://github.com/akatranlp/hsfl-master-ai-cloud-engineering/actions/workflows/book-service-test.yml/badge.svg)
+![Transaction Service Badge](https://github.com/akatranlp/hsfl-master-ai-cloud-engineering/actions/workflows/transaction-service-test.yml/badge.svg)
+
 # VerseVault: Unleash Your Words, Earn Your Worth!
 
 Welcome to VerseVault, your one-stop destination for unleashing your creative potential and turning your passion for writing into a profitable venture. VerseVault is a dynamic platform where aspiring writers and wordsmiths of all levels can craft, publish, and monetize their written works.
