@@ -8,7 +8,6 @@ type Repository interface {
 	Update(list *model.UserShoppingList) (*model.UserShoppingList, error)
 	FindById(userId uint64) (*model.UserShoppingList, error)
 	FindByIds(userId uint64, listId uint64) (*model.UserShoppingList, error)
-	FindAll() ([]*model.UserShoppingList, error)
 }
 
 const (
