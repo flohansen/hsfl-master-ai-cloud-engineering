@@ -1,0 +1,1 @@
+module github.com/akatranlp/hsfl-master-ai-cloud-engineering/web-service
