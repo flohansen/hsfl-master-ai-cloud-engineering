@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -36,14 +37,25 @@ func (p *HTTPProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.URL.Scheme = host.Scheme
 			r.RequestURI = ""
 
+			log.Printf("Got a connection from %s to %s: Redirect to %s\n", r.RemoteAddr, r.URL.Host, host.Host)
+
 			originServerResponse, err := http.DefaultClient.Do(r)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				_, _ = fmt.Fprint(w, err)
 				mapping.hostIndex = (mapping.hostIndex + 1) % len(mapping.hosts)
+				log.Println(err.Error())
 				return
 			}
-			w.WriteHeader(http.StatusOK)
+
+			for headerKey, headerValue := range originServerResponse.Header {
+				for _, value := range headerValue {
+					w.Header().Add(headerKey, value)
+				}
+			}
+
+			w.WriteHeader(originServerResponse.StatusCode)
+
 			io.Copy(w, originServerResponse.Body)
 
 			// Round-robin
