@@ -1,14 +1,14 @@
-name: Run tests (data-management-service)
+name: Run tests (product-service)
 
 on:
   push:
     paths:
-      - 'src/data-management-service/**'
+      - 'src/product-service/**'
   workflow_dispatch:
 
 jobs:
   test:
-    name: Test data-management-service
+    name: Test product-service
     runs-on: ubuntu-latest
 
     steps:
