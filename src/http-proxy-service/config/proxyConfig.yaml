@@ -1,0 +1,9 @@
+proxy:
+  listenAddress: localhost:8080
+  proxyRoutes:
+    - name: Service A
+      context: /service-a
+      target: http://localhost:3001
+    - name: Service B
+      context: /service-b
+      target: http://localhost:3002
