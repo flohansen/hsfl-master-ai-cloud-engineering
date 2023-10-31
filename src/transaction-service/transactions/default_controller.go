@@ -1,8 +1,12 @@
 package transactions
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/transaction-service/transactions/model"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -79,4 +83,40 @@ func (ctrl *DefaultController) GetTransaction(w http.ResponseWriter, r *http.Req
 
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(transaction)
+}
+
+func (ctrl *DefaultController) AuthenticationMiddleware(w http.ResponseWriter, r *http.Request, next router.Next) {
+	req, err := http.NewRequest("GET", "http://localhost:8080/api/v1/users/me", nil)
+	if err != nil {
+		http.Error(w, "Response could not be sent!", 500)
+		return
+	}
+	req.Header.Add("Authorization", r.Header.Get("Authorization"))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(res.Status, res.Header)
+
+	if res.StatusCode != http.StatusOK {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	bytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var claims map[string]interface{}
+	err = json.Unmarshal(bytes, &claims)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), "user", claims)
+	next(r.WithContext(ctx))
 }
