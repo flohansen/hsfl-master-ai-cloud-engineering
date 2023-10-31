@@ -1,8 +1,8 @@
 package router
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
 	"net/http"
 
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
