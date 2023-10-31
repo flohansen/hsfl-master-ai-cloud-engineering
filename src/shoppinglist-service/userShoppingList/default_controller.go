@@ -41,7 +41,7 @@ func (controller defaultController) GetList(writer http.ResponseWriter, request 
 
 func (controller defaultController) PutList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
-
+	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -55,7 +55,7 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 
 	if _, err := controller.userShoppingListRepository.Update(&model.UserShoppingList{
 		Id:        listId,
-		UserId:    requestData.UserId,
+		UserId:    userId,
 		Completed: requestData.Checked,
 	}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -80,7 +80,12 @@ func (controller defaultController) PostList(writer http.ResponseWriter, request
 }
 
 func (controller defaultController) GetLists(writer http.ResponseWriter, request *http.Request) {
-	values, err := controller.userShoppingListRepository.FindAll()
+	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+	values, err := controller.userShoppingListRepository.FindById(userId)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
@@ -94,13 +99,13 @@ func (controller defaultController) GetLists(writer http.ResponseWriter, request
 }
 
 func (controller defaultController) DeleteList(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := controller.userShoppingListRepository.Delete(&model.UserShoppingList{UserId: userId}); err != nil {
+	if err := controller.userShoppingListRepository.Delete(&model.UserShoppingList{Id: listId}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
