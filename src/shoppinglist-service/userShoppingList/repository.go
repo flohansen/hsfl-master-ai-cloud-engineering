@@ -12,5 +12,7 @@ type Repository interface {
 
 const (
 	ErrorListNotFound      = "list could not be found"
+	ErrorListUpdate        = "list can not be updated"
+	ErrorListDeletion      = "list could not be deleted"
 	ErrorListAlreadyExists = "list already exists"
 )
