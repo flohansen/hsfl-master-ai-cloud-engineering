@@ -2,18 +2,22 @@ package userShoppingListEntry
 
 import "net/http"
 
-type JsonFormatUpdateListRequest struct {
-	ShoppingListId uint64 `json:"shoppingListId,omitempty"`
-	ProductId      uint64 `json:"productId,omitempty"`
-	Count          uint16 `json:"count,omitempty"`
-	Note           string `json:"note,omitempty"`
-	Checked        bool   `json:"checked,omitempty"`
+type JsonFormatCreateEntryRequest struct {
+	Count   uint16 `json:"count,omitempty"`
+	Note    string `json:"note,omitempty"`
+	Checked bool   `json:"checked,omitempty"`
+}
+
+type JsonFormatUpdateEntryRequest struct {
+	Count   uint16 `json:"count,omitempty"`
+	Note    string `json:"note,omitempty"`
+	Checked bool   `json:"checked,omitempty"`
 }
 
 type Controller interface {
-	GetList(http.ResponseWriter, *http.Request)
-	GetLists(http.ResponseWriter, *http.Request)
-	PostList(http.ResponseWriter, *http.Request)
-	PutList(http.ResponseWriter, *http.Request)
-	DeleteList(http.ResponseWriter, *http.Request)
+	GetEntry(http.ResponseWriter, *http.Request)
+	GetEntries(http.ResponseWriter, *http.Request)
+	PostEntry(http.ResponseWriter, *http.Request)
+	PutEntry(http.ResponseWriter, *http.Request)
+	DeleteEntry(http.ResponseWriter, *http.Request)
 }
