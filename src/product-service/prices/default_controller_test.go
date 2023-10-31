@@ -3,7 +3,7 @@ package prices
 import (
 	"context"
 	"encoding/json"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"net/http"
 	"net/http/httptest"
 	"reflect"

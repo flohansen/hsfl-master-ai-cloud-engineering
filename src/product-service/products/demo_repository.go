@@ -2,7 +2,7 @@ package products
 
 import (
 	"errors"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 )
 
 type DemoRepository struct {

@@ -2,10 +2,10 @@ package router
 
 import (
 	"github.com/stretchr/testify/assert"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices"
-	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products"
-	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
+	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
+	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"net/http"
 	"net/http/httptest"
 	"strings"

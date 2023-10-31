@@ -1,7 +1,7 @@
 package prices
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"reflect"
 	"testing"
 )

@@ -3,7 +3,7 @@ package products
 import (
 	"context"
 	"encoding/json"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
