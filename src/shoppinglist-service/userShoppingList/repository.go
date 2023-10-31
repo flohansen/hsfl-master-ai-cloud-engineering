@@ -6,7 +6,7 @@ type Repository interface {
 	Create(*model.UserShoppingList) (*model.UserShoppingList, error)
 	Delete(*model.UserShoppingList) error
 	Update(list *model.UserShoppingList) (*model.UserShoppingList, error)
-	FindById(userId uint64) (*model.UserShoppingList, error)
+	FindAllById(userId uint64) ([]*model.UserShoppingList, error)
 	FindByIds(userId uint64, listId uint64) (*model.UserShoppingList, error)
 }
 
