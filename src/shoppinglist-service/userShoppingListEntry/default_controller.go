@@ -58,10 +58,10 @@ func (controller defaultController) GetEntry(writer http.ResponseWriter, request
 	}
 }
 func (controller defaultController) PostEntry(writer http.ResponseWriter, request *http.Request) {
-	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
-	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	listId, listIdErr := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+	if listIdErr != nil || productIdErr != nil {
+		http.Error(writer, "Invalid listId or productId", http.StatusBadRequest)
 		return
 	}
 
@@ -82,8 +82,8 @@ func (controller defaultController) PostEntry(writer http.ResponseWriter, reques
 		return
 	}
 	writer.WriteHeader(http.StatusCreated)
-
 }
+
 func (controller defaultController) PutEntry(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)

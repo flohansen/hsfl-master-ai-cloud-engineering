@@ -17,6 +17,10 @@ func NewDefaultController(userShoppingListRepository Repository) *defaultControl
 
 func (controller defaultController) GetList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -41,6 +45,10 @@ func (controller defaultController) GetList(writer http.ResponseWriter, request 
 
 func (controller defaultController) PutList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -64,7 +72,13 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 }
 
 func (controller defaultController) PostList(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+	userIdValue := request.Context().Value("userId")
+	if userIdValue == nil {
+		http.Error(writer, "User ID not provided", http.StatusBadRequest)
+		return
+	}
+
+	userId, err := strconv.ParseUint(userIdValue.(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
