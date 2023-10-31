@@ -21,11 +21,11 @@ func New(shoppingListController userShoppingList.Controller, shoppingListEntryCo
 	r.POST("/api/v1/shoppinglist/:userId", shoppingListController.PostList)
 	r.DELETE("/api/v1/shoppinglist/:listId", shoppingListController.DeleteList)
 
-	r.GET("/api/v1/shoppinglistEntry/:listId", shoppingListEntryController.GetEntries)
-	r.GET("/api/v1/shoppinglistEntry/:listId/:productId", shoppingListEntryController.GetEntry)
-	r.PUT("/api/v1/shoppinglistEntry/:listId/:productId", shoppingListEntryController.PutEntry)
-	r.POST("/api/v1/shoppinglistEntry/:listId/:productId", shoppingListEntryController.PostEntry)
-	r.DELETE("/api/v1/shoppinglistEntry/:listId/:productId", shoppingListEntryController.DeleteEntry)
+	r.GET("/api/v1/shoppinglistentries/:listId", shoppingListEntryController.GetEntries)
+	r.GET("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.GetEntry)
+	r.PUT("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.PutEntry)
+	r.POST("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.PostEntry)
+	r.DELETE("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.DeleteEntry)
 
 	return &Router{r}
 }
