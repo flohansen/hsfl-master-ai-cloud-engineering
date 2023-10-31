@@ -2,7 +2,7 @@ package prices
 
 import (
 	"encoding/json"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"net/http"
 	"strconv"
 )

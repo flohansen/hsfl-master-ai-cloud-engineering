@@ -2,7 +2,8 @@ go 1.21
 
 use (
 	lib
-	src/data-management-service
+	src/product-service
 	src/user-service
 	src/web-service
+	src/shoppinglist-service
 )

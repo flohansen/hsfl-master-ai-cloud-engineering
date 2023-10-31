@@ -1,11 +1,11 @@
 package main
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/api/router"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices"
-	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products"
-	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/router"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
+	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
+	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"log"
 	"net/http"
 )

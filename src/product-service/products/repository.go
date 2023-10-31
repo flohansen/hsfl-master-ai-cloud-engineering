@@ -1,7 +1,7 @@
 package products
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 )
 
 type Repository interface {
