@@ -1,4 +1,4 @@
-package shoppinglist_service
+package main
 
 import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/api/router"
