@@ -13,8 +13,18 @@ type route struct {
 	params  []string
 }
 
+type Next func(r *http.Request)
+type MiddleWareFunc func(w http.ResponseWriter, r *http.Request, next Next)
+
+type middleware struct {
+	pattern *regexp.Regexp
+	handler MiddleWareFunc
+	params  []string
+}
+
 type Router struct {
-	routes []route
+	routes      []route
+	middlewares []middleware
 }
 
 func New() *Router {
@@ -22,6 +32,26 @@ func New() *Router {
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, middleware := range router.middlewares {
+
+		matches := middleware.pattern.FindStringSubmatch(r.URL.Path)
+
+		if len(matches) > 0 {
+			r = createRequestContext(r, middleware.params, matches[1:])
+
+			nextWasCalled := false
+			next := func(req *http.Request) {
+				nextWasCalled = true
+				r = req
+			}
+
+			middleware.handler(w, r, next)
+			if !nextWasCalled {
+				return
+			}
+		}
+	}
+
 	for _, route := range router.routes {
 		if r.Method != route.method {
 			continue
@@ -88,4 +118,31 @@ func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
 
 func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
 	router.addRoute(http.MethodDelete, pattern, handler)
+}
+
+func (router *Router) USE(pattern string, handler MiddleWareFunc) *Router {
+	var params []string
+
+	pattern = pattern + "(.*)"
+
+	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)")
+	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
+
+	params = make([]string, len(paramMatches))
+
+	if len(paramMatches) > 0 {
+		pattern = paramMatcher.ReplaceAllLiteralString(pattern, "([^/]+)")
+
+		for i, match := range paramMatches {
+			params[i] = match[1]
+		}
+	}
+
+	router.middlewares = append(router.middlewares, middleware{
+		pattern: regexp.MustCompile("^" + pattern + "$"),
+		handler: handler,
+		params:  params,
+	})
+
+	return router
 }
