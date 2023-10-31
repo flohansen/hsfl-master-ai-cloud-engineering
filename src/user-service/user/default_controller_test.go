@@ -23,6 +23,127 @@ func TestDefaultController(t *testing.T) {
 
 	controller := DefaultController{userRepository, hasher, tokenGenerator}
 
+	t.Run("Authentication-Middleware", func(t *testing.T) {
+		t.Run("should return 401 when you don't add a token", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+
+			// when
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(r *http.Request) {
+				called = true
+			})
+
+			assert.Equal(t, false, called)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+		})
+
+		t.Run("should return 401 when its not a valid token", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+			r.Header.Set("Authorization", "tester")
+
+			// when
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(r *http.Request) {
+				called = true
+			})
+
+			assert.Equal(t, false, called)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+		})
+
+		t.Run("should return 401 when it's a malformed Bearer token", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+			r.Header.Set("Authorization", "Bearer tester")
+
+			// when
+			tokenGenerator.EXPECT().VerifyToken("tester").Return(nil, errors.New("token is not valid"))
+
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(r *http.Request) {
+				called = true
+			})
+
+			assert.Equal(t, false, called)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+		})
+
+		t.Run("should return 401 if there is no email claim", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+			r.Header.Set("Authorization", "Bearer tester")
+
+			// when
+			tokenGenerator.EXPECT().VerifyToken("tester").Return(map[string]interface{}{
+				"exp":  12345,
+				"user": "tester",
+			}, nil)
+
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(r *http.Request) {
+				called = true
+			})
+
+			assert.Equal(t, false, called)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+		})
+
+		t.Run("should return 401 if the user is not found", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+			r.Header.Set("Authorization", "Bearer tester")
+
+			// when
+			tokenGenerator.EXPECT().VerifyToken("tester").Return(map[string]interface{}{
+				"exp":   12345,
+				"email": "toni@tester",
+			}, nil)
+
+			userRepository.EXPECT().FindByEmail("toni@tester").Return(nil, errors.New("user not found"))
+
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(r *http.Request) {
+				called = true
+			})
+
+			assert.Equal(t, false, called)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+		})
+
+		t.Run("should return call next if the token is valid", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/users/me", nil)
+			r.Header.Set("Authorization", "Bearer tester")
+			user := model.DbUser{Email: "toni@tester"}
+
+			// when
+			tokenGenerator.EXPECT().VerifyToken("tester").Return(map[string]interface{}{
+				"exp":   12345,
+				"email": "toni@tester",
+			}, nil)
+
+			userRepository.EXPECT().FindByEmail("toni@tester").Return([]*model.DbUser{&user}, nil)
+
+			called := false
+			controller.AuthenticationMiddleWare(w, r, func(req *http.Request) {
+				called = true
+				r = req
+			})
+
+			assert.Equal(t, true, called)
+			assert.Equal(t, user, r.Context().Value(authenticatedUserKey))
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
 	t.Run("Login", func(t *testing.T) {
 		t.Run("should return 405 METHOD NOT ALLOWED if method is not POST", func(t *testing.T) {
 			// given

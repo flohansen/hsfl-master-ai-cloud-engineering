@@ -211,7 +211,12 @@ func (ctrl *DefaultController) AuthenticationMiddleWare(w http.ResponseWriter, r
 		return
 	}
 
-	email := claims["email"].(string)
+	email, ok := claims["email"].(string)
+
+	if !ok {
+		http.Error(w, "There is no email claim in your token", http.StatusUnauthorized)
+		return
+	}
 
 	users, err := ctrl.userRepository.FindByEmail(email)
 	if err != nil {
