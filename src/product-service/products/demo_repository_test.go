@@ -3,6 +3,7 @@ package products
 import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -92,6 +93,9 @@ func TestDemoRepository_FindAll(t *testing.T) {
 	for i, tt := range productTests {
 		t.Run("Is fetched product matching with "+tt.name+" added product?", func(t *testing.T) {
 			fetchedProducts, _ := demoRepository.FindAll()
+			sort.Slice(fetchedProducts, func(i, j int) bool {
+				return fetchedProducts[i].Id < fetchedProducts[j].Id
+			})
 			if !reflect.DeepEqual(tt.want, fetchedProducts[i]) {
 				t.Error("Fetched product does not match original product")
 			}
