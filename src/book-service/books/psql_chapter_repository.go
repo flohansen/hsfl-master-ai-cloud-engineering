@@ -83,7 +83,7 @@ func (repo *PsqlChapterRepository) FindAll() ([]*model.Chapter, error) {
 		return nil, err
 	}
 
-	var chapters []*model.Chapter
+	chapters := make([]*model.Chapter, 0)
 	for rows.Next() {
 		chapter := model.Chapter{}
 		if err := rows.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.AuthorID, &chapter.Price, &chapter.Content); err != nil {

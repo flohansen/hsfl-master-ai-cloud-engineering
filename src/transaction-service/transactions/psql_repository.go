@@ -73,7 +73,7 @@ func (repo *PsqlRepository) FindAll() ([]*model.Transaction, error) {
 		return nil, err
 	}
 
-	var transactions []*model.Transaction
+	transactions := make([]*model.Transaction, 0)
 	for rows.Next() {
 		transaction := model.Transaction{}
 		if err := rows.Scan(&transaction.ID, &transaction.ChapterID, &transaction.PayingUserID, &transaction.ReceivingUserID, &transaction.Amount); err != nil {

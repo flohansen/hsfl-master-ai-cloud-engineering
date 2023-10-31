@@ -78,7 +78,7 @@ func (repo *PsqlBookRepository) FindAll() ([]*model.Book, error) {
 		return nil, err
 	}
 
-	var books []*model.Book
+	books := make([]*model.Book, 0)
 	for rows.Next() {
 		book := model.Book{}
 		if err := rows.Scan(&book.ID, &book.Name, &book.AuthorID, &book.Description); err != nil {

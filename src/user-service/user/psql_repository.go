@@ -82,7 +82,7 @@ func (repo *PsqlRepository) FindAll() ([]*model.DbUser, error) {
 		return nil, err
 	}
 
-	var users []*model.DbUser
+	users := make([]*model.DbUser, 0)
 	for rows.Next() {
 		user := model.DbUser{}
 		if err := rows.Scan(&user.ID, &user.Email, &user.Password, &user.Username, &user.ProfileName, &user.Balance); err != nil {
