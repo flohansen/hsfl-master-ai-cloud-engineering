@@ -41,7 +41,7 @@ func (repo *DemoRepository) Delete(shoppinglist *model.UserShoppingList) error {
 }
 
 func (repo *DemoRepository) Update(shoppinglist *model.UserShoppingList) (*model.UserShoppingList, error) {
-	product, foundError := repo.FindById(shoppinglist.Id)
+	product, foundError := repo.findById(shoppinglist.Id)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorListUpdate)
@@ -66,7 +66,7 @@ func (repo *DemoRepository) FindAllById(userId uint64) ([]*model.UserShoppingLis
 	return lists, nil
 }
 
-func (repo *DemoRepository) FindById(Id uint64) (*model.UserShoppingList, error) {
+func (repo *DemoRepository) findById(Id uint64) (*model.UserShoppingList, error) {
 	product, found := repo.shoppinglists[Id]
 	if found {
 		return product, nil
