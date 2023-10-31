@@ -1,6 +1,6 @@
 package prices
 
-import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/data-management-service/prices/model"
+import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 
 type Repository interface {
 	Create(*model.Price) (*model.Price, error)
