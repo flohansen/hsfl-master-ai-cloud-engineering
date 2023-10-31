@@ -85,7 +85,7 @@ func (controller defaultController) GetLists(writer http.ResponseWriter, request
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-	values, err := controller.userShoppingListRepository.FindById(userId)
+	values, err := controller.userShoppingListRepository.FindAllById(userId)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
