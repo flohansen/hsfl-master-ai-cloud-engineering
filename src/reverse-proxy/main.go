@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/reverse-proxy/httpproxy"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type RouteMapping struct {
@@ -15,6 +19,12 @@ type RouteMapping struct {
 
 type ApplicationConfig struct {
 	Mappings []RouteMapping `yaml:"mappings"`
+}
+
+type EnvConfig struct {
+	ConfigFilePath string `env:"CONFIG_FILE_PATH" envDefault:"config.yaml"`
+	ConfigFile     string `env:"CONFIG_FILE"`
+	Port           uint16 `env:"PORT" envDefault:"8080"`
 }
 
 func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
@@ -31,13 +41,26 @@ func LoadConfigFromFile(path string) (*ApplicationConfig, error) {
 	return &config, nil
 }
 
-func main() {
-	configFilePath := os.Getenv("CONFIG_FILE")
-	if configFilePath == "" {
-		configFilePath = "config.yaml"
+func LoadConfigFromEnv(content string) (*ApplicationConfig, error) {
+	f := strings.NewReader(content)
+
+	var config ApplicationConfig
+	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
+		return nil, err
 	}
 
-	config, err := LoadConfigFromFile(configFilePath)
+	return &config, nil
+}
+
+func main() {
+	godotenv.Load()
+
+	envConfig := EnvConfig{}
+	if err := env.Parse(&envConfig); err != nil {
+		log.Fatalf("Couldn't parse environment %s", err.Error())
+	}
+
+	config, err := LoadConfigFromEnv(envConfig.ConfigFile)
 	if err != nil {
 		log.Fatalf("could not load application configuration: %s", err.Error())
 	}
@@ -50,6 +73,9 @@ func main() {
 		}
 	}
 
-	log.Println("Server will be started!")
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", proxy))
+	log.Println("Server Started!")
+	addr := fmt.Sprintf("0.0.0.0:%d", envConfig.Port)
+	if err := http.ListenAndServe(addr, proxy); err != nil {
+		log.Fatalf("error while listen and serve: %s", err.Error())
+	}
 }

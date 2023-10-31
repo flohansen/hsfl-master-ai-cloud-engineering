@@ -5,13 +5,14 @@ go 1.21.3
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib v0.0.0
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/mock v0.3.0
 	golang.org/x/crypto v0.14.0
 	golang.org/x/net v0.17.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -60,6 +61,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231012201019-e917dd12ba7a // indirect
 	google.golang.org/grpc v1.58.3 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib => ../../lib

@@ -5,11 +5,11 @@ import (
 )
 
 type PsqlConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Database string `yaml:"dbname"`
+	Host     string `env:"HOST,notEmpty"`
+	Port     int    `env:"PORT,notEmpty"`
+	Username string `env:"USER,notEmpty"`
+	Password string `env:"PASSWORD,notEmpty"`
+	Database string `env:"DB,notEmpty"`
 }
 
 func (config PsqlConfig) Dsn() string {
