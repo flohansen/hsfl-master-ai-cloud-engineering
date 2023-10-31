@@ -12,6 +12,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
+	router "github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -36,6 +37,18 @@ func NewMockController(ctrl *gomock.Controller) *MockController {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockController) EXPECT() *MockControllerMockRecorder {
 	return m.recorder
+}
+
+// AuthenticationMiddleware mocks base method.
+func (m *MockController) AuthenticationMiddleware(arg0 http.ResponseWriter, arg1 *http.Request, arg2 router.Next) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "AuthenticationMiddleware", arg0, arg1, arg2)
+}
+
+// AuthenticationMiddleware indicates an expected call of AuthenticationMiddleware.
+func (mr *MockControllerMockRecorder) AuthenticationMiddleware(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthenticationMiddleware", reflect.TypeOf((*MockController)(nil).AuthenticationMiddleware), arg0, arg1, arg2)
 }
 
 // GetTransaction mocks base method.
