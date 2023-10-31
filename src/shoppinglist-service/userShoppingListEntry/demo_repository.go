@@ -5,17 +5,17 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 )
 
-type ShoppingListEntryKey struct {
+type shoppingListEntryKey struct {
 	ShoppingListID uint64
 	ProductID      uint64
 }
 
 type DemoRepository struct {
-	entries map[ShoppingListEntryKey]*model.UserShoppingListEntry
+	entries map[shoppingListEntryKey]*model.UserShoppingListEntry
 }
 
 func NewDemoRepository() *DemoRepository {
-	return &DemoRepository{entries: make(map[ShoppingListEntryKey]*model.UserShoppingListEntry)}
+	return &DemoRepository{entries: make(map[shoppingListEntryKey]*model.UserShoppingListEntry)}
 }
 
 func (repo *DemoRepository) Create(entry *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error) {
@@ -24,7 +24,7 @@ func (repo *DemoRepository) Create(entry *model.UserShoppingListEntry) (*model.U
 	if err == nil {
 		return nil, errors.New(ErrorEntryAlreadyExists)
 	}
-	key := ShoppingListEntryKey{
+	key := shoppingListEntryKey{
 		ShoppingListID: entry.ShoppingListId,
 		ProductID:      entry.ProductId,
 	}
@@ -35,7 +35,7 @@ func (repo *DemoRepository) Create(entry *model.UserShoppingListEntry) (*model.U
 }
 
 func (repo *DemoRepository) Delete(entry *model.UserShoppingListEntry) error {
-	key := ShoppingListEntryKey{
+	key := shoppingListEntryKey{
 		ShoppingListID: entry.ShoppingListId,
 		ProductID:      entry.ProductId,
 	}
@@ -60,7 +60,7 @@ func (repo *DemoRepository) Update(entry *model.UserShoppingListEntry) (*model.U
 }
 
 func (repo *DemoRepository) FindByIds(shoppingListId, productId uint64) (*model.UserShoppingListEntry, error) {
-	key := ShoppingListEntryKey{
+	key := shoppingListEntryKey{
 		ShoppingListID: shoppingListId,
 		ProductID:      productId,
 	}
