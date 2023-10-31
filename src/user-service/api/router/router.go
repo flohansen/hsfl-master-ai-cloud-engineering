@@ -13,29 +13,20 @@ type Router struct {
 func New(
 	userController user.Controller,
 ) *Router {
-	router := router.New()
+	r := router.New()
 
-	router.POST("/api/v1/login", func(w http.ResponseWriter, r *http.Request) {
-		userController.Login(w, r)
-	})
-	router.POST("/api/v1/register", func(w http.ResponseWriter, r *http.Request) {
-		userController.Register(w, r)
-	})
+	r.POST("/api/v1/login", userController.Login)
+	r.POST("/api/v1/register", userController.Register)
 
-	router.GET("/api/v1/users", func(w http.ResponseWriter, r *http.Request) {
-		userController.GetUsers(w, r)
-	})
-	router.GET("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
-		userController.GetUser(w, r)
-	})
-	router.PUT("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
-		userController.PutUser(w, r)
-	})
-	router.DELETE("/api/v1/users/:username", func(w http.ResponseWriter, r *http.Request) {
-		userController.DeleteUser(w, r)
-	})
+	r.USE("/api/v1/users", userController.AuthenticationMiddleWare)
 
-	return &Router{router}
+	r.GET("/api/v1/users", userController.GetUsers)
+	r.GET("/api/v1/users/me", userController.GetMe)
+	r.GET("/api/v1/users/:username", userController.GetUser)
+	r.PUT("/api/v1/users/:username", userController.PutUser)
+	r.DELETE("/api/v1/users/:username", userController.DeleteUser)
+
+	return &Router{r}
 }
 
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {

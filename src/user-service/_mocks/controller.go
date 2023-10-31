@@ -12,6 +12,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
+	router "github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -38,6 +39,18 @@ func (m *MockController) EXPECT() *MockControllerMockRecorder {
 	return m.recorder
 }
 
+// AuthenticationMiddleWare mocks base method.
+func (m *MockController) AuthenticationMiddleWare(arg0 http.ResponseWriter, arg1 *http.Request, arg2 router.Next) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "AuthenticationMiddleWare", arg0, arg1, arg2)
+}
+
+// AuthenticationMiddleWare indicates an expected call of AuthenticationMiddleWare.
+func (mr *MockControllerMockRecorder) AuthenticationMiddleWare(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthenticationMiddleWare", reflect.TypeOf((*MockController)(nil).AuthenticationMiddleWare), arg0, arg1, arg2)
+}
+
 // DeleteUser mocks base method.
 func (m *MockController) DeleteUser(arg0 http.ResponseWriter, arg1 *http.Request) {
 	m.ctrl.T.Helper()
@@ -48,6 +61,18 @@ func (m *MockController) DeleteUser(arg0 http.ResponseWriter, arg1 *http.Request
 func (mr *MockControllerMockRecorder) DeleteUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockController)(nil).DeleteUser), arg0, arg1)
+}
+
+// GetMe mocks base method.
+func (m *MockController) GetMe(arg0 http.ResponseWriter, arg1 *http.Request) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "GetMe", arg0, arg1)
+}
+
+// GetMe indicates an expected call of GetMe.
+func (mr *MockControllerMockRecorder) GetMe(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockController)(nil).GetMe), arg0, arg1)
 }
 
 // GetUser mocks base method.

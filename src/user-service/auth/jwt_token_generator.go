@@ -2,7 +2,8 @@ package auth
 
 import (
 	"crypto/rsa"
-	"github.com/golang-jwt/jwt"
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type JwtTokenGenerator struct {
@@ -40,4 +41,22 @@ func (gen *JwtTokenGenerator) CreateToken(claims map[string]interface{}) (string
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwtClaims)
 	return token.SignedString(gen.privateKey)
+}
+
+func (gen *JwtTokenGenerator) VerifyToken(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(
+		tokenString,
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return gen.publicKey, nil
+		},
+		jwt.WithValidMethods([]string{"RS256"}),
+	)
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, err
+	}
 }

@@ -2,14 +2,21 @@ package user
 
 import (
 	"encoding/json"
+	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/lib/router"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/auth"
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/crypto"
+	"golang.org/x/net/context"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/akatranlp/hsfl-master-ai-cloud-engineering/user-service/user/model"
 )
+
+type contextKey int
+
+const authenticatedUserKey contextKey = 0
 
 type loginRequest struct {
 	Email    string `json:"email"`
@@ -146,6 +153,13 @@ func (ctrl *DefaultController) GetUsers(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(users)
 }
 
+func (ctrl *DefaultController) GetMe(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(authenticatedUserKey).(model.DbUser)
+
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
 func (ctrl *DefaultController) GetUser(w http.ResponseWriter, r *http.Request) {
 	username := r.Context().Value("username").(string)
 
@@ -180,4 +194,31 @@ func (ctrl *DefaultController) DeleteUser(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (ctrl *DefaultController) AuthenticationMiddleWare(w http.ResponseWriter, r *http.Request, next router.Next) {
+	token := r.Header.Get("Authorization")
+
+	after, found := strings.CutPrefix(token, "Bearer ")
+	if !found {
+		http.Error(w, "There was no Token provided", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := ctrl.tokenGenerator.VerifyToken(after)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	email := claims["email"].(string)
+
+	users, err := ctrl.userRepository.FindByEmail(email)
+	if err != nil {
+		http.Error(w, "The user doesn't exist anymore", http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), authenticatedUserKey, *users[0])
+	next(r.WithContext(ctx))
 }
