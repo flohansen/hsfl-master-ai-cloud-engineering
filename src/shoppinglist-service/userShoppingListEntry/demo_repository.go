@@ -53,7 +53,7 @@ func (repo *DemoRepository) Update(entry *model.UserShoppingListEntry) (*model.U
 	price, foundError := repo.FindByIds(entry.ShoppingListId, entry.ProductId)
 
 	if foundError != nil {
-		return nil, errors.New(ErrorEntryNotFound)
+		return nil, errors.New(ErrorEntryUpdate)
 	}
 
 	return price, nil
