@@ -16,13 +16,14 @@ func NewDefaultController(userShoppingListRepository Repository) *defaultControl
 }
 
 func (controller defaultController) GetList(writer http.ResponseWriter, request *http.Request) {
+	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	value, err := controller.userShoppingListRepository.FindById(userId)
+	value, err := controller.userShoppingListRepository.FindByIds(userId, listId)
 	if err != nil {
 		if err.Error() == ErrorListNotFound {
 			http.Error(writer, err.Error(), http.StatusNotFound)
@@ -63,7 +64,7 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 }
 
 func (controller defaultController) PostList(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
