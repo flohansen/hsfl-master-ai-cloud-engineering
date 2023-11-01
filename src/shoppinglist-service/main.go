@@ -17,7 +17,7 @@ func main() {
 
 	handler := router.New(shoppingListController, shoppingListEntryController)
 
-	if err := http.ListenAndServe(":3001", handler); err != nil {
+	if err := http.ListenAndServe(":3002", handler); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
 	}
 }
