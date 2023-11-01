@@ -2,7 +2,7 @@
         aria-label="{currentOption.ariaLabel}"
         aria-current="{isActive}"
         class="{isActive ? 'bg-green-light/25 text-green-dark hover:bg-green-light/50' : ' bg-gray-light text-black hover:bg-gray-dark/25'}
-                w-14 h-14 rounded-full flex items-center justify-center transition-all ease-in-out duration-300">
+                w-14 h-14 rounded-full flex items-center justify-center transition-all ease-in-out duration-300 sm:w-12 sm:h-12">
         <svelte:component this="{currentOption.component}" classes="w-6 h-6"/>
 </button>
 
