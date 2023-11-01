@@ -4,12 +4,12 @@
             <Euro classes="text-white w-6 h-6"/>
         </figure>
     </div>
-    <div class="flex items-center justify-between sm:flex-col sm:gap-6 sm:pt-8">
+    <nav aria-label="Hauptnavigation" class="flex items-center justify-between sm:flex-col sm:gap-6 sm:pt-8">
         <NavItem icon="home"/>
         <NavItem icon="list"/>
         <NavItem icon="cart"/>
         <NavItem icon="profile"/>
-    </div>
+    </nav>
 </aside>
 
 <script lang="ts">

@@ -323,14 +323,16 @@ func setupMockListRepositoryError() Repository {
 func setupDemoListSlice() []*model.UserShoppingList {
 	return []*model.UserShoppingList{
 		{
-			Id:        1,
-			UserId:    2,
-			Completed: false,
+			Id:          1,
+			UserId:      2,
+			Description: "Frühstück mit Anne",
+			Completed:   false,
 		},
 		{
-			Id:        3,
-			UserId:    4,
-			Completed: true,
+			Id:          3,
+			UserId:      4,
+			Description: "Geburtstagskuchen",
+			Completed:   true,
 		},
 	}
 }
