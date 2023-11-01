@@ -3,8 +3,9 @@ package userShoppingList
 import "net/http"
 
 type JsonFormatUpdateListRequest struct {
-	UserId  uint64 `json:"userId,omitempty"`
-	Checked bool   `json:"checked,omitempty"`
+	UserId      uint64 `json:"userId,omitempty"`
+	Description string `json:"description,omitempty"`
+	Checked     bool   `json:"checked,omitempty"`
 }
 
 type Controller interface {

@@ -62,9 +62,10 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 	}
 
 	if _, err := controller.userShoppingListRepository.Update(&model.UserShoppingList{
-		Id:        listId,
-		UserId:    userId,
-		Completed: requestData.Checked,
+		Id:          listId,
+		UserId:      userId,
+		Description: requestData.Description,
+		Completed:   requestData.Checked,
 	}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
