@@ -1,3 +1,7 @@
+<script>
+    import Euro from "../assets/svg/Euro.svelte";
+</script>
+
 <section class="mx-5 mt-8 rounded-2xl bg-blue-light/50 p-5 lg:p-8">
     <figure class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-dark/40">
         <Euro classes="w-7 h-7 text-blue-dark"></Euro>
@@ -11,6 +15,3 @@
     </p>
 </section>
 
-<script lang="ts">
-    import Euro from "../../assets/svg/Euro.svelte";
-</script>
