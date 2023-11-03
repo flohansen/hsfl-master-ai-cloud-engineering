@@ -7,7 +7,7 @@
     let isLoading: boolean = true;
 
     interface ShoppingList {
-        Id: number;
+        id: number;
         description: string;
         userId: number;
     }
@@ -42,7 +42,7 @@
         {:else}
             {#if jsonData}
                 {#each jsonData as item}
-                    <ShoppingListItem description={item.description}/>
+                    <ShoppingListItem description={item.description} id="{item.id}"/>
                 {/each}
             {:else}
                 <p>Es konnten keine Daten geladen werden.</p>

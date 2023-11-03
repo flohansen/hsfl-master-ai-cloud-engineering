@@ -10,6 +10,9 @@ const config = {
 			assets: 'static',
 			strict: false,
 		}),
+		prerender: {
+			entries: ['/shopping-lists/:id'],
+		},
 	},
 };
 
