@@ -1,9 +1,18 @@
 proxy:
   listenAddress: localhost:8080
   proxyRoutes:
-    - name: Service A
-      context: /service-a
+    - name: User Service
+      context: /users
       target: http://localhost:3001
-    - name: Service B
-      context: /service-b
+    - name: Shoppinglist Service
+      context: /shoppinglists
       target: http://localhost:3002
+    - name: Product Service
+      context: /products
+      target: http://localhost:3003
+    - name: Data Processing Service
+      context: /processing
+      target: http://localhost:3004
+    - name: Web Service
+      context: /
+      target: http://localhost:3000
