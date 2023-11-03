@@ -1,9 +1,10 @@
-go 1.21
+go 1.21.2
 
 use (
 	lib
 	src/product-service
+	src/shoppinglist-service
 	src/user-service
 	src/web-service
-	src/shoppinglist-service
+	src/http-proxy-service
 )

@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"regexp"
 )
@@ -53,16 +54,29 @@ func createRequestContext(r *http.Request, paramKeys []string, paramValues []str
 }
 
 func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc) {
-	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)")
+	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)|\\*")
 	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
 
 	params := make([]string, len(paramMatches))
 
 	if len(paramMatches) > 0 {
-		pattern = paramMatcher.ReplaceAllLiteralString(pattern, "([^/]+)")
+		pattern = paramMatcher.ReplaceAllStringFunc(pattern, func(substring string) string {
+			if substring == "*" {
+				return "(.*)"
+			} else {
+				return "([^/]+)"
+			}
+		})
 
+		wildcardNo := 0
 		for i, match := range paramMatches {
-			params[i] = match[1]
+			if match[1] != "" {
+				params[i] = match[1]
+			} else {
+				params[i] = fmt.Sprintf("wildcard%d", wildcardNo)
+				wildcardNo++
+			}
+
 		}
 	}
 
@@ -88,4 +102,36 @@ func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
 
 func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
 	router.addRoute(http.MethodDelete, pattern, handler)
+}
+
+func (router *Router) PATCH(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodPatch, pattern, handler)
+}
+
+func (router *Router) CONNECT(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodConnect, pattern, handler)
+}
+
+func (router *Router) HEAD(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodHead, pattern, handler)
+}
+
+func (router *Router) OPTIONS(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodOptions, pattern, handler)
+}
+
+func (router *Router) TRACE(pattern string, handler http.HandlerFunc) {
+	router.addRoute(http.MethodTrace, pattern, handler)
+}
+
+func (router *Router) ALL(pattern string, handler http.HandlerFunc) {
+	router.GET(pattern, handler)
+	router.POST(pattern, handler)
+	router.PUT(pattern, handler)
+	router.DELETE(pattern, handler)
+	router.PATCH(pattern, handler)
+	router.CONNECT(pattern, handler)
+	router.HEAD(pattern, handler)
+	router.OPTIONS(pattern, handler)
+	router.TRACE(pattern, handler)
 }
