@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	proxyConfig := proxyutils.ReadDefaultProxyManagerConfiguration("./config", "proxyConfig")
+	proxyConfig := proxyutils.DefaultProxyManagerConfigurationReader("./config", "proxyConfig")
 	proxyManager := proxy.NewDefaultManager(proxyConfig)
 
 	log.Printf("Listening on %v", proxyConfig.ListenAddress)
