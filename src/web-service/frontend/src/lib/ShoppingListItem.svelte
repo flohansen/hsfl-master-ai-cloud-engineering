@@ -1,3 +1,8 @@
+<script lang="ts">
+    export let description: string = 'Name der Einkaufsliste';
+    export let count: number = 0;
+</script>
+
 <li>
     <a href="/" class="bg-white w-full rounded-2xl p-3 flex items-center gap-x-4 transition-all ease-in-out duration-300 group hover:bg-blue-light/25 lg:p-6 lg:gap-x-6">
         <figure class="bg-green-light/25 rounded-full w-14 h-14 flex items-center justify-center lg:w-16 lg:h-16">
@@ -11,8 +16,3 @@
         </div>
     </a>
 </li>
-
-<script lang="ts">
-    export let description: string = 'Name der Einkaufsliste';
-    export let count: number = 0;
-</script>
