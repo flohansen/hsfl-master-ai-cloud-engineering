@@ -1,6 +1,5 @@
 <script lang="ts">
     import Euro from "../assets/svg/Euro.svelte";
-    export let data;
 </script>
 
 <section class="mx-5 mt-8 rounded-2xl bg-blue-light/50 p-5 lg:p-8">
