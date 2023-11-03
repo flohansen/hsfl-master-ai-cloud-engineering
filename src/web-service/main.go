@@ -1,17 +1,17 @@
 package main
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/web-service/api/router"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/web-service/service"
-	"log"
 	"net/http"
 )
 
-func main() {
-	productsController := service.NewDefaultController()
-	handler := router.New(productsController)
+type IndexPageViewModel struct {
+	Title string
+}
 
-	if err := http.ListenAndServe(":3000", handler); err != nil {
-		log.Fatalf("error while listen and serve: %s", err.Error())
-	}
+func main() {
+
+	// Add a custom handler to set the Content-Type for JavaScript files.
+	http.Handle("/", http.FileServer(http.Dir("frontend/static")))
+
+	http.ListenAndServe(":3000", nil)
 }
