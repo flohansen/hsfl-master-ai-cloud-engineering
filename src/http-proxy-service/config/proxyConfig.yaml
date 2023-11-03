@@ -2,17 +2,20 @@ proxy:
   listenAddress: localhost:8080
   proxyRoutes:
     - name: User Service
-      context: /users
-      target: http://localhost:3001
-    - name: Shoppinglist Service
-      context: /shoppinglists
-      target: http://localhost:3002
+      context: /api/v1/user
+      target: http://localhost:3001/api/v1/user
+    - name: Shoppinglist Service (Lists)
+      context: /api/v1/shoppinglist (Lists)
+      target: http://localhost:3002/api/v1/shoppinglist
+    - name: Shoppinglist Service (Entries)
+      context: /api/v1/shoppinglistentries
+      target: http://localhost:3002/api/v1/shoppinglistentries
     - name: Product Service
-      context: /products
-      target: http://localhost:3003
+      context: /api/v1/product
+      target: http://localhost:3003/api/v1/product
     - name: Data Processing Service
-      context: /processing
-      target: http://localhost:3004
+      context: /api/v1//processing
+      target: http://localhost:3004/api/v1/processing
     - name: Web Service
-      context: /
+      context:
       target: http://localhost:3000
