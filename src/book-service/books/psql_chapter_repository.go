@@ -29,11 +29,9 @@ create table if not exists chapters (
     id			serial primary key,
     bookId		int not null,
 	name    	varchar(100) not null,
-	authorId	int not null,
 	price		int not null,
 	content 	text not null,
-   	foreign key (bookId) REFERENCES books(id),
-   	foreign key (authorId) REFERENCES users(id)
+   	foreign key (bookId) REFERENCES books(id)
 )
 `
 
@@ -43,20 +41,19 @@ func (repo *PsqlChapterRepository) Migrate() error {
 }
 
 const createChaptersBatchQuery = `
-insert into chapters (bookId,  name,  authorId,  price,  content) values %s
+insert into chapters (bookId, name, price, content) values %s
 `
 
 func (repo *PsqlChapterRepository) Create(chapters []*model.Chapter) error {
 	placeholders := make([]string, len(chapters))
-	values := make([]interface{}, len(chapters)*5)
+	values := make([]interface{}, len(chapters)*4)
 
 	for i := 0; i < len(chapters); i++ {
-		placeholders[i] = fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)", i*5+1, i*5+2, i*5+3, i*5+4, i*5+5)
-		values[i*5+0] = chapters[i].BookID
-		values[i*5+1] = chapters[i].Name
-		values[i*5+2] = chapters[i].AuthorID
-		values[i*5+3] = chapters[i].Price
-		values[i*5+4] = chapters[i].Content
+		placeholders[i] = fmt.Sprintf("($%d,$%d,$%d,$%d)", i*4+1, i*4+2, i*4+3, i*4+4)
+		values[i*4+0] = chapters[i].BookID
+		values[i*4+1] = chapters[i].Name
+		values[i*4+2] = chapters[i].Price
+		values[i*4+3] = chapters[i].Content
 	}
 
 	query := fmt.Sprintf(createChaptersBatchQuery, strings.Join(placeholders, ","))
@@ -74,7 +71,7 @@ func (repo *PsqlChapterRepository) Update(id uint64, chapter *model.UpdateChapte
 }
 
 const findAllChaptersQuery = `
-select id, bookId, name, a  uthorId,price,content from chapters
+select id, bookId, name,price,content from chapters
 `
 
 func (repo *PsqlChapterRepository) FindAll() ([]*model.Chapter, error) {
@@ -86,7 +83,7 @@ func (repo *PsqlChapterRepository) FindAll() ([]*model.Chapter, error) {
 	chapters := make([]*model.Chapter, 0)
 	for rows.Next() {
 		chapter := model.Chapter{}
-		if err := rows.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.AuthorID, &chapter.Price, &chapter.Content); err != nil {
+		if err := rows.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.Price, &chapter.Content); err != nil {
 			return nil, err
 		}
 		chapters = append(chapters, &chapter)
@@ -96,14 +93,14 @@ func (repo *PsqlChapterRepository) FindAll() ([]*model.Chapter, error) {
 }
 
 const findChaptersByIDQuery = `
-select id, bookId, name, authorId, price, content from chapters where id = $1
+select id, bookId, name, price, content from chapters where id = $1
 `
 
 func (repo *PsqlChapterRepository) FindById(id uint64) (*model.Chapter, error) {
 	row := repo.db.QueryRow(findChaptersByIDQuery, id)
 
 	var chapter model.Chapter
-	if err := row.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.AuthorID, &chapter.Price, &chapter.Content); err != nil {
+	if err := row.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.Price, &chapter.Content); err != nil {
 		return nil, err
 	}
 

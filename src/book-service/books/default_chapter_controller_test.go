@@ -91,7 +91,6 @@ func TestChapterDefaultController(t *testing.T) {
 			tests := []io.Reader{
 				strings.NewReader(`{"price": 100}`),
 				strings.NewReader(`{"description": "amazing chapter"}`),
-				strings.NewReader(`{"authorid": 1}`),
 			}
 
 			for _, test := range tests {
@@ -111,11 +110,11 @@ func TestChapterDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/books/1/chapters",
-				strings.NewReader(`{"name":"test chapter","author":"the best author"}`))
+				strings.NewReader(`{"name":"test chapter"}`))
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{Name: "test chapter", AuthorID: 0}}).
+				Create([]*model.Chapter{{Name: "test chapter"}}).
 				Return(errors.New("database error"))
 
 			// when
@@ -129,11 +128,11 @@ func TestChapterDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/books/1/chapters",
-				strings.NewReader(`{"name":"test chapter","authorid":1}`))
+				strings.NewReader(`{"name":"test chapter"}`))
 
 			chapterRepository.
 				EXPECT().
-				Create([]*model.Chapter{{Name: "test chapter", AuthorID: 1}}).
+				Create([]*model.Chapter{{Name: "test chapter"}}).
 				Return(nil)
 
 			// when
@@ -185,7 +184,7 @@ func TestChapterDefaultController(t *testing.T) {
 			chapterRepository.
 				EXPECT().
 				FindById(uint64(1)).
-				Return(&model.Chapter{ID: 1, Name: "test chapter", AuthorID: 1}, nil)
+				Return(&model.Chapter{ID: 1, Name: "test chapter"}, nil)
 
 			// when
 			controller.GetChapter(w, r)

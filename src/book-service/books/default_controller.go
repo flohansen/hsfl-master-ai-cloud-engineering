@@ -20,19 +20,17 @@ type updateBookRequest struct {
 }
 
 type createChapterRequest struct {
-	BookID   uint64 `json:"bookid"`
-	Name     string `json:"name"`
-	AuthorID uint64 `json:"authorid"`
-	Price    uint64 `json:"price"`
-	Content  string `json:"content"`
+	BookID  uint64 `json:"bookid"`
+	Name    string `json:"name"`
+	Price   uint64 `json:"price"`
+	Content string `json:"content"`
 }
 
 type updateChapterRequest struct {
-	BookID   uint64 `json:"bookid"` //Does Update BookID and Author make sense? No, right?
-	Name     string `json:"name"`
-	AuthorID uint64 `json:"authorid"`
-	Price    uint64 `json:"price"`
-	Content  string `json:"content"`
+	BookID  uint64 `json:"bookid"` //Does Update BookID and Author make sense? No, right?
+	Name    string `json:"name"`
+	Price   uint64 `json:"price"`
+	Content string `json:"content"`
 }
 
 func (r createBookRequest) isValid() bool {
@@ -168,11 +166,10 @@ func (ctrl *DefaultController) PostChapters(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := ctrl.chapterRepository.Create([]*model.Chapter{{
-		BookID:   request.BookID,
-		Name:     request.Name,
-		AuthorID: request.AuthorID,
-		Price:    request.Price,
-		Content:  request.Content,
+		BookID:  request.BookID,
+		Name:    request.Name,
+		Price:   request.Price,
+		Content: request.Content,
 	}}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

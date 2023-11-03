@@ -21,12 +21,11 @@ func TestPsqlChapterRepository(t *testing.T) {
 		t.Run("should return error if executing query failed", func(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{{
-				ID:       1,
-				BookID:   1,
-				Name:     "doesnt matter",
-				AuthorID: 1,
-				Price:    0,
-				Content:  "doesnt matter",
+				ID:      1,
+				BookID:  1,
+				Name:    "doesnt matter",
+				Price:   0,
+				Content: "doesnt matter",
 			}}
 
 			dbmock.
@@ -44,26 +43,24 @@ func TestPsqlChapterRepository(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{
 				{
-					ID:       1,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      1,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 				{
-					ID:       2,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      2,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 			}
 
 			dbmock.
-				ExpectExec(`insert into chapters \(bookId, name, authorId, price, content\) values \(\$1,\$2,\$3,\$4,\$5\),\(\$6,\$7,\$8,\$9,\$10\)`).
-				WithArgs(1, "doesnt matter", 1, 0, "doesnt matter", 1, "doesnt matter", 1, 0, "doesnt matter").
+				ExpectExec(`insert into chapters \(bookId, name, price, content\) values \(\$1,\$2,\$3,\$4\),\(\$5,\$6,\$7,\$8\)`).
+				WithArgs(1, "doesnt matter", 0, "doesnt matter", 1, "doesnt matter", 0, "doesnt matter").
 				WillReturnResult(sqlmock.NewResult(0, 2))
 
 			// when
@@ -80,7 +77,7 @@ func TestPsqlChapterRepository(t *testing.T) {
 			var id uint64 = 1
 
 			dbmock.
-				ExpectQuery(`select id, bookId, name, authorId, price, content from chapters where id = \$1`).
+				ExpectQuery(`select id, bookId, name, price, content from chapters where id = \$1`).
 				WillReturnError(errors.New("database error"))
 
 			// when
@@ -96,9 +93,9 @@ func TestPsqlChapterRepository(t *testing.T) {
 			var id uint64 = 1
 
 			dbmock.
-				ExpectQuery(`select id, bookId, name, authorId, price, content from chapters where id = \$1`).
-				WillReturnRows(sqlmock.NewRows([]string{"id", "bookId", "name", "authorId", "price", "content"}).
-					AddRow(1, 1, "doesnt matter", 1, 0, "doesnt matter"))
+				ExpectQuery(`select id, bookId, name, price, content from chapters where id = \$1`).
+				WillReturnRows(sqlmock.NewRows([]string{"id", "bookId", "name", "price", "content"}).
+					AddRow(1, 1, "doesnt matter", 0, "doesnt matter"))
 
 			// when
 			chapter, err := repository.FindById(id)
@@ -114,20 +111,18 @@ func TestPsqlChapterRepository(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{
 				{
-					ID:       1,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      1,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 				{
-					ID:       2,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      2,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 			}
 
@@ -146,20 +141,18 @@ func TestPsqlChapterRepository(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{
 				{
-					ID:       1,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      1,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 				{
-					ID:       2,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      2,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 			}
 

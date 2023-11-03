@@ -49,7 +49,7 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 
 			// then
 			assert.NoError(t, err)
-			assertChapterTableExists(t, repository.db, "chapters", []string{"id", "bookid", "name", "authorid", "price", "content"})
+			assertChapterTableExists(t, repository.db, "chapters", []string{"id", "bookid", "name", "price", "content"})
 		})
 	})
 
@@ -60,20 +60,18 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{
 				{
-					ID:       1,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      1,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 				{
-					ID:       2,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      2,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 			}
 
@@ -92,12 +90,11 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 
 			// given
 			insertChapter(t, repository.db, &model.Chapter{
-				ID:       3,
-				BookID:   1,
-				Name:     "First Chapter",
-				AuthorID: 1,
-				Price:    0,
-				Content:  "Chapter Content",
+				ID:      3,
+				BookID:  1,
+				Name:    "First Chapter",
+				Price:   0,
+				Content: "Chapter Content",
 			})
 			newChapterData := &model.UpdateChapter{
 				Name:    "First Chapter",
@@ -111,12 +108,11 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 			// then
 			assert.NoError(t, err)
 			assert.Equal(t, &model.Chapter{
-				ID:       3,
-				BookID:   1,
-				Name:     "First Chapter",
-				AuthorID: 1,
-				Price:    100,
-				Content:  "Updated Chapter: Chapter Content but good now",
+				ID:      3,
+				BookID:  1,
+				Name:    "First Chapter",
+				Price:   100,
+				Content: "Updated Chapter: Chapter Content but good now",
 			}, getChapterFromDatabase(t, repository.db, 3))
 		})
 	})
@@ -127,12 +123,11 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 
 			// given
 			insertChapter(t, repository.db, &model.Chapter{
-				ID:       4,
-				BookID:   1,
-				Name:     "doesnt matter",
-				AuthorID: 1,
-				Price:    0,
-				Content:  "doesnt matter",
+				ID:      4,
+				BookID:  1,
+				Name:    "doesnt matter",
+				Price:   0,
+				Content: "doesnt matter",
 			})
 
 			// when
@@ -151,20 +146,18 @@ func TestIntegrationPsqlChapterRepository(t *testing.T) {
 			// given
 			chapters := []*model.Chapter{
 				{
-					ID:       5,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      5,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 				{
-					ID:       6,
-					BookID:   1,
-					Name:     "doesnt matter",
-					AuthorID: 1,
-					Price:    0,
-					Content:  "doesnt matter",
+					ID:      6,
+					BookID:  1,
+					Name:    "doesnt matter",
+					Price:   0,
+					Content: "doesnt matter",
 				},
 			}
 
@@ -230,10 +223,10 @@ func createUserAndBookTable(t *testing.T, db *sql.DB) {
 }
 
 func getChapterFromDatabase(t *testing.T, db *sql.DB, id int) *model.Chapter {
-	row := db.QueryRow(`select id,bookId,name,authorId,price,content from chapters where id = $1`, id)
+	row := db.QueryRow(`select id,bookId,name,price,content from chapters where id = $1`, id)
 
 	var chapter model.Chapter
-	if err := row.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.AuthorID, &chapter.Price, &chapter.Content); err != nil {
+	if err := row.Scan(&chapter.ID, &chapter.BookID, &chapter.Name, &chapter.Price, &chapter.Content); err != nil {
 		return nil
 	}
 
@@ -241,7 +234,7 @@ func getChapterFromDatabase(t *testing.T, db *sql.DB, id int) *model.Chapter {
 }
 
 func insertChapter(t *testing.T, db *sql.DB, chapter *model.Chapter) {
-	_, err := db.Exec(`insert into chapters (id,bookId,name,authorId,price,content) values ($1, $2, $3, $4, $5, $6)`, chapter.ID, chapter.BookID, chapter.Name, chapter.AuthorID, chapter.Price, chapter.Content)
+	_, err := db.Exec(`insert into chapters (id,bookId,name,price,content) values ($1, $2, $3, $4, $5)`, chapter.ID, chapter.BookID, chapter.Name, chapter.Price, chapter.Content)
 	if err != nil {
 		t.Logf("could not insert chapter: %s", err.Error())
 		t.FailNow()
