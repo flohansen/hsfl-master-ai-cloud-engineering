@@ -4,7 +4,15 @@
     import { page } from "$app/stores";
     import Header from "$lib/Header.svelte";
 
-    let jsonData: any = null;
+    let isLoading: boolean = true;
+
+    interface ShoppingList {
+        Id: number;
+        description: string;
+        userId: number;
+    }
+
+    let jsonData: ShoppingList[] = [];
 
     onMount(async () => {
         try {
@@ -17,6 +25,8 @@
         } catch (error) {
             console.error(error);
         }
+
+        isLoading = false;
     });
 </script>
 
@@ -27,12 +37,16 @@
         Offene Einkaufslisten
     </h2>
     <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-        {#if jsonData}
-            {#each jsonData.items as item}
-                <ShoppingListItem description={item.description}/>
-            {/each}
+        {#if isLoading}
+            <p>Daten werden geladen …</p>
         {:else}
-            <p>Loading data...</p>
+            {#if jsonData}
+                {#each jsonData as item}
+                    <ShoppingListItem description={item.description}/>
+                {/each}
+            {:else}
+                <p>Es konnten keine Daten geladen werden.</p>
+            {/if}
         {/if}
     </ul>
 </main>
