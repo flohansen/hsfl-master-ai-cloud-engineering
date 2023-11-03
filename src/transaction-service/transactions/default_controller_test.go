@@ -108,11 +108,11 @@ func TestTransactionDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/transactions",
-				strings.NewReader(`{"chapterID":1,"payingUserID":1, "receivingUserID":1,"amount":100}`))
+				strings.NewReader(`{"chapterID":1,"payingUserID":1, "amount":100}`))
 
 			transactionRepository.
 				EXPECT().
-				Create([]*model.Transaction{{ChapterID: 1, PayingUserID: 1, ReceivingUserID: 1, Amount: 100}}).
+				Create([]*model.Transaction{{ChapterID: 1, PayingUserID: 1, Amount: 100}}).
 				Return(errors.New("database error"))
 
 			// when
@@ -126,11 +126,11 @@ func TestTransactionDefaultController(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("POST", "/api/v1/transactions",
-				strings.NewReader(`{"chapterID":1,"payingUserID":1, "receivingUserID":1,"amount":100}`))
+				strings.NewReader(`{"chapterID":1,"payingUserID":1, "amount":100}`))
 
 			transactionRepository.
 				EXPECT().
-				Create([]*model.Transaction{{ChapterID: 1, PayingUserID: 1, ReceivingUserID: 1, Amount: 100}}).
+				Create([]*model.Transaction{{ChapterID: 1, PayingUserID: 1, Amount: 100}}).
 				Return(nil)
 
 			// when

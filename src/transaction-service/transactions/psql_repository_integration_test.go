@@ -55,25 +55,23 @@ func TestIntegrationPsqlRepository(t *testing.T) {
 	})
 
 	t.Run("Create", func(t *testing.T) {
-		t.Run("should insert users in batches", func(t *testing.T) {
+		t.Run("should insert transactions in batches", func(t *testing.T) {
 			t.Cleanup(clearTables(t, repository.db))
 
 			// given
 
 			transactions := []*model.Transaction{
 				{
-					ID:              1,
-					ChapterID:       1,
-					PayingUserID:    1,
-					ReceivingUserID: 1,
-					Amount:          0,
+					ID:           1,
+					ChapterID:    1,
+					PayingUserID: 1,
+					Amount:       0,
 				},
 				{
-					ID:              2,
-					ChapterID:       1,
-					PayingUserID:    1,
-					ReceivingUserID: 1,
-					Amount:          0,
+					ID:           2,
+					ChapterID:    1,
+					PayingUserID: 1,
+					Amount:       0,
 				},
 			}
 			// when
@@ -93,18 +91,16 @@ func TestIntegrationPsqlRepository(t *testing.T) {
 			// given
 			transactions := []*model.Transaction{
 				{
-					ID:              3,
-					ChapterID:       1,
-					PayingUserID:    1,
-					ReceivingUserID: 1,
-					Amount:          0,
+					ID:           3,
+					ChapterID:    1,
+					PayingUserID: 1,
+					Amount:       0,
 				},
 				{
-					ID:              4,
-					ChapterID:       1,
-					PayingUserID:    1,
-					ReceivingUserID: 1,
-					Amount:          0,
+					ID:           4,
+					ChapterID:    1,
+					PayingUserID: 1,
+					Amount:       0,
 				},
 			}
 
@@ -127,11 +123,10 @@ func TestIntegrationPsqlRepository(t *testing.T) {
 
 			// given
 			insertTransaction(t, repository.db, &model.Transaction{
-				ID:              5,
-				ChapterID:       1,
-				PayingUserID:    1,
-				ReceivingUserID: 1,
-				Amount:          0,
+				ID:           5,
+				ChapterID:    1,
+				PayingUserID: 1,
+				Amount:       0,
 			})
 
 			// when
@@ -171,11 +166,9 @@ func createUserBookAndChapterTable(t *testing.T, db *sql.DB) {
     		id			serial primary key,
     		bookId		int not null,
 			name    	varchar(100) not null,
-			authorId	int not null,
 			price		int not null,
 			content 	text not null,
-   			foreign key (bookId) REFERENCES books(id),
-   			foreign key (authorId) REFERENCES users(id)
+   			foreign key (bookId) REFERENCES books(id)
 		)
 	`)
 
@@ -202,20 +195,18 @@ func createUserBookAndChapterTable(t *testing.T, db *sql.DB) {
 
 	chapters := []*bookModels.Chapter{
 		{
-			ID:       1,
-			BookID:   1,
-			Name:     "doesnt matter",
-			AuthorID: 1,
-			Price:    0,
-			Content:  "doesnt matter",
+			ID:      1,
+			BookID:  1,
+			Name:    "doesnt matter",
+			Price:   0,
+			Content: "doesnt matter",
 		},
 		{
-			ID:       2,
-			BookID:   1,
-			Name:     "doesnt matter",
-			AuthorID: 1,
-			Price:    0,
-			Content:  "doesnt matter",
+			ID:      2,
+			BookID:  1,
+			Name:    "doesnt matter",
+			Price:   0,
+			Content: "doesnt matter",
 		},
 	}
 	for _, chapter := range chapters {
@@ -225,10 +216,10 @@ func createUserBookAndChapterTable(t *testing.T, db *sql.DB) {
 }
 
 func getTransactionFromDatabase(t *testing.T, db *sql.DB, id int) *model.Transaction {
-	row := db.QueryRow(`select id, chapterid, payinguserid, receivinguserid, amount from transactions where id = $1`, id)
+	row := db.QueryRow(`select id, chapterid, payinguserid, amount from transactions where id = $1`, id)
 
 	var transaction model.Transaction
-	if err := row.Scan(&transaction.ID, &transaction.ChapterID, &transaction.PayingUserID, &transaction.ReceivingUserID, &transaction.Amount); err != nil {
+	if err := row.Scan(&transaction.ID, &transaction.ChapterID, &transaction.PayingUserID, &transaction.Amount); err != nil {
 		return nil
 	}
 
@@ -236,7 +227,7 @@ func getTransactionFromDatabase(t *testing.T, db *sql.DB, id int) *model.Transac
 }
 
 func insertTransaction(t *testing.T, db *sql.DB, transaction *model.Transaction) {
-	_, err := db.Exec(`insert into transactions (id, chapterid, payinguserid, receivinguserid, amount) values ($1, $2, $3, $4, $5)`, transaction.ID, transaction.ChapterID, transaction.PayingUserID, transaction.ReceivingUserID, transaction.Amount)
+	_, err := db.Exec(`insert into transactions (id, chapterid, payinguserid, amount) values ($1, $2, $3, $4)`, transaction.ID, transaction.ChapterID, transaction.PayingUserID, transaction.Amount)
 	if err != nil {
 		t.Logf("could not insert transaction: %s", err.Error())
 		t.FailNow()
@@ -250,7 +241,7 @@ func insertBook(t *testing.T, db *sql.DB, book *bookModels.Book) {
 	}
 }
 func insertChapter(t *testing.T, db *sql.DB, chapter *bookModels.Chapter) {
-	_, err := db.Exec(`insert into chapters (id,bookId,name,authorId,price,content) values ($1, $2, $3, $4, $5, $6)`, chapter.ID, chapter.BookID, chapter.Name, chapter.AuthorID, chapter.Price, chapter.Content)
+	_, err := db.Exec(`insert into chapters (id,bookId,name,price,content) values ($1, $2, $3, $4, $5)`, chapter.ID, chapter.BookID, chapter.Name, chapter.Price, chapter.Content)
 	if err != nil {
 		t.Logf("could not insert chapter: %s", err.Error())
 		t.FailNow()

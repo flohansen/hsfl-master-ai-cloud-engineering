@@ -12,14 +12,13 @@ import (
 )
 
 type createTransactionRequest struct {
-	ChapterID       uint64 `json:"chapterID"`
-	PayingUserID    uint64 `json:"payingUserID"`
-	ReceivingUserID uint64 `json:"receivingUserID"`
-	Amount          uint64 `json:"amount"`
+	ChapterID    uint64 `json:"chapterID"`
+	PayingUserID uint64 `json:"payingUserID"`
+	Amount       uint64 `json:"amount"`
 }
 
 func (r createTransactionRequest) isValid() bool {
-	return r.ChapterID != 0 && r.PayingUserID != 0 && r.ReceivingUserID != 0
+	return r.ChapterID != 0 && r.PayingUserID != 0
 }
 
 type DefaultController struct {
@@ -56,10 +55,9 @@ func (ctrl *DefaultController) PostTransactions(w http.ResponseWriter, r *http.R
 	}
 
 	if err := ctrl.transactionRepository.Create([]*model.Transaction{{
-		ChapterID:       request.ChapterID,
-		PayingUserID:    request.PayingUserID,
-		ReceivingUserID: request.ReceivingUserID,
-		Amount:          request.Amount,
+		ChapterID:    request.ChapterID,
+		PayingUserID: request.PayingUserID,
+		Amount:       request.Amount,
 	}}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
