@@ -1,4 +1,5 @@
 <script>
+    import ShoppingListItem from "$lib/ShoppingListItem.svelte";
     import {page} from "$app/stores";
     import Header from "$lib/Header.svelte";
 </script>
