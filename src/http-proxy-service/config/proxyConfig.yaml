@@ -17,5 +17,5 @@ proxy:
       context: /api/v1/processing
       target: http://localhost:3004/api/v1/processing
     - name: Web Service
-      context:
+      context: /
       target: http://localhost:3000
