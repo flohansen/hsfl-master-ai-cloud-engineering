@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 )
 
 type Route struct {
@@ -19,13 +20,13 @@ type Config struct {
 	ProxyRoutes   []Route `mapstructure:"proxyRoutes"`
 }
 
-type defaultManager struct {
+type DefaultManager struct {
 	proxies []*httputil.ReverseProxy
 	routing *router.Router
 }
 
-func NewDefaultManager(config *Config) *defaultManager {
-	proxyManager := defaultManager{}
+func NewDefaultManager(config *Config) *DefaultManager {
+	proxyManager := DefaultManager{}
 
 	// Prepare routing
 	proxyManager.routing = router.New()
@@ -39,7 +40,11 @@ func NewDefaultManager(config *Config) *defaultManager {
 		proxyManager.newHandler(proxy)
 		proxyManager.proxies = append(proxyManager.proxies, proxy)
 
-		proxyManager.routing.ALL(route.Context+"/*", proxyManager.newHandler(proxy))
+		if !strings.HasSuffix(route.Context, "/") {
+			route.Context = route.Context + "/"
+		}
+
+		proxyManager.routing.ALL(route.Context+"*", proxyManager.newHandler(proxy))
 
 		log.Printf("Mapping '%v' | %v ---> %v", route.Name, route.Context, route.Target)
 	}
@@ -47,22 +52,24 @@ func NewDefaultManager(config *Config) *defaultManager {
 	return &proxyManager
 }
 
-func (dp defaultManager) GetProxyRouter() *router.Router {
+func (dp DefaultManager) GetProxyRouter() *router.Router {
 	return dp.routing
 }
 
-func (dp defaultManager) newProxy(targetUrl string) (*httputil.ReverseProxy, error) {
+func (dp DefaultManager) newProxy(targetUrl string) (*httputil.ReverseProxy, error) {
 	target, err := url.Parse(targetUrl)
 	if err != nil {
 		return nil, err
 	}
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.ModifyResponse = func(response *http.Response) error {
+		response.Header.Set("X-Proxy", "Price Whisper Proxy")
 		dumpResponse, err := httputil.DumpResponse(response, false)
 		if err != nil {
 			return err
 		}
-		log.Println("Response: \r\n", string(dumpResponse))
+		log.Println("Relaying to: ", target)
+		log.Println("Response to client: \r\n", string(dumpResponse))
 		return nil
 	}
 
@@ -71,10 +78,13 @@ func (dp defaultManager) newProxy(targetUrl string) (*httputil.ReverseProxy, err
 	return proxy, nil
 }
 
-func (dp defaultManager) newHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
+func (dp DefaultManager) newHandler(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Request URL: %v ---> /%v\n", r.URL.String(), r.Context().Value("wildcard0").(string))
+		r.Header.Set("X-Proxy", "Price Whisper Proxy")
+		r.Header.Set("X-Forwarded-For", strings.Split(r.RemoteAddr, ":")[0])
+		r.Header.Set("X-Forwarded-Host", r.Host)
 		r.URL.Path = r.Context().Value("wildcard0").(string)
-		log.Println("Request URL: ", r.URL.String())
 		p.ServeHTTP(w, r)
 	}
 }
