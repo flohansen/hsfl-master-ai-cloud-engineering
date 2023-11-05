@@ -1,8 +1,14 @@
 <script lang="ts">
-    import ShoppingListItem from "$lib/ShoppingListItem.svelte";
     import { page } from "$app/stores";
     import Header from "$lib/Header.svelte";
-    export let data;
+    import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
+
+    interface Data {
+        lists: { id: number, description: string }[]
+        headline: string;
+    }
+
+    export let data: Data;
 </script>
 
 <Header headline="{$page.data.headline}"/>
@@ -13,8 +19,8 @@
     </h2>
     <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
         {#if data.lists}
-            {#each data.lists as item}
-                <ShoppingListItem description={item.description} id="{item.id}"/>
+            {#each data.lists as list}
+                <ShoppingList description={list.description} id="{list.id}"/>
             {/each}
         {:else}
             <p>Es konnten keine Daten geladen werden.</p>

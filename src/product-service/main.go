@@ -60,6 +60,11 @@ func createContentForProducts(productRepository products.Repository) {
 			Description: "Lauchzwiebeln",
 			Ean:         5001819040871,
 		},
+		{
+			Id:          3,
+			Description: "Mehl",
+			Ean:         5001819049871,
+		},
 	}
 
 	for _, product := range productSlice {
