@@ -17,8 +17,8 @@ proxy:
       context: /api/v1/price
       target: http://localhost:3003/api/v1/price
     - name: Data Processing Service
-      context: /api/v1//processing
+      context: /api/v1/processing
       target: http://localhost:3004/api/v1/processing
     - name: Web Service
-      context:
+      context: /
       target: http://localhost:3000
