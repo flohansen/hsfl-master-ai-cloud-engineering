@@ -44,10 +44,10 @@
         <input type="checkbox">
         <div class="-mt-1">
             <h2 class="text-sm font-medium lg:text-base">{productData.description}</h2>
-            <p class="block text-gray-dark mt-2 text-xs flex items-center gap-x-2 lg:text-sm">
+            <p class="text-gray-dark mt-2 text-xs flex flex-wrap items-center gap-2 lg:text-sm">
                 Am günstigsten bei: <Badge />
             </p>
         </div>
     </div>
-    <span class="block text-gray-dark text-sm lg:text-base">{priceData.price} €</span>
+    <span class="block text-gray-dark text-sm lg:text-base whitespace-nowrap">{priceData.price} €</span>
 </li>
