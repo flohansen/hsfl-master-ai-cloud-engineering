@@ -1,33 +1,8 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import ShoppingListItem from "$lib/ShoppingListItem.svelte";
     import { page } from "$app/stores";
     import Header from "$lib/Header.svelte";
-
-    let isLoading: boolean = true;
-
-    interface ShoppingList {
-        id: number;
-        description: string;
-        userId: number;
-    }
-
-    let jsonData: ShoppingList[] = [];
-
-    onMount(async () => {
-        try {
-            const response = await fetch("http://localhost:8080/api/v1/shoppinglist/2");
-            if (response.ok) {
-                jsonData = await response.json();
-            } else {
-                throw new Error("Failed to fetch data");
-            }
-        } catch (error) {
-            console.error(error);
-        }
-
-        isLoading = false;
-    });
+    export let data;
 </script>
 
 <Header headline="{$page.data.headline}"/>
@@ -37,16 +12,12 @@
         Offene Einkaufslisten
     </h2>
     <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-        {#if isLoading}
-            <p>Daten werden geladen …</p>
+        {#if data.lists}
+            {#each data.lists as item}
+                <ShoppingListItem description={item.description} id="{item.id}"/>
+            {/each}
         {:else}
-            {#if jsonData}
-                {#each jsonData as item}
-                    <ShoppingListItem description={item.description} id="{item.id}"/>
-                {/each}
-            {:else}
-                <p>Es konnten keine Daten geladen werden.</p>
-            {/if}
+            <p>Es konnten keine Daten geladen werden.</p>
         {/if}
     </ul>
 </main>

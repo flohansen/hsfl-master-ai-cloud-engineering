@@ -3,8 +3,9 @@ package main
 import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/api/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
+	listModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry"
+	entryModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 	"log"
 	"net/http"
 )
@@ -12,10 +13,11 @@ import (
 func main() {
 	shoppingListRepository := userShoppingList.NewDemoRepository()
 	shoppingListController := userShoppingList.NewDefaultController(shoppingListRepository)
-	createContent(shoppingListRepository)
+	createContentForShoppingLists(shoppingListRepository)
 
 	shoppingListEntryRepository := userShoppingListEntry.NewDemoRepository()
 	shoppingListEntryController := userShoppingListEntry.NewDefaultController(shoppingListEntryRepository)
+	createContentForShoppingListEntries(shoppingListEntryRepository)
 
 	handler := router.New(shoppingListController, shoppingListEntryController)
 
@@ -24,8 +26,34 @@ func main() {
 	}
 }
 
-func createContent(shoppingListRepository userShoppingList.Repository) {
-	shoppingLists := []*model.UserShoppingList{
+func createContentForShoppingListEntries(shoppingListEntryRepository userShoppingListEntry.Repository) {
+	shoppingListEntries := []*entryModel.UserShoppingListEntry{
+		{
+			ShoppingListId: 1,
+			ProductId:      1,
+			Count:          1,
+			Note:           "",
+			Checked:        false,
+		},
+		{
+			ShoppingListId: 1,
+			ProductId:      2,
+			Count:          1,
+			Note:           "",
+			Checked:        false,
+		},
+	}
+
+	for _, price := range shoppingListEntries {
+		_, err := shoppingListEntryRepository.Create(price)
+		if err != nil {
+			return
+		}
+	}
+}
+
+func createContentForShoppingLists(shoppingListRepository userShoppingList.Repository) {
+	shoppingLists := []*listModel.UserShoppingList{
 		{
 			Id:          1,
 			UserId:      2,

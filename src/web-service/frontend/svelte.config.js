@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
 const config = {
@@ -9,10 +9,8 @@ const config = {
 			pages: 'static',
 			assets: 'static',
 			strict: false,
+			trailingSlash: 'never',
 		}),
-		prerender: {
-			entries: ['/shopping-lists/:id'],
-		},
 	},
 };
 
