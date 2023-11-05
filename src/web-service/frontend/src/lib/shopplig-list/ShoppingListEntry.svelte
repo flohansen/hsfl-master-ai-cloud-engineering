@@ -7,14 +7,30 @@
         description: string,
     }
 
+    interface Price {
+        price: number,
+    }
+
     let productData: Product = { id: 0, description: '' };
-    const apiUrl = `/api/v1/product/${productId}`;
+    let priceData: Price = { price: 0 };
+
+    const apiUrlProduct = `/api/v1/product/${productId}`;
+    const apiUrlPrice = `/api/v1/price/${productId}/1`;
 
     onMount(async () => {
         try {
-            const response = await fetch(apiUrl);
+            const response = await fetch(apiUrlProduct);
             response.ok
                 ? productData = await response.json()
+                : console.error('Failed to fetch data');
+        } catch (error) {
+            console.error(error);
+        }
+
+        try {
+            const response = await fetch(apiUrlPrice);
+            response.ok
+                ? priceData = await response.json()
                 : console.error('Failed to fetch data');
         } catch (error) {
             console.error(error);
@@ -30,5 +46,5 @@
             <span class="block text-gray-dark mt-2 text-xs lg:text-sm">Am günstigsten bei:</span>
         </div>
     </div>
-    <span class="block text-gray-dark text-sm lg:text-base">Preis €</span>
+    <span class="block text-gray-dark text-sm lg:text-base">{priceData.price} €</span>
 </li>
