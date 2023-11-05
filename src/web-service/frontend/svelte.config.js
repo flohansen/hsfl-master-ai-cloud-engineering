@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
 const config = {
@@ -10,6 +10,7 @@ const config = {
 			assets: 'static',
 			strict: false,
 			trailingSlash: 'never',
+			fallback: 'index.html',
 		}),
 	},
 };
