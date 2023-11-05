@@ -13,7 +13,6 @@ func main() {
 	fallbackFile := "index.html"
 	rootDir := "frontend/static"
 
-	// Add a custom handler to set the Content-Type for JavaScript files.
 	http.Handle("/_app", http.FileServer(http.Dir("frontend/static/_app")))
 	http.Handle("/", tryFilesHandler(rootDir, fallbackFile))
 

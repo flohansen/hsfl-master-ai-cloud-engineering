@@ -1,7 +1,12 @@
 <script lang="ts">
-    export let data;
+    import ShoppingListEntry from "$lib/shopplig-list/ShoppingListEntry.svelte";
 
-    console.log(data.list);
+    interface Data {
+        list: { description: string },
+        entries: { productId: number, checked: boolean }[],
+    }
+
+    export let data: Data;
 </script>
 
 <header class="px-5 mt-16 flex items-center justify-between sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto xl:max-w-5xl">
@@ -21,24 +26,19 @@
             </figure>
             <div>
                 <h1 class="text-lg font-semibold lg:text-xl xl:text-2xl">
-                    Name der Einkaufsliste
+                    {data.list.description}
                 </h1>
-                <p class="text-gray-dark text-sm mt-1">Anzahl der Einträge</p>
+                <p class="text-gray-dark text-sm mt-1">
+                    Anzahl der Einträge: {data.entries.length}
+                </p>
             </div>
         </header>
 
         <p class="text-gray-dark text-sm mt-10">Deine Einkaufsliste</p>
         <ul class="mt-4">
-           <li class="border-t-2 border-t-gray-light py-4 flex justify-between gap-x-4">
-               <div class="flex gap-x-4 items-start">
-                   <input type="checkbox">
-                   <div class="-mt-1">
-                       <h2 class="text-sm font-medium">Crossaints</h2>
-                       <span class="block text-gray-dark mt-2 text-xs">Am günstigsten bei:</span>
-                   </div>
-               </div>
-               <span class="block text-gray-dark text-sm">Preis €</span>
-           </li>
+            {#each data.entries as entry}
+                <ShoppingListEntry productId="{entry.productId}"/>
+            {/each}
         </ul>
     </div>
 </main>

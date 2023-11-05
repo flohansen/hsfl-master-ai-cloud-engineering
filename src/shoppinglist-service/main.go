@@ -42,6 +42,13 @@ func createContentForShoppingListEntries(shoppingListEntryRepository userShoppin
 			Note:           "",
 			Checked:        false,
 		},
+		{
+			ShoppingListId: 2,
+			ProductId:      3,
+			Count:          1,
+			Note:           "",
+			Checked:        false,
+		},
 	}
 
 	for _, price := range shoppingListEntries {
