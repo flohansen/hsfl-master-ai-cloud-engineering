@@ -1,5 +1,7 @@
 <script lang="ts">
     import ShoppingListEntry from "$lib/shopplig-list/ShoppingListEntry.svelte";
+    import Add from "../../../assets/svg/Add.svelte";
+    import AddEntryModal from "$lib/shopplig-list/AddEntryModal.svelte";
 
     interface Data {
         list: { description: string },
@@ -40,5 +42,7 @@
                 <ShoppingListEntry productId="{entry.productId}"/>
             {/each}
         </ul>
+
+        <AddEntryModal />
     </div>
 </main>
