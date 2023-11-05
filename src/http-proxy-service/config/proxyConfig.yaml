@@ -5,7 +5,7 @@ proxy:
       context: /api/v1/user
       target: http://localhost:3001/api/v1/user
     - name: Shoppinglist Service (Lists)
-      context: /api/v1/shoppinglist (Lists)
+      context: /api/v1/shoppinglist
       target: http://localhost:3002/api/v1/shoppinglist
     - name: Shoppinglist Service (Entries)
       context: /api/v1/shoppinglistentries
@@ -14,8 +14,8 @@ proxy:
       context: /api/v1/product
       target: http://localhost:3003/api/v1/product
     - name: Data Processing Service
-      context: /api/v1//processing
+      context: /api/v1/processing
       target: http://localhost:3004/api/v1/processing
     - name: Web Service
-      context:
+      context: /
       target: http://localhost:3000
