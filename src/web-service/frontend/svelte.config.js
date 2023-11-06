@@ -9,6 +9,8 @@ const config = {
 			pages: 'static',
 			assets: 'static',
 			strict: false,
+			trailingSlash: 'never',
+			fallback: 'index.html',
 		}),
 	},
 };
