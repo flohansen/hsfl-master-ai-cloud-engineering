@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Badge from "$lib/shopplig-list/Badge.svelte";
+    import Checkbox from "$lib/forms/Checkbox.svelte";
     export let productId: number;
 
     interface Product {
@@ -39,15 +40,14 @@
     });
 </script>
 
-<li class="border-t-2 border-t-gray-light py-4 flex justify-between gap-x-4 lg:py-6">
-    <div class="flex gap-x-4 items-start">
-        <input type="checkbox">
-        <div class="-mt-1">
-            <h2 class="text-sm font-medium lg:text-base">{productData.description}</h2>
-            <p class="block text-gray-dark mt-2 text-xs flex items-center gap-x-2 lg:text-sm">
-                Am günstigsten bei: <Badge />
-            </p>
-        </div>
+<li class="border-t-2 border-t-gray-light py-4 lg:py-6">
+    <div class="flex gap-x-4 items-start justify-between">
+        <Checkbox label="{productData.description}" id="{productData.id}"/>
+        <span class="block text-gray-dark text-sm whitespace-nowrap lg:text-base">{priceData.price} €</span>
     </div>
-    <span class="block text-gray-dark text-sm lg:text-base">{priceData.price} €</span>
+    <p class="text-gray-dark mt-1 ml-[2.1rem] text-xs flex flex-wrap items-center gap-2 lg:text-sm">
+        Am günstigsten bei: <Badge />
+    </p>
 </li>
+
+
