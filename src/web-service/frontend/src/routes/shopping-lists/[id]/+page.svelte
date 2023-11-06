@@ -9,7 +9,6 @@
 
     export let data: Data;
     let selectedProduct: number;
-
     $: selectedProduct ? addNewShoppingListEntry() : null;
 
     function addNewShoppingListEntry() {
@@ -20,14 +19,15 @@
             body: `{"count": 2, "note": "Test entry", "checked": false}`,
         };
 
-        async () => {
-            try {
-                const response = await fetch(apiUrl, requestOptions);
-                if (!response.ok) console.error('Failed to fetch data');
-            } catch (error) {
+        fetch(apiUrl, requestOptions)
+            .then((response) => {
+                response.ok
+                    ? location.reload()
+                    : console.error('Failed to fetch data');
+            })
+            .catch((error) => {
                 console.error(error);
-            }
-        }
+            });
     }
 </script>
 
