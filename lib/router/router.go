@@ -64,7 +64,7 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 			if substring == "*" {
 				return "(.*)"
 			} else {
-				return "([^/]+)"
+				return "([^/]+)/?"
 			}
 		})
 

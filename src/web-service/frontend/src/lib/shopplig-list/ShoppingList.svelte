@@ -1,6 +1,5 @@
 <script lang="ts">
     export let description: string = 'Name der Einkaufsliste';
-    export let count: number = 0;
     export let id: number = 0;
 </script>
 
@@ -13,7 +12,9 @@
             <h3 class="font-semibold text-base transition-all ease-in-out duration-300 group-hover:text-blue-dark lg:text-lg">
                 {description}
             </h3>
-            <p class="text-xs text-gray-dark mt-1 lg:text-sm">Anzahl der Einträge: {count}</p>
+            <p class="text-xs text-gray-dark mt-1 lg:text-sm">
+                Hier ist Platz für eine Beschreibung.
+            </p>
         </div>
     </a>
 </li>
