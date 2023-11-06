@@ -1,12 +1,12 @@
 <script lang="ts">
     import Euro from "../assets/svg/Euro.svelte";
     import {page} from "$app/stores";
-    import Header from "$lib/Header.svelte";
+    import Header from "$lib/general/Header.svelte";
 </script>
 
 <Header headline="{$page.data.headline}"/>
 
-<main class="mt-8 sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto lg:mt-10 xl:max-w-5xl">
+<main>
     <section class="mx-5 rounded-2xl bg-blue-light/50 p-5 lg:p-8">
         <figure class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-dark/40">
             <Euro classes="w-7 h-7 text-blue-dark"></Euro>

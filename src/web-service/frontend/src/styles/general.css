@@ -41,3 +41,7 @@
 html {
     @apply font-manrope text-base text-black bg-gray-light selection:bg-green-light/50 selection:text-black;
 }
+
+main {
+    @apply mt-8 mb-32 sm:mb-0 sm:ml-20 md:ml-24 lg:max-w-[54rem] lg:mx-auto lg:mt-10 xl:max-w-5xl;
+}

@@ -1,8 +1,10 @@
 <script lang="ts">
     import Add from "../../assets/svg/Add.svelte";
     import {clickOutside} from "../../assets/helper/clickOutside";
+    import Select from "$lib/general/Select.svelte";
 
     let isOpen = false;
+    export let selectedProduct: number;
 
     function toggleModal() {
         isOpen = !isOpen;
@@ -27,13 +29,10 @@
     use:clickOutside
     on:click_outside={handleClickOutside}
     class:hidden={! isOpen}
-    class="fixed inset-x-4 h-[40vh] top-1/2 -translate-y-1/2 bg-gray-light rounded-xl p-4"
->
+    class="fixed inset-x-4 h-[40vh] top-1/2 -translate-y-1/2 bg-gray-light rounded-xl p-4 sm:left-28 sm:right-8 lg:inset-x-0 lg:max-w-[52rem] lg:mx-auto xl:max-w-[62rem]">
     <h3 class="text-lg font-semibold mt-4">
         Eintrag hinzufügen:
     </h3>
-    <select>
-        <option>Strauchtomaten</option>
-        <option>Lauchzwiebeln</option>
-    </select>
+
+    <Select bind:selectedProduct={selectedProduct}/>
 </div>
