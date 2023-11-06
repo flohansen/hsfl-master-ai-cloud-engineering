@@ -10,9 +10,12 @@ proxy:
     - name: Shoppinglist Service (Entries)
       context: /api/v1/shoppinglistentries
       target: http://localhost:3002/api/v1/shoppinglistentries
-    - name: Product Service
+    - name: Product Service (Products)
       context: /api/v1/product
       target: http://localhost:3003/api/v1/product
+    - name: Product Service (Prices)
+      context: /api/v1/price
+      target: http://localhost:3003/api/v1/price
     - name: Data Processing Service
       context: /api/v1/processing
       target: http://localhost:3004/api/v1/processing
