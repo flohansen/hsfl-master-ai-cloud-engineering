@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/spf13/viper"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
+	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
 	"log"
 	"net/http"
 	"net/http/httputil"

@@ -1,11 +1,10 @@
 package router
 
 import (
+	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
 	"net/http"
-
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
 )
 
 type Router struct {

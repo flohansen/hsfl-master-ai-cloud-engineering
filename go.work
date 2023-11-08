@@ -1,7 +1,7 @@
 go 1.21.2
 
 use (
-	lib
+	lib/router
 	src/product-service
 	src/shoppinglist-service
 	src/user-service
