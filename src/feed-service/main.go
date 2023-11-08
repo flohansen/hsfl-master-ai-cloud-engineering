@@ -11,7 +11,7 @@ import (
 func main() {
 	feedController := feed.NewDefaultController()
 	handler := router.New(feedController)
-	if err := http.ListenAndServe(":3000", handler); err != nil {
+	if err := http.ListenAndServe(":8081", handler); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
 	}
 }

@@ -3,6 +3,7 @@ package feed
 import (
 	"encoding/json"
 	"net/http"
+	"fmt"
 )
 
 type DefaultController struct {
@@ -13,14 +14,16 @@ func NewDefaultController() *DefaultController {
 }
 
 func (ctrl *DefaultController) GetFeed(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get("http://localhost:3000/posts")
+	/*resp, err := http.Get("http://localhost:8080/posts")
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to fetch data")
 		return
 	}
-	respondWithJSON(w, http.StatusOK, resp)
-
+	respondWithJSON(w, http.StatusOK, resp)*/
+	fmt.Println("feed")
 }
+
+
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
