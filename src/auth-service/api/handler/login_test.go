@@ -142,11 +142,6 @@ func TestLoginHandler(t *testing.T) {
 
 		jwtTokenGenerator.
 			EXPECT().
-			GetExpiration().
-			Return(3600)
-
-		jwtTokenGenerator.
-			EXPECT().
 			GenerateToken(gomock.Any()).
 			Return("token", nil)
 

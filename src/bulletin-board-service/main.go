@@ -2,34 +2,43 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/api/handler"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/api/router"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/database"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/service"
-	"gopkg.in/yaml.v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"os"
 )
 
-var db *gorm.DB
+func GetenvInt(key string) int {
+	value := os.Getenv(key)
+	valueInt, err := strconv.Atoi(value)
+	if err != nil {
+		panic(err)
+	}
 
-type ApplicationConfig struct {
-	Database database.PsqlConfig `yaml:"database"`
+	return valueInt
 }
 
 func main() {
-	config, err := LoadFromConfigFile("config.yml")
+	port := os.Getenv("PORT")
 
-	if err != nil {
-		log.Fatal("Failed to load config file: ", err)
+	psqlConfig := database.PsqlConfig{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     GetenvInt("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Dbname:   os.Getenv("DB_NAME"),
 	}
 
-	db, err = gorm.Open(postgres.Open(config.Database.Dsn()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(psqlConfig.Dsn()), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
@@ -45,31 +54,8 @@ func main() {
 
 	r := router.NewRouter(postHandler)
 
-	port := ":8080"
-	fmt.Println("Server is running on port", port)
-	log.Fatal(http.ListenAndServe(port, r))
-}
-
-func LoadFromConfigFile(path string) (*ApplicationConfig, error) {
-	f, err := os.Open(path)
-
-	if err != nil {
-		return nil, err
+	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	if err := http.ListenAndServe(addr, r); err != nil {
+		log.Fatalf("error while listen and serve: %s", err.Error())
 	}
-
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-			log.Println("Failed to close file: ", err)
-		}
-	}(f)
-
-	var config ApplicationConfig
-
-	if err := yaml.NewDecoder(f).Decode(&config); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
-
 }

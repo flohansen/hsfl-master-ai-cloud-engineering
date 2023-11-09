@@ -1,5 +1,10 @@
 #  BoardHub
 
+[![](https://codecov.io/gh/Flo0807/hsfl-master-ai-cloud-engineering/graph/badge.svg?token=WILJH4U7EH)](https://codecov.io/gh/Flo0807/hsfl-master-ai-cloud-engineering)
+![](https://github.com/Flo0807/hsfl-master-ai-cloud-engineering/actions/workflows/auth-service.yml/badge.svg)
+![](https://github.com/Flo0807/hsfl-master-ai-cloud-engineering/actions/workflows/bulletin-board-service.yml/badge.svg)
+![](https://github.com/Flo0807/hsfl-master-ai-cloud-engineering/actions/workflows/feed-service.yml/badge.svg)
+
 BoardHub is an interactive platform that allows users to create and manage bulletin board posts. The platform offers an organized space for people to share news, ideas, or requests. Simple and easy to use, users can create bulletin board posts and comment on other posts. It features a user-friendly interface and different types of feeds to view posts. Whether it's for a business, a community, a club, a school, personal use or more, BoardHub provides a convenient way to communicate and connect.
 
 ## Use Cases

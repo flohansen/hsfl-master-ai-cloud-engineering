@@ -51,17 +51,3 @@ func (mr *MockTokenGeneratorMockRecorder) GenerateToken(claims any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockTokenGenerator)(nil).GenerateToken), claims)
 }
-
-// GetExpiration mocks base method.
-func (m *MockTokenGenerator) GetExpiration() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetExpiration")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// GetExpiration indicates an expected call of GetExpiration.
-func (mr *MockTokenGeneratorMockRecorder) GetExpiration() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpiration", reflect.TypeOf((*MockTokenGenerator)(nil).GetExpiration))
-}
