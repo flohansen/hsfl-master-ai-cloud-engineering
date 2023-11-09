@@ -3,6 +3,7 @@ services:
     build:
       context: ./
       dockerfile: ./src/http-proxy-service/Dockerfile
+    image: onyxmoon/pw-http-proxy-service:latest
     ports:
       - 8080:8080
     depends_on:
@@ -13,6 +14,7 @@ services:
     build:
       context: ./
       dockerfile: ./src/web-service/Dockerfile
+    image: onyxmoon/pw-web-service:latest
     ports:
       - 3000:3000
     depends_on:
@@ -28,6 +30,7 @@ services:
     build:
       context: ./
       dockerfile: ./src/product-service/Dockerfile
+    image: onyxmoon/pw-product-service:latest
     ports:
       - 3003:3003
 
@@ -35,6 +38,7 @@ services:
     build:
       context: ./
       dockerfile: ./src/user-service/Dockerfile
+    image: onyxmoon/pw-user-service:latest
     ports:
       - 3001:3001
 
@@ -42,5 +46,6 @@ services:
     build:
       context: ./
       dockerfile: ./src/shoppinglist-service/Dockerfile
+    image: onyxmoon/pw-shoppinglist-service:latest
     ports:
       - 3002:3002
