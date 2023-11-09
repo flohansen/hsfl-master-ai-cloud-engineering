@@ -1,0 +1,41 @@
+name: Run tests (shoppinglist-service)
+
+on:
+  push:
+    paths:
+      - 'src/shoppinglist-service/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test shoppinglist-service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21
+
+      - name: Install dependencies
+        working-directory: ./src/shoppinglist-service
+        run: go mod tidy
+
+      - name: Build
+        working-directory: ./src/shoppinglist-service
+        run: go build -v ./...
+
+      - name: Test Go Module
+        run: |
+          cd src/shoppinglist-service
+          go test ./...
+          test_exit_code=$? # Capture the exit code of the go test command
+          if [ $test_exit_code -eq 0 ]; then
+            echo "Tests passed successfully."
+          else
+            echo "Tests failed with exit code $test_exit_code."
+            exit 1 # Fail the GitHub Actions workflow
+          fi

@@ -1,4 +1,11 @@
 # Price Whisper
+![Coverage](https://img.shields.io/badge/Coverage-79.3%25-brightgreen)
+[![Run tests (http proxy service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml)
+[![Run tests (product-service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-product-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-product-service.yml)
+[![Run tests (shoppinglist-service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-shoppinglist-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-shoppinglist-service.yml)
+[![Run tests (user-service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-user-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-user-service.yml)
+[![Run tests (web service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-web-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-web-service.yml)
+
 PriceWhisper is your go-to destination for effortless savings on every shopping trip. Compare prices across supermarkets, find the best deals, and save money without the noise. Unlock the power of smart shopping with PriceWhisper.
 
 PriceWhisper is an web application designed to streamline shopping experiences. Users can input their shopping list containing various products, and PriceWhisper meticulously scans multiple retailers, extracting pricing data given merchants.
@@ -14,7 +21,7 @@ Key features:
 
 ## Prototypical architecture
 
-![CE_ Architecture Prototype](./README.assets/CE_ Architecture%20Prototype.svg)
+![Architecture](README.assets/CE_Architecture_Prototype.svg)
 
 ## Authors
 
@@ -24,6 +31,10 @@ Hochschule Flensburg
 
 Philipp Borucki
 philipp.borucki@stud.hs-flensburg.de\
+Hochschule Flensburg
+
+Jannick Lindner
+jannick.lindner@stud.hs-flensburg.de\
 Hochschule Flensburg
 
 ## \<Add more sections here\>
