@@ -7,12 +7,7 @@ import (
 )
 
 type JwtConfig struct {
-	SignKey     string           `yaml:"signKey"`
-	AccessToken ExpirationConfig `yaml:"access_token"`
-}
-
-type ExpirationConfig struct {
-	Expiration int `yaml:"expiration"`
+	SignKey string `yaml:"signKey"`
 }
 
 func (c JwtConfig) GetPrivateKey() (any, error) {
@@ -24,8 +19,4 @@ func (c JwtConfig) GetPrivateKey() (any, error) {
 
 	block, _ := pem.Decode(bytes)
 	return x509.ParseECPrivateKey(block.Bytes)
-}
-
-func (c JwtConfig) GetExpiration() int {
-	return c.AccessToken.Expiration
 }

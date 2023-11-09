@@ -22,17 +22,13 @@ ssh-keygen -t ecdsa -f /path/to/key -m pem
 
 ## Config
 
-Example config:
+Config values are set via environment variables. The following environment variables are available:
 
-```yaml
-jwt:
-    signKey: /path/to/key
-    access_token:
-        expiration: 3600
-db:
-    host: localhost
-    port: 5432
-    user: postgres
-    password: postgres
-    database: postgres
-```
+| Name | Description |
+| ---- | ----------- |
+| JWT_SIGN_KEY | Path to ECDSA private key used to sign JWTs |
+| DB_HOST | Hostname of PostgreSQL database |
+| DB_PORT | Port of PostgreSQL database |
+| DB_USER | Username of PostgreSQL database |
+| DB_PASSWORD | Password of PostgreSQL database |
+| DB_DATABASE | Name of PostgreSQL database |
