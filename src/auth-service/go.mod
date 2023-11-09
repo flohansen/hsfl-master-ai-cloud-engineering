@@ -9,8 +9,9 @@ require (
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/mock v0.3.0
 	golang.org/x/crypto v0.15.0
-	gopkg.in/yaml.v3 v3.0.1
 )
+
+require gopkg.in/yaml.v3 v3.0.1 // indirect
 
 require (
 	github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib v0.0.0-20231018143811-3c7d81c81e29
