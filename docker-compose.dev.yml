@@ -4,7 +4,8 @@ services:
       context: ./
       dockerfile: ./src/http-proxy-service/Dockerfile
     environment:
-      - DOCKER_MODE=1
+      - PROXY_DOCKER_CONFIG_PATH=./config
+      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
     ports:
       - 8080:8080
     depends_on:
