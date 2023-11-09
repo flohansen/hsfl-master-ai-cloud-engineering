@@ -1,4 +1,4 @@
-name: Test bulletin-board-service
+name: bulletin-board-service
 
 on:
   push:
@@ -57,6 +57,7 @@ jobs:
           file: ./src/bulletin-board-service/coverage.txt
           fail_ci_if_error: false
   build-and-push-image:
+    name: Build and push bulletin-board-service image
     runs-on: ubuntu-latest
 
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
