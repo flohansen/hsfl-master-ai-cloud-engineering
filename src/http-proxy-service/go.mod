@@ -1,6 +1,6 @@
 module hsfl.de/group6/hsfl-master-ai-cloud-engineering/http-proxy-service
 
-go 1.21.2
+go 1.21
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
