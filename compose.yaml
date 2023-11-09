@@ -1,9 +1,53 @@
 services:
+  auth-service:
+    build:
+      context: ./
+      dockerfile: ./src/auth-service/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - JWT_SIGN_KEY=./key
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+  bulletin-board-service:
+    build:
+      context: ./
+      dockerfile: ./src/bulletin-board-service/Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+  feed-service:
+    build:
+      context: ./
+      dockerfile: ./src/feed-service/Dockerfile
+    ports:
+      - '3002:3002'
+    environment:
+      - PORT=3002
   postgres:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=postgres'
-      - 'POSTGRES_USER=postgres'
-      - 'POSTGRES_PASSWORD=password'
-    ports:
-      - '8888:5432'
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
