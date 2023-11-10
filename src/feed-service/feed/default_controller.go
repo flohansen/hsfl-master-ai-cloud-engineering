@@ -2,8 +2,8 @@ package feed
 
 import (
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"net/http"
 )
 
 type DefaultController struct {
@@ -22,8 +22,6 @@ func (ctrl *DefaultController) GetFeed(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, resp)*/
 	fmt.Println("feed")
 }
-
-
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
