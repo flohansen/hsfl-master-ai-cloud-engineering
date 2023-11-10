@@ -1,9 +1,10 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/api/handler"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/router"
-	"net/http"
 )
 
 type Router struct {
@@ -13,11 +14,11 @@ type Router struct {
 func NewRouter(postHandler *handler.PostHandler) *Router {
 	r := router.New()
 
-	r.GET("/posts", postHandler.GetPosts)
-	r.GET("/posts/:id", postHandler.GetPost)
-	r.POST("/posts", postHandler.CreatePost)
-	r.PUT("/posts/:id", postHandler.UpdatePost)
-	r.DELETE("/posts/:id", postHandler.DeletePost)
+	r.GET("/bulletin-board/posts", postHandler.GetPosts)
+	r.GET("/bulletin-board/posts/:id", postHandler.GetPost)
+	r.POST("/bulletin-board/posts", postHandler.CreatePost)
+	r.PUT("/bulletin-board/posts/:id", postHandler.UpdatePost)
+	r.DELETE("/bulletin-board/posts/:id", postHandler.DeletePost)
 
 	return &Router{r}
 }
