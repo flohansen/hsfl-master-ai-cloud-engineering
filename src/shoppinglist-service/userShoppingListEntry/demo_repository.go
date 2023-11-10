@@ -50,13 +50,17 @@ func (repo *DemoRepository) Delete(entry *model.UserShoppingListEntry) error {
 }
 
 func (repo *DemoRepository) Update(entry *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error) {
-	price, foundError := repo.FindByIds(entry.ShoppingListId, entry.ProductId)
+	existingEntry, foundError := repo.FindByIds(entry.ShoppingListId, entry.ProductId)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorEntryUpdate)
 	}
 
-	return price, nil
+	existingEntry.Count = entry.Count
+	existingEntry.Note = entry.Note
+	existingEntry.Checked = entry.Checked
+
+	return existingEntry, nil
 }
 
 func (repo *DemoRepository) FindByIds(shoppingListId, productId uint64) (*model.UserShoppingListEntry, error) {
@@ -66,6 +70,7 @@ func (repo *DemoRepository) FindByIds(shoppingListId, productId uint64) (*model.
 	}
 
 	entry, exists := repo.entries[key]
+
 	if !exists {
 		return nil, errors.New(ErrorEntryNotFound)
 	}

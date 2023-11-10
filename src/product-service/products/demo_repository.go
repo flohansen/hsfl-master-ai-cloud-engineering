@@ -62,13 +62,16 @@ func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
 }
 
 func (repo *DemoRepository) Update(product *model.Product) (*model.Product, error) {
-	product, foundError := repo.FindById(product.Id)
+	existingProduct, foundError := repo.FindById(product.Id)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorProductUpdate)
 	}
 
-	return product, nil
+	existingProduct.Description = product.Description
+	existingProduct.Ean = product.Ean
+
+	return existingProduct, nil
 }
 
 func (repo *DemoRepository) findNextAvailableID() uint64 {
