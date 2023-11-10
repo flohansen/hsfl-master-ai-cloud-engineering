@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
+	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
 	"net/http"
 	"net/http/httputil"
 )

@@ -20,6 +20,14 @@ jobs:
         with:
           go-version: 1.21
 
+      - name: Install dependencies
+        working-directory: ./src/web-service
+        run: go mod tidy
+
+      - name: Build
+        working-directory: ./src/web-service
+        run: go build -v ./...
+
       - name: Test Go Module
         run: |
           cd src/web-service
