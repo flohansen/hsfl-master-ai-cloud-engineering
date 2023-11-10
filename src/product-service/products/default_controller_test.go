@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -239,6 +240,10 @@ func TestDefaultController_GetProducts(t *testing.T) {
 		}
 
 		products := setupDemoProductSlice()
+
+		sort.Slice(response, func(i, j int) bool {
+			return response[i].Id < response[j].Id
+		})
 
 		if len(response) != len(products) {
 			t.Errorf("Expected count of product is %d, got %d",

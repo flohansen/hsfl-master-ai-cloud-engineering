@@ -1,0 +1,44 @@
+services:
+  proxy:
+    build:
+      context: ./
+      dockerfile: ./src/http-proxy-service/Dockerfile
+    environment:
+      - PROXY_DOCKER_CONFIG_PATH=./config
+      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
+    ports:
+      - 8080:8080
+    depends_on:
+      - web
+
+  web:
+    build:
+      context: ./
+      dockerfile: ./src/web-service/Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - products
+      - shoppinglists
+      - users
+
+  products:
+    build:
+      context: ./
+      dockerfile: ./src/product-service/Dockerfile
+    ports:
+      - 3003:3003
+
+  users:
+    build:
+      context: ./
+      dockerfile: ./src/user-service/Dockerfile
+    ports:
+      - 3001:3001
+
+  shoppinglists:
+    build:
+      context: ./
+      dockerfile: ./src/shoppinglist-service/Dockerfile
+    ports:
+      - 3002:3002
