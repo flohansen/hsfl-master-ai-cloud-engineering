@@ -14,7 +14,7 @@ import (
 
 func TestJwtTokenGenerator(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	generator := JwtTokenGenerator{privateKey, 3600}
+	generator := JwtTokenGenerator{privateKey}
 
 	t.Run("generate valid token", func(t *testing.T) {
 		// given

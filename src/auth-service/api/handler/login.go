@@ -71,7 +71,7 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expiration := time.Duration(h.jwtTokenGenerator.GetExpiration()) * time.Second
+	expiration := time.Duration(3600) * time.Second
 
 	claims := map[string]interface{}{
 		"sub":   user.ID,
