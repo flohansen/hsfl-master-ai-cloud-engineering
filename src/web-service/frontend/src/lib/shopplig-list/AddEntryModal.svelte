@@ -51,7 +51,7 @@
         const requestOptions = {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: `{"count": 5, "note": "", "checked": false}`,
+            body: `{"count": ${count}, "note": "", "checked": false}`,
         };
 
         fetch(apiUrl, requestOptions)
