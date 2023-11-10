@@ -112,12 +112,12 @@ func TestDemoRepository_Update(t *testing.T) {
 		}
 
 		if updatedEntry.Note != entry.Note {
-			t.Errorf("Expected updated shopping list entry to have node %s, but got note %s",
+			t.Errorf("Expected updated shopping list entry to have note %s, but got note %s",
 				entry.Note, updatedEntry.Note)
 		}
 
 		if updatedEntry.Checked != entry.Checked {
-			t.Errorf("Expected updated shopping list entry to have node %t, but got note %t",
+			t.Errorf("Expected updated shopping list entry to have checked value %t, but got note %t",
 				entry.Checked, updatedEntry.Checked)
 		}
 	})
