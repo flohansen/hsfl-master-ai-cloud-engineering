@@ -1,8 +1,13 @@
-export interface Todo {
-  id: number;
-  content: string;
-}
 
-export interface Meta {
-  totalCount: number;
+export interface ResponsePage<T> {
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  records: T[];
+}
+export interface BulletinBoardEntry {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
 }
