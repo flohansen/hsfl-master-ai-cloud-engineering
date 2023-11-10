@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -44,12 +45,18 @@ func NewReverseProxy(config ReverseProxyConfig) *ReverseProxyHandler {
 }
 func newSingleHostReverseProxy(targetURL string) *httputil.ReverseProxy {
 	target, _ := url.Parse(targetURL)
-	return httputil.NewSingleHostReverseProxy(target)
+	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.ErrorHandler = func(writer http.ResponseWriter, request *http.Request, e error) {
+		http.Error(writer, "Proxy error", http.StatusInternalServerError)
+		log.Printf("proxy for %s error: %v", targetURL, e)
+	}
+	return proxy
 }
 
 func (rp *ReverseProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for pattern, proxy := range rp.Services {
 		if pattern.MatchString(r.URL.Path) {
+			log.Printf("Proxying %s to %s", r.URL.Path, pattern.String())
 			proxy.ServeHTTP(w, r)
 			return
 		}
