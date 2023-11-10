@@ -208,7 +208,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 			userShoppingListRepository: setupMockListRepository(),
 		}
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglists/2", nil)
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
 
 		controller.GetLists(writer, request)
@@ -229,7 +229,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 			userShoppingListRepository: setupMockListRepository(),
 		}
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglists/abc", nil)
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/abc", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
 
 		controller.GetLists(writer, request)
@@ -244,7 +244,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 			userShoppingListRepository: setupMockListRepositoryError(),
 		}
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglists/2", nil)
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
 
 		controller.GetLists(writer, request)
@@ -316,7 +316,7 @@ func setupMockListRepository() Repository {
 
 func setupMockListRepositoryError() Repository {
 	return &DemoRepository{
-		shoppinglists: map[uint64]*model.UserShoppingList{},
+		shoppingLists: map[uint64]*model.UserShoppingList{},
 	}
 }
 

@@ -48,11 +48,13 @@ func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.P
 }
 
 func (repo *DemoRepository) Update(price *model.Price) (*model.Price, error) {
-	price, foundError := repo.FindByIds(price.ProductId, price.UserId)
+	existingPrice, foundError := repo.FindByIds(price.ProductId, price.UserId)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorPriceUpdate)
 	}
 
-	return price, nil
+	existingPrice.Price = price.Price
+
+	return existingPrice, nil
 }
