@@ -11,11 +11,16 @@ import (
 func main() {
 	port := os.Getenv("PORT")
 
+	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
+	bulletinBoardServiceURL := os.Getenv("BULLETIN_BOARD_SERVICE_URL")
+	feedServiceURL := os.Getenv("FEED_SERVICE_URL")
+
 	// Configuration for the Reverse Proxy
 	config := handler.ReverseProxyConfig{
 		Services: []handler.Service{
-			{Name: "auth", ContextPath: "/auth", TargetURL: "http://localhost:8081"},
-			{Name: "bulletinboard", ContextPath: "/bulletin-board", TargetURL: "http://localhost:8080"},
+			{Name: "auth", ContextPath: "/auth", TargetURL: authServiceURL},
+			{Name: "bulletin-board", ContextPath: "/bulletin-board", TargetURL: bulletinBoardServiceURL},
+			{Name: "feed", ContextPath: "/feed", TargetURL: feedServiceURL},
 		},
 	}
 
