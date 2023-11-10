@@ -27,7 +27,7 @@ func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
 
 func (repo *DemoRepository) Delete(priceToDelete *model.Price) error {
 	for i, price := range repo.prices {
-		if reflect.DeepEqual(price, priceToDelete) {
+		if price.ProductId == priceToDelete.ProductId && price.UserId == priceToDelete.UserId {
 			repo.prices = append(repo.prices[:i], repo.prices[i+1:]...)
 			return nil
 		}
