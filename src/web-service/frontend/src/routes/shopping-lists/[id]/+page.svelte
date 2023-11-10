@@ -1,34 +1,18 @@
 <script lang="ts">
     import ShoppingListEntry from "$lib/shopplig-list/ShoppingListEntry.svelte";
     import AddEntryModal from "$lib/shopplig-list/AddEntryModal.svelte";
+    import ViewSelect from "$lib/shopplig-list/ViewSelect.svelte";
 
     interface Data {
         list: { id: number, description: string },
-        entries: { productId: number, checked: boolean }[],
+        entries: { productId: number, count: number, checked: boolean }[],
     }
 
+    type ViewState = "detailed" | "compressed";
+
+    let view: ViewState;
     export let data: Data;
-    let selectedProduct: number;
-    $: selectedProduct ? addNewShoppingListEntry() : null;
-
-    function addNewShoppingListEntry() {
-        const apiUrl: string = `/api/v1/shoppinglistentries/${data.list.id}/${selectedProduct}`
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: `{"count": 2, "note": "Test entry", "checked": false}`,
-        };
-
-        fetch(apiUrl, requestOptions)
-            .then((response) => {
-                response.ok
-                    ? location.reload()
-                    : console.error('Failed to fetch data');
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    }
+    console.log(data.entries);
 </script>
 
 <header class="px-5 mt-16 flex items-center justify-between sm:ml-20 md:ml-24 lg:max-w-[54rem] lg:mx-auto xl:max-w-5xl">
@@ -56,13 +40,18 @@
             </div>
         </header>
 
-        <p class="text-gray-dark text-sm mt-10">Deine Einkaufsliste</p>
+        <ViewSelect bind:view={view}/>
+
+        <p class="text-gray-dark text-sm">Deine Einkaufsliste</p>
         <ul class="mt-4">
             {#each data.entries as entry}
-                <ShoppingListEntry productId="{entry.productId}"/>
+                <ShoppingListEntry
+                    view="{view}"
+                    productId="{entry.productId}"
+                    productCount="{entry.count}"/>
             {/each}
         </ul>
 
-        <AddEntryModal bind:selectedProduct={selectedProduct}/>
+        <AddEntryModal listId="{data.list.id}" currentEntries="{data.entries}"/>
     </div>
 </main>
