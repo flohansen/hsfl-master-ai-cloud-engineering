@@ -14,6 +14,13 @@ services:
       - auth-service
       - bulletin-board-service
       - feed-service
+      - web-service
+  web-service:
+    build:
+      context: ./
+      dockerfile: ./src/web-service/Dockerfile
+    environment:
+      - PORT=3000
   auth-service:
     build:
       context: ./
