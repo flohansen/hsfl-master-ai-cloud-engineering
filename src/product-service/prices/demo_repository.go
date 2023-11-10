@@ -39,7 +39,6 @@ func (repo *DemoRepository) Delete(priceToDelete *model.Price) error {
 func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {
 	for _, price := range repo.prices {
 		if price.ProductId == productId && price.UserId == userId {
-			println(price)
 			return price, nil
 		}
 	}

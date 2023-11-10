@@ -81,7 +81,6 @@ func (repo *DemoRepository) findById(Id uint64) (*model.UserShoppingList, error)
 func (repo *DemoRepository) FindByIds(userId uint64, listId uint64) (*model.UserShoppingList, error) {
 	for _, shoppingList := range repo.shoppingLists {
 		if shoppingList.UserId == userId && shoppingList.Id == listId {
-			println(shoppingList)
 			return shoppingList, nil
 		}
 	}
