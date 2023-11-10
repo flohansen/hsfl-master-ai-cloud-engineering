@@ -8,8 +8,8 @@ services:
     environment:
       - PORT=3000
       - AUTH_SERVICE_URL=http://auth-service:3000
-      - BULLETIN_BOARD_SERVICE=http://bulletin-board-service:3000
-      - FEED_SERVICE=http://feed-service:3000
+      - BULLETIN_BOARD_SERVICE_URL=http://bulletin-board-service:3000
+      - FEED_SERVICE_URL=http://feed-service:3000
     depends_on:
       - auth-service
       - bulletin-board-service
