@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import Header from "$lib/Header.svelte";
+    import Header from "$lib/general/Header.svelte";
     import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
 
     interface Data {
@@ -13,7 +13,7 @@
 
 <Header headline="{$page.data.headline}"/>
 
-<main class="mt-8 sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto lg:mt-10 xl:max-w-5xl">
+<main>
     <h2 class="px-5 text-gray-dark text-sm font-medium mt-6 lg:mt-10 lg:text-base">
         Offene Einkaufslisten
     </h2>
