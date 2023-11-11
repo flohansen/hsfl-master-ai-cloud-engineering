@@ -1,14 +1,14 @@
 <template>
   <q-dialog v-model="visible">
-    <q-card style="width: 800px; max-width: 80vw;">
+    <q-card v-if="props.item" style="width: 800px; max-width: 80vw;">
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">{{ item.title }}</div>
+        <div class="text-h6">{{ item?.title }}</div>
         <q-space />
         <q-btn icon="close" flat round dense v-close-popup />
       </q-card-section>
 
       <q-card-section>
-        <span>{{ item.description }}</span>
+        <span v-html="item?.content"/>
       </q-card-section>
 
       <!-- Comment Section -->
@@ -25,9 +25,8 @@ import {computed, PropType} from "vue";
 
 const props = defineProps({
   item: {
-    type: Object as PropType<BulletinBoardEntry | null>,
-    required: true,
-    default: null,
+    type: Object as PropType<BulletinBoardEntry | undefined>,
+    default: undefined,
   },
 });
 
@@ -35,7 +34,7 @@ const emit = defineEmits(['close']);
 
 const visible = computed({
   get() {
-    return props.item !== null;
+    return props.item !== undefined;
   },
   set() {
     emit('close');
