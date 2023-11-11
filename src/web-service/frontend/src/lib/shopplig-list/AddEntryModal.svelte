@@ -1,9 +1,10 @@
 <script lang="ts">
     import Add from "../../assets/svg/Add.svelte";
-    import {clickOutside} from "../../assets/helper/clickOutside";
     import Select from "$lib/forms/Select.svelte";
     import Count from "$lib/forms/Count.svelte";
     import Checkmark from "../../assets/svg/Checkmark.svelte";
+    import {clickOutside} from "../../assets/helper/clickOutside";
+    import {handleErrors} from "../../assets/helper/handleErrors";
 
     interface NewEntry {
         id: number,
@@ -22,31 +23,27 @@
     export let listId: number;
     export let currentEntries: ShoppingListEntry[];
 
-    function toggleModal(): void {
-        isOpen = !isOpen;
-    }
-
     function handleClickOutside(): void {
         if (! isOpen) return;
         isOpen = false;
     }
 
-    function getEntryThatIsInList(): ShoppingListEntry | undefined {
-        return currentEntries.find((currentEntry) => currentEntry.productId === entry.id);
+    // Checks if the selected item is already listed in the current shopping list.
+    function findExistingListEntry(): ShoppingListEntry | undefined {
+        return currentEntries.find((listEntry) => listEntry.productId === entry.id);
     }
 
     function submit(): void {
         if (! entry.id || ! entry.count) return;
 
-        let currentEntry: ShoppingListEntry | undefined = getEntryThatIsInList();
+        let existingEntry: ShoppingListEntry | undefined = findExistingListEntry();
 
-        currentEntry
-            ? fetchContent("PUT", entry.count + currentEntry.count)
+        existingEntry
+            ? fetchContent("PUT", entry.count + existingEntry.count)
             : fetchContent("POST", entry.count);
     }
 
     function fetchContent(method: string, count: number): void {
-        console.log(method);
         const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${entry.id}`
         const requestOptions = {
             method: method,
@@ -55,18 +52,13 @@
         };
 
         fetch(apiUrl, requestOptions)
-            .then((response) => {
-                response.ok
-                    ? location.reload()
-                    : console.error('Failed to fetch data');
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+            .then(handleErrors)
+            .then(()=> location.reload())
+            .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
 
-<button on:click={toggleModal} class="-ml-[2px] mt-6 text-green-dark hover:text-green-light flex items-center justify-center gap-x-4">
+<button on:click={() => isOpen = ! isOpen} class="-ml-[2px] mt-6 text-green-dark hover:text-green-light flex items-center justify-center gap-x-4">
     <Add classes="w-6 h-6 transition-all ease-in-out duration-300"/>
     <span class="block transition-all ease-in-out duration-300 text-sm lg:text-base">
         Einträge hinzufügen

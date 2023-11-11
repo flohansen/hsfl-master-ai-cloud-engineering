@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Checkbox from "$lib/forms/Checkbox.svelte";
+    import {handleErrors} from "../../assets/helper/handleErrors";
+
     export let productId: number;
     export let productCount: number;
     export let view: ViewState;
@@ -25,23 +27,15 @@
     const apiUrlPrice = `/api/v1/price/${productId}/1`;
 
     onMount(async () => {
-        try {
-            const response = await fetch(apiUrlProduct);
-            response.ok
-                ? productData = await response.json()
-                : console.error('Failed to fetch data');
-        } catch (error) {
-            console.error(error);
-        }
+        fetch(apiUrlProduct)
+            .then(handleErrors)
+            .then(data => productData = data)
+            .catch(error => console.error("Failed to fetch data:", error.message));
 
-        try {
-            const response = await fetch(apiUrlPrice);
-            response.ok
-                ? priceData = await response.json()
-                : console.error('Failed to fetch data');
-        } catch (error) {
-            console.error(error);
-        }
+        fetch(apiUrlPrice)
+            .then(handleErrors)
+            .then(data => priceData = data)
+            .catch(error => console.error("Failed to fetch data:", error.message));
     });
 </script>
 

@@ -1,3 +1,4 @@
+/* Load fonts */
 @font-face{
     font-family: 'Manrope';
     src: url('../../../frontend/src/assets/fonts/Manrope-Light.ttf') format('ttf');
@@ -38,6 +39,7 @@
     font-display: swap;
 }
 
+/* Add some general classes */
 html {
     @apply font-manrope text-base text-black bg-gray-light selection:bg-green-light/50 selection:text-black;
 }

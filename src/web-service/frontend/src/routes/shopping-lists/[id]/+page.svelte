@@ -12,7 +12,6 @@
 
     let view: ViewState;
     export let data: Data;
-    console.log(data.entries);
 </script>
 
 <header class="px-5 mt-16 flex items-center justify-between sm:ml-20 md:ml-24 lg:max-w-[54rem] lg:mx-auto xl:max-w-5xl">
