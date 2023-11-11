@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let count: number = 1
+    export let count: number;
 </script>
 
 <section>

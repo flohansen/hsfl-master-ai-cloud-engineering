@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { page } from "$app/stores";
+    import {page} from "$app/stores";
     import Header from "$lib/general/Header.svelte";
     import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
 

@@ -1,6 +1,6 @@
-<script>
-import {page} from "$app/stores";
-import Header from "$lib/general/Header.svelte";
+<script lang="ts">
+    import {page} from "$app/stores";
+    import Header from "$lib/general/Header.svelte";
 </script>
 
 <Header headline="{$page.data.headline}"/>

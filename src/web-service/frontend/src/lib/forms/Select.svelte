@@ -1,30 +1,21 @@
 <script lang="ts">
     import Chevron from "../../assets/svg/Chevron.svelte";
     import {onMount} from "svelte";
+    import {handleErrors} from "../../assets/helper/handleErrors";
 
     let isOpen: boolean = false;
+    let label: string = 'Eintrag auswählen';
     let products: { id: number, description: string }[] = [];
-    let label: string = '';
-
     export let entryId: number;
 
-    const apiUrlProducts: string = '/api/v1/product';
-
     onMount(async () => {
-        try {
-            const response = await fetch(apiUrlProducts);
-            response.ok
-                ? products = await response.json()
-                : console.error('Failed to fetch data');
-        } catch (error) {
-            console.error(error);
-        }
+        const apiUrlProducts: string = '/api/v1/product';
+
+        fetch(apiUrlProducts)
+            .then(handleErrors)
+            .then(data => products = data)
+            .catch(error => console.error("Failed to fetch data:", error.message));
     });
-
-    function toggleOpen() {
-        isOpen = ! isOpen;
-    }
-
 </script>
 
 <div class="relative my-5 lg:my-8">
@@ -36,20 +27,14 @@
         aria-haspopup="listbox"
         aria-expanded="{isOpen}"
         aria-controls="select-options"
-        on:click={toggleOpen}
+        on:click={() => isOpen = ! isOpen}
         class="rounded-lg border px-3 py-2 w-full text-left text-green-dark/75 flex items-center justify-between transition-all duration-300 ease-in-out hover:bg-blue-light/25 lg:px-4 lg:py-3
             {isOpen ? 'border-green-dark' : 'border-green-dark/50'}">
-        <span class="font-medium text-sm lg:text-base">
-            {#if label}
-                {label}
-            {:else}
-                Eintrag auswählen
-            {/if}
-        </span>
-        <Chevron classes="w-4 h-4 transition-all duration-300 ease-in-out  {isOpen ? 'rotate-180' : ''}"/>
+        <span class="font-medium text-sm lg:text-base">{label}</span>
+        <Chevron classes="w-4 h-4 transition-all duration-300 ease-in-out {isOpen ? 'rotate-180' : ''}"/>
     </button>
 
-    <div class:hidden={!isOpen}>
+    <div class:hidden={! isOpen}>
         <ul
             id="select-options"
             role="listbox"

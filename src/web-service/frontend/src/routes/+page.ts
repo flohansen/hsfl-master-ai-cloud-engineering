@@ -1,6 +1,6 @@
 export function load(): object {
     return {
-        metaTitle: 'Starseite',
+        metaTitle: 'Startseite',
         headline: 'Price Whisper',
     };
 }

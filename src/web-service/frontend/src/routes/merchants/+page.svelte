@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {page} from "$app/stores";
     import Header from "$lib/general/Header.svelte";
 </script>

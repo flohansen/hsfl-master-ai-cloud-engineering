@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
     import "../styles/app.css";
     import NavBar from "$lib/navigation/NavBar.svelte";
-    import { page } from '$app/stores';
+    import {page} from '$app/stores';
 </script>
 
 <svelte:head>
