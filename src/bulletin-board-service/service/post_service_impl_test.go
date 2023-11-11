@@ -3,6 +3,7 @@ package service
 import (
 	mocks "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/_mocks"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	"go.uber.org/mock/gomock"
 	"testing"
 )
@@ -27,9 +28,17 @@ func TestGetAll(t *testing.T) {
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	postService := NewPostService(mockRepo)
 
-	mockRepo.EXPECT().FindAll().Return([]models.Post{})
+	mockRepo.EXPECT().FindAll(int64(10), int64(1)).Return(repository.PostPage{
+		Page: repository.Page{
+			CurrentPage:  1,
+			PageSize:     10,
+			TotalRecords: 0,
+			TotalPages:   0,
+		},
+		Records: []models.Post{},
+	})
 
-	postService.GetAll()
+	postService.GetAll(int64(10), int64(1))
 }
 
 func TestGetByID(t *testing.T) {

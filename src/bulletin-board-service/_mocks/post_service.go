@@ -12,6 +12,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
+	repository "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -63,17 +64,17 @@ func (mr *MockPostServiceMockRecorder) Delete(post any) *gomock.Call {
 }
 
 // GetAll mocks base method.
-func (m *MockPostService) GetAll() []models.Post {
+func (m *MockPostService) GetAll(take, skip int64) repository.PostPage {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
-	ret0, _ := ret[0].([]models.Post)
+	ret := m.ctrl.Call(m, "GetAll", take, skip)
+	ret0, _ := ret[0].(repository.PostPage)
 	return ret0
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockPostServiceMockRecorder) GetAll() *gomock.Call {
+func (mr *MockPostServiceMockRecorder) GetAll(take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockPostService)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockPostService)(nil).GetAll), take, skip)
 }
 
 // GetByID mocks base method.
