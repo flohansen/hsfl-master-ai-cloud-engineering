@@ -7,6 +7,7 @@ services:
       - '3000:3000'
     environment:
       - PORT=3000
+      - WEB_SERVICE_URL=http://web-service:3000
       - AUTH_SERVICE_URL=http://auth-service:3000
       - BULLETIN_BOARD_SERVICE_URL=http://bulletin-board-service:3000
       - FEED_SERVICE_URL=http://feed-service:3000

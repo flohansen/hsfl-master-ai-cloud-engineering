@@ -14,10 +14,12 @@ func main() {
 	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
 	bulletinBoardServiceURL := os.Getenv("BULLETIN_BOARD_SERVICE_URL")
 	feedServiceURL := os.Getenv("FEED_SERVICE_URL")
+	webServiceURL := os.Getenv("WEB_SERVICE_URL")
 
 	// Configuration for the Reverse Proxy
 	config := handler.ReverseProxyConfig{
 		Services: []handler.Service{
+			{Name: "frontend", ContextPath: "/", TargetURL: webServiceURL},
 			{Name: "auth", ContextPath: "/auth", TargetURL: authServiceURL},
 			{Name: "bulletin-board", ContextPath: "/bulletin-board", TargetURL: bulletinBoardServiceURL},
 			{Name: "feed", ContextPath: "/feed", TargetURL: feedServiceURL},
@@ -27,7 +29,7 @@ func main() {
 	// Create a new Reverse Proxy
 	reverseProxy := handler.NewReverseProxy(config)
 
-	// Use the Reverse Proxy as an http.Handler in http.ListenAndServe
+	// Use the Reverse Proxy as a http.Handler in http.ListenAndServe
 	http.Handle("/", reverseProxy)
 
 	// Start the Reverse Proxy
