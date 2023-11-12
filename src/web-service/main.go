@@ -5,10 +5,6 @@ import (
 	"os"
 )
 
-type IndexPageViewModel struct {
-	Title string
-}
-
 func main() {
 	fallbackFile := "index.html"
 	rootDir := "frontend/static"
