@@ -1,5 +1,5 @@
 # Price Whisper
-![Coverage](https://img.shields.io/badge/Coverage-79.7%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-79.4%25-brightgreen)
 [![Run tests (http proxy service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml)
 [![Run tests (product-service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-product-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-product-service.yml)
 [![Run tests (shoppinglist-service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-shoppinglist-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-shoppinglist-service.yml)
@@ -23,18 +23,25 @@ Key features:
 
 ![Architecture](README.assets/CE_Architecture_Prototype.svg)
 
+## Setup for development
+1. Clone repository from Github `git clone git@github.com:Onyxmoon/hsfl-master-ai-cloud-engineering.git`
+2. Run `docker compose up -d` to startt the containers defined in the Compose file
+3. Install dependencies for frontend `cd src/web-service/frontend` and run `npm ci`
+4. Call `npm run build` to build your static files
+5. Run `docker compopse down` to stop container, networks, volumes, and images created by up.
+
 ## Authors
 
-Dorien Grönwald
-dorien.groenwald@stud.hs-flensburg.de
+Dorien Grönwald<br>
+dorien.groenwald@stud.hs-flensburg.de<br>
 Hochschule Flensburg
 
-Philipp Borucki
-philipp.borucki@stud.hs-flensburg.de\
+Philipp Borucki<br>
+philipp.borucki@stud.hs-flensburg.de<br>
 Hochschule Flensburg
 
-Jannick Lindner
-jannick.lindner@stud.hs-flensburg.de\
+Jannick Lindner<br>
+jannick.lindner@stud.hs-flensburg.de<br>
 Hochschule Flensburg
 
 ## \<Add more sections here\>
