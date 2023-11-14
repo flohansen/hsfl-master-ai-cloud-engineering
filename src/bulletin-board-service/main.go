@@ -52,7 +52,9 @@ func main() {
 	postService := service.NewPostService(postRepo)
 	postHandler := handler.NewPostHandler(postService)
 
-	r := router.NewRouter(postHandler)
+	healthHandler := handler.NewHealthHandler()
+
+	r := router.NewRouter(healthHandler, postHandler)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", port)
 	if err := http.ListenAndServe(addr, r); err != nil {
