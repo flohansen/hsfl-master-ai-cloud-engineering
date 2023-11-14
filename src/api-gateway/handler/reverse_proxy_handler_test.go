@@ -18,13 +18,18 @@ func TestServeHTTP(t *testing.T) {
 	// Close the server when the test finishes
 	defer server.Close()
 
-	service := Service{
-		Name:        "test-service",
-		ContextPath: "/service",
-		TargetURL:   server.URL,
-	}
-
-	config := ReverseProxyConfig{Services: []Service{service}}
+	config := ReverseProxyConfig{Services: []Service{
+		{
+			Name:        "test-service",
+			ContextPath: "/service",
+			TargetURL:   server.URL,
+		},
+		{ // This service should not be matched
+			Name:        "test-service2",
+			ContextPath: "/service2",
+			TargetURL:   server.URL,
+		},
+	}}
 	rp := NewReverseProxy(config)
 
 	req := httptest.NewRequest("GET", "/service/path", nil)

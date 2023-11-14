@@ -11,9 +11,12 @@ type Router struct {
 	router http.Handler
 }
 
-func NewRouter(postHandler *handler.PostHandler) *Router {
+func NewRouter(
+	healthHandler *handler.HealthHandler,
+	postHandler *handler.PostHandler,
+) *Router {
 	r := router.New()
-
+	r.GET("/bulletin-board/health", healthHandler.Health)
 	r.GET("/bulletin-board/posts", postHandler.GetPosts)
 	r.GET("/bulletin-board/posts/:id", postHandler.GetPost)
 	r.POST("/bulletin-board/posts", postHandler.CreatePost)
