@@ -21,8 +21,8 @@ func (s *PostServiceImpl) Create(post *models.Post) {
 }
 
 // GetAll Get all posts
-func (s *PostServiceImpl) GetAll() []models.Post {
-	return s.PostRepository.FindAll()
+func (s *PostServiceImpl) GetAll(take int64, skip int64) repository.PostPage {
+	return s.PostRepository.FindAll(take, skip)
 }
 
 // GetByID Get a post by ID

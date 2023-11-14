@@ -41,9 +41,34 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPosts handles the retrieval of all posts
-func (h *PostHandler) GetPosts(w http.ResponseWriter, _ *http.Request) {
-	posts := h.PostService.GetAll()
-	respondWithJSON(w, http.StatusOK, posts)
+func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
+	take := int64(10) // Standardwert für Anzahl der Datensätze pro Seite als uint
+	page := int64(1)  // Standardwert für die aktuelle Seite als uint
+
+	takeParam := r.FormValue("take")
+	pageParam := r.FormValue("page")
+
+	// Überprüfen und Parsen der optionalen Parameter
+	if takeParam != "" {
+		takeValue, err := strconv.ParseInt(takeParam, 10, 0)
+		if err == nil {
+			take = takeValue
+		}
+	}
+
+	if pageParam != "" {
+		pageValue, err := strconv.ParseInt(pageParam, 10, 0)
+		if err == nil {
+			page = pageValue
+		}
+	}
+
+	// Berechnung des Datensatz-Offsets basierend auf der aktuellen Seite
+	skip := (page - 1) * take
+
+	// Verwende `take` und `skip` in deinem Service, um die Daten zu paginieren
+	postPage := h.PostService.GetAll(take, skip)
+	respondWithJSON(w, http.StatusOK, postPage)
 }
 
 // GetPost handles the retrieval of a post by ID

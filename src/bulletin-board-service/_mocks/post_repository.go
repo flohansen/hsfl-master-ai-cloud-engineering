@@ -12,6 +12,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
+	repository "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -63,17 +64,17 @@ func (mr *MockPostRepositoryMockRecorder) Delete(post any) *gomock.Call {
 }
 
 // FindAll mocks base method.
-func (m *MockPostRepository) FindAll() []models.Post {
+func (m *MockPostRepository) FindAll(take, skip int64) repository.PostPage {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAll")
-	ret0, _ := ret[0].([]models.Post)
+	ret := m.ctrl.Call(m, "FindAll", take, skip)
+	ret0, _ := ret[0].(repository.PostPage)
 	return ret0
 }
 
 // FindAll indicates an expected call of FindAll.
-func (mr *MockPostRepositoryMockRecorder) FindAll() *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) FindAll(take, skip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockPostRepository)(nil).FindAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockPostRepository)(nil).FindAll), take, skip)
 }
 
 // FindByID mocks base method.

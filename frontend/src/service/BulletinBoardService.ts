@@ -1,11 +1,16 @@
-import {BulletinBoardEntry} from "components/models";
+import {BulletinBoardEntry, ResponsePage} from "components/models";
 import {api} from "boot/axios";
 
 const bulletinBoardApi = '/bulletin-board/posts';
 export default {
-  get(): Promise<BulletinBoardEntry[]> {
+  get(take: number, page: number): Promise<ResponsePage<BulletinBoardEntry>> {
     return new Promise((resolve, reject) => {
-      api.get(`${bulletinBoardApi}`).then((res) => {
+      api.get(`${bulletinBoardApi}`, {
+        params: {
+          take,
+          page
+        }
+      }).then((res) => {
         if (res.status == 200) {
           resolve(res.data);
         } else {

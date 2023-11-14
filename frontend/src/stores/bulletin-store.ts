@@ -4,55 +4,34 @@ import {BulletinBoardEntry} from "components/models";
 
 export const useBulletinStore = defineStore('bulletin', {
   state: () => ({
-    bulletins: [
-      {
-        id: '1',
-        title: 'First bulletin',
-        description: 'This is the first bulletin',
-        createdAt: '2021-01-01T00:00:00.000Z',
-      },
-      {
-        id: '2',
-        title: 'Second bulletin',
-        description: 'This is the second bulletin',
-        createdAt: '2021-01-02T00:00:00.000Z',
-      },
-      {
-        id: '3',
-        title: 'Third bulletin',
-        description: 'This is the third bulletin',
-        createdAt: '2021-01-03T00:00:00.000Z',
-      },
-      {
-        id: '4',
-        title: 'Fourth bulletin',
-        description: 'This is the fourth bulletin',
-        createdAt: '2021-01-04T00:00:00.000Z',
-      },
-      {
-        id: '5',
-        title: 'Fifth bulletin',
-        description: 'This is the fifth bulletin',
-        createdAt: '2021-01-05T00:00:00.000Z',
-      },
-      {
-        id: '6',
-        title: 'Sixth bulletin',
-        description: 'This is the sixth bulletin',
-        createdAt: '2021-01-06T00:00:00.000Z',
-      }
-    ] as BulletinBoardEntry[],
+    bulletins: [] as BulletinBoardEntry[],
+    pagination: {
+      currentPage: 0,
+      pageSize: 0,
+      totalPages: 0,
+      totalRecords: 0,
+    }
   }),
   getters: {
     get(): BulletinBoardEntry[] {
       return this.bulletins;
     },
+    reachedEnd(): boolean {
+      return this.pagination.currentPage >= this.pagination.totalPages;
+    },
+    isLoading(): boolean {
+      return this.bulletins.length === 0;
+    }
   },
   actions: {
     fetch() {
-        BulletinBoardService.get().then((res) => {
-          this.bulletins.length = 0;
-          this.bulletins.push(...res);
+        const nextPage = this.pagination.currentPage + 1;
+        BulletinBoardService.get(5, nextPage).then((res) => {
+          this.bulletins.push(...res.records);
+          this.pagination.currentPage = res.page.currentPage;
+          this.pagination.pageSize = res.page.pageSize;
+          this.pagination.totalPages = res.page.totalPages;
+          this.pagination.totalRecords = res.page.totalRecords;
         });
     },
     create(bulletin: BulletinBoardEntry) {
@@ -60,5 +39,16 @@ export const useBulletinStore = defineStore('bulletin', {
         this.bulletins.unshift(res);
       });
     },
+    update(bulletin: BulletinBoardEntry) {
+      BulletinBoardService.update(bulletin.id, bulletin).then((res) => {
+        const index = this.bulletins.findIndex((b) => b.id === res.id);
+        this.bulletins[index] = res;
+      });
+    },
+    remove(id: string) {
+      BulletinBoardService.delete(id).then(() => {
+        this.bulletins = this.bulletins.filter((b) => b.id !== id);
+      });
+    }
   }
 });

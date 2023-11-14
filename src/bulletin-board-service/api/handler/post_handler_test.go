@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	mocks "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/_mocks"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"io"
@@ -76,10 +77,18 @@ func TestGetPosts(t *testing.T) {
 	t.Run("should return 200 OK with list of posts", func(t *testing.T) {
 		// Setup
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/posts", nil)
+		req, _ := http.NewRequest("GET", "/posts?take=10&page=1", nil)
 
 		// Expectations
-		mockService.EXPECT().GetAll().Return([]models.Post{})
+		mockService.EXPECT().GetAll(int64(10), int64(0)).Return(repository.PostPage{
+			Page: repository.Page{
+				CurrentPage:  1,
+				PageSize:     10,
+				TotalRecords: 0,
+				TotalPages:   0,
+			},
+			Records: []models.Post{},
+		})
 
 		// Test
 		handler.GetPosts(w, req)

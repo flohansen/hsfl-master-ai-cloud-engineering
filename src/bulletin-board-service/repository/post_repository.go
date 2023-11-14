@@ -4,7 +4,7 @@ import "github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-servi
 
 type PostRepository interface {
 	Create(post *models.Post)
-	FindAll() []models.Post
+	FindAll(take int64, skip int64) PostPage
 	FindByID(id uint) models.Post
 	Update(post *models.Post)
 	Delete(post *models.Post)
