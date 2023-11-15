@@ -7,9 +7,14 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"io"
+	"log"
+	"math/rand"
 	"net/url"
 	"os"
+	"time"
 )
+
+const shutdownPollIntervalMax = 500 * time.Millisecond
 
 type defaultOrchestrator struct {
 	containers []string
@@ -19,7 +24,7 @@ func NewDefaultOrchestrator() *defaultOrchestrator {
 	return &defaultOrchestrator{}
 }
 
-func (orchestrator defaultOrchestrator) StartContainers(image string, replicas int) []string {
+func (orchestrator *defaultOrchestrator) StartContainers(image string, replicas int) []string {
 	cli, err := client.NewClientWithOpts()
 	if err != nil {
 		panic(err)
@@ -46,33 +51,64 @@ func (orchestrator defaultOrchestrator) StartContainers(image string, replicas i
 			panic(err)
 		}
 		containers[i] = createResponse.ID
+		log.Printf("Container created: %s", createResponse.ID)
 	}
 
 	orchestrator.containers = containers
 	return containers
 }
 
-func (orchestrator defaultOrchestrator) StopAllContainers() {
-	orchestrator.StopContainers(orchestrator.containers)
+func (orchestrator *defaultOrchestrator) Shutdown(ctx context.Context) error {
+	pollIntervalBase := time.Millisecond
+	nextPollInterval := func() time.Duration {
+		// Add 10% jitter.
+		interval := pollIntervalBase + time.Duration(rand.Intn(int(pollIntervalBase/10)))
+		// Double and clamp for next time.
+		pollIntervalBase *= 2
+		if pollIntervalBase > shutdownPollIntervalMax {
+			pollIntervalBase = shutdownPollIntervalMax
+		}
+		return interval
+	}
+
+	timer := time.NewTimer(nextPollInterval())
+	defer timer.Stop()
+	for {
+		if len(orchestrator.containers) > 0 {
+			return orchestrator.StopAllContainers()
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-timer.C:
+			timer.Reset(nextPollInterval())
+		}
+	}
+
 }
 
-func (orchestrator defaultOrchestrator) StopContainers(containers []string) {
+func (orchestrator *defaultOrchestrator) StopAllContainers() error {
+	return orchestrator.StopContainers(orchestrator.containers...)
+}
+
+func (orchestrator *defaultOrchestrator) StopContainers(containers ...string) error {
 	cli, err := client.NewClientWithOpts()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, currentContainer := range containers {
 		if err := cli.ContainerRemove(context.Background(), currentContainer, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
-			RemoveLinks:   true,
 			Force:         true,
 		}); err != nil {
-			panic(err)
+			return err
 		}
+		log.Printf("Container removed: %s", currentContainer)
 	}
+	return nil
 }
 
-func (orchestrator defaultOrchestrator) GetContainerEndpoints(containers []string, networkName string) []*url.URL {
+func (orchestrator *defaultOrchestrator) GetContainerEndpoints(containers []string, networkName string) []*url.URL {
 	cli, err := client.NewClientWithOpts()
 	if err != nil {
 		panic(err)
