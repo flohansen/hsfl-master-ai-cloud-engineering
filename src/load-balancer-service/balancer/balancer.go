@@ -9,25 +9,23 @@ import (
 
 type Balancer struct {
 	endpoints          []*endpoint.Endpoint
-	schedulerAlgorithm scheduler.Scheduler
+	schedulerAlgorithm *scheduler.Scheduler
 }
 
-func NewBalancer[T scheduler.Scheduler](targetUrls []*url.URL) *Balancer {
+func NewBalancer(targetUrls []*url.URL, scheduler scheduler.NewScheduler) *Balancer {
 	endpoints := make([]*endpoint.Endpoint, len(targetUrls))
 	for i, targetUrl := range targetUrls {
 		endpoints[i] = endpoint.NewEndpoint(targetUrl)
 	}
 
-	var schedulerAlgorithm T
-
 	return &Balancer{
 		endpoints:          endpoints,
-		schedulerAlgorithm: T.New(schedulerAlgorithm, endpoints),
+		schedulerAlgorithm: scheduler(endpoints),
 	}
 }
 
 func (b *Balancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	endpoint, err := b.schedulerAlgorithm.Next()
+	endpoint, err := (*b.schedulerAlgorithm).Next()
 	if err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return

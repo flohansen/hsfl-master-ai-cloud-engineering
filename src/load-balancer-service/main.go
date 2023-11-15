@@ -7,6 +7,7 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/scheduler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/orchestrator"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/utils"
+	"log"
 	"net/http"
 	"time"
 )
@@ -20,9 +21,10 @@ func main() {
 
 	containers := defaultOrchestrator.StartContainers(*image, *replicas)
 
-	loadBalancer := balancer.NewBalancer[scheduler.RoundRobin](defaultOrchestrator.GetContainerEndpoints(containers, *networkName))
+	loadBalancer := balancer.NewBalancer(
+		defaultOrchestrator.GetContainerEndpoints(containers, *networkName),
+		scheduler.NewRoundRobin)
 
-	//Placeholder Server
 	server := &http.Server{
 		Addr:    ":3000",
 		Handler: loadBalancer,
