@@ -7,14 +7,13 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/scheduler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/orchestrator"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/utils"
-	"log"
 	"net/http"
 	"time"
 )
 
 func main() {
 	defaultOrchestrator := orchestrator.NewDefaultOrchestrator()
-	image := flag.String("image", "hello-world", "")
+	image := flag.String("image", "nginxdemos/hello", "")
 	replicas := flag.Int("replicas", 5, "")
 	networkName := flag.String("network", "bridge", "")
 	flag.Parse()
@@ -29,6 +28,8 @@ func main() {
 		Handler: loadBalancer,
 	}
 
+	server.ListenAndServe()
+
 	wait := utils.GracefulShutdown(context.Background(), 30*time.Second, map[string]utils.Operation{
 		"orchestrator": func(ctx context.Context) error {
 			return defaultOrchestrator.Shutdown(ctx)
@@ -39,6 +40,4 @@ func main() {
 	})
 
 	<-wait
-
-	log.Fatal(server.ListenAndServe())
 }

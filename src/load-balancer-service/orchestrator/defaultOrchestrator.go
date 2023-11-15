@@ -45,7 +45,7 @@ func (orchestrator *defaultOrchestrator) StartContainers(image string, replicas 
 	for i := 0; i < replicas; i++ {
 		createResponse, err := cli.ContainerCreate(context.Background(), &container.Config{
 			Image: image,
-		}, &container.HostConfig{}, nil, nil, "")
+		}, &container.HostConfig{PublishAllPorts: true}, nil, nil, "")
 		if err != nil {
 			panic(err)
 		}

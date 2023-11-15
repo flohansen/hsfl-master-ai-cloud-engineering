@@ -25,9 +25,7 @@ func (r RoundRobin) SetEndpoints(endpoints []*endpoint.Endpoint) {
 
 func (r RoundRobin) Next() (endpoint *endpoint.Endpoint, err error) {
 	if len(r.endpoints) > 0 {
-		defer func() {
-			r.currentIndex = (r.currentIndex + 1) % len(r.endpoints)
-		}()
+		r.currentIndex = (r.currentIndex + 1) % len(r.endpoints)
 		return r.endpoints[r.currentIndex], nil
 	}
 	return nil, fmt.Errorf("no endpoints are available")
