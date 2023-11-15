@@ -6,11 +6,13 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 	"io"
 	"log"
 	"math/rand"
 	"net/url"
 	"os"
+	"reflect"
 	"time"
 )
 
@@ -120,8 +122,9 @@ func (orchestrator *defaultOrchestrator) GetContainerEndpoints(containers []stri
 		if err != nil {
 			panic(err)
 		}
-		//todo: adjust this for every orchestrator
-		endpoint, err := url.Parse(fmt.Sprintf("http://%s:3000", inspectResponse.NetworkSettings.Networks[networkName].IPAddress))
+		var address = inspectResponse.NetworkSettings.Networks[networkName].IPAddress
+		var port = reflect.ValueOf(inspectResponse.Config.ExposedPorts).MapKeys()[0].Interface().(nat.Port).Int()
+		endpoint, err := url.Parse(fmt.Sprintf("http://%s:%d", address, port))
 		if err != nil {
 			panic(err)
 		}
