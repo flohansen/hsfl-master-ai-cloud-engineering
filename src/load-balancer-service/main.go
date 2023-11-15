@@ -28,7 +28,9 @@ func main() {
 		Handler: loadBalancer,
 	}
 
-	server.ListenAndServe()
+	go func() {
+		log.Print(server.ListenAndServe())
+	}()
 
 	wait := utils.GracefulShutdown(context.Background(), 30*time.Second, map[string]utils.Operation{
 		"orchestrator": func(ctx context.Context) error {
