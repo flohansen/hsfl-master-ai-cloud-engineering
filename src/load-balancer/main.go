@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -12,10 +11,11 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/round_robin.go"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/balancer"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/docker_helper"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/model"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 )
 
@@ -34,6 +34,7 @@ func main() {
 	image := os.Getenv("IMAGE")
 	networkName := os.Getenv("NETWORK_NAME")
 	replicas := GetenvInt("REPLICAS")
+	healthCheckInterval := GetenvInt("HEALTH_CHECK_INTERVAL_SECONDS")
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -41,7 +42,7 @@ func main() {
 	}
 	defer cli.Close()
 
-	err = CreateNetworkIfNotExists(cli, networkName)
+	err = docker_helper.CreateNetworkIfNotExists(cli, networkName)
 	if err != nil {
 		panic(err)
 	}
@@ -52,15 +53,15 @@ func main() {
 	}
 	io.Copy(os.Stdout, reader)
 
-	containerIds := StartContainers(cli, image, networkName, replicas)
-	defer RemoveContainers(cli, containerIds)
+	containerIds := docker_helper.StartContainers(cli, image, networkName, replicas)
+	defer docker_helper.RemoveContainers(cli, containerIds)
 
-	targetUrls, err := GetTargetUrls(cli, networkName, containerIds)
+	targets, err := GetTargets(cli, networkName, containerIds)
 	if err != nil {
 		panic(err)
 	}
 
-	loadBalancer := balancer.NewIPHashBalancer(targetUrls)
+	loadBalancer := balancer.NewBalancer(round_robin.New(), targets, healthCheckInterval)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("0.0.0.0:%s", port),
@@ -78,76 +79,8 @@ func main() {
 	server.ListenAndServe()
 }
 
-func StartContainers(cli *client.Client, imageName string, networkName string, replicas int) []string {
-	containerConfig := &container.Config{
-		Image: imageName,
-	}
-
-	networkConfig := &network.NetworkingConfig{
-		EndpointsConfig: map[string]*network.EndpointSettings{
-			networkName: {},
-		},
-	}
-
-	containerIds := make([]string, replicas)
-
-	for i := 0; i < replicas; i++ {
-		resp, err := cli.ContainerCreate(context.Background(), containerConfig, nil, networkConfig, nil, "")
-		if err != nil {
-			log.Printf("Error creating container: %s\n", err)
-		}
-
-		containerIds[i] = resp.ID
-
-		err = cli.ContainerStart(context.Background(), resp.ID, types.ContainerStartOptions{})
-		if err != nil {
-			log.Printf("Error starting container: %s\n", err)
-		}
-	}
-
-	return containerIds
-}
-
-func RemoveContainers(cli *client.Client, containerIDs []string) {
-	log.Println("Stopping containers...")
-
-	for _, containerID := range containerIDs {
-		err := cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
-			Force: true,
-		})
-		if err != nil {
-			log.Printf("Error stopping container %s: %s\n", containerID, err)
-		}
-	}
-}
-
-func CreateNetworkIfNotExists(cli *client.Client, networkName string) error {
-	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
-	if err != nil {
-		return err
-	}
-
-	networkExists := false
-	for _, network := range networks {
-		if network.Name == networkName {
-			networkExists = true
-			break
-		}
-	}
-
-	if !networkExists {
-		_, err = cli.NetworkCreate(context.Background(), networkName, types.NetworkCreate{})
-		if err != nil {
-			return err
-		}
-		log.Printf("Created network %s\n", networkName)
-	}
-
-	return nil
-}
-
-func GetTargetUrls(cli *client.Client, networkName string, containerIDs []string) ([]*url.URL, error) {
-	targetUrls := make([]*url.URL, len(containerIDs))
+func GetTargets(cli *client.Client, networkName string, containerIDs []string) ([]model.Target, error) {
+	targets := make([]model.Target, len(containerIDs))
 
 	for i, containerID := range containerIDs {
 		containerJson, err := cli.ContainerInspect(context.Background(), containerID)
@@ -164,8 +97,13 @@ func GetTargetUrls(cli *client.Client, networkName string, containerIDs []string
 			return nil, err
 		}
 
-		targetUrls[i] = targetUrl
+		target := model.Target{
+			ContainerId: containerID,
+			Url:         targetUrl,
+		}
+
+		targets[i] = target
 	}
 
-	return targetUrls, nil
+	return targets, nil
 }

@@ -10,6 +10,7 @@ services:
       - IMAGE=docker.io/yeasy/simple-web
       - NETWORK_NAME=bulletinboard
       - REPLICAS=3
+      - HEALTH_CHECK_INTERVAL=5
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
