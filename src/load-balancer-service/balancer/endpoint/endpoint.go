@@ -29,3 +29,7 @@ func (e *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (e *Endpoint) IsAvailable() bool {
 	return true
 }
+
+func (e *Endpoint) GetCurrentRequests() int {
+	return e.currentRequests
+}
