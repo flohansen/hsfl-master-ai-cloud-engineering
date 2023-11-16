@@ -7,14 +7,12 @@ import (
 )
 
 type leastConnections struct {
-	requestsCount map[string]uint
-	endpoints     []*endpoint.Endpoint
+	endpoints []*endpoint.Endpoint
 }
 
 func NewLeastConnections(endpoints []*endpoint.Endpoint) *Scheduler {
 	var scheduler Scheduler = &leastConnections{
-		requestsCount: make(map[string]uint),
-		endpoints:     endpoints,
+		endpoints: endpoints,
 	}
 	return &scheduler
 }
