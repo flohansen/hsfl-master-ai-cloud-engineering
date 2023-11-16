@@ -18,6 +18,9 @@ func main() {
 	replicas := flag.Int("replicas", 5, "")
 	networkName := flag.String("network", "bridge", "")
 	flag.Parse()
+	log.Printf("Image is: %s", *image)
+	log.Printf("No. of Replicas is: %d", *replicas)
+	log.Printf("Network is: %s", *networkName)
 
 	containers := defaultOrchestrator.StartContainers(*image, *replicas)
 
