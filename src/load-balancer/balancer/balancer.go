@@ -32,6 +32,10 @@ func (b *Balancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (b *Balancer) healthCheck() {
 	for {
 		for i, target := range b.targets {
+			if target.Url == nil {
+				continue
+			}
+
 			resp, err := http.Get(target.Url.String() + "/health")
 			if err != nil || resp.StatusCode != http.StatusOK {
 				// Remove from healthyTargets if it's there
