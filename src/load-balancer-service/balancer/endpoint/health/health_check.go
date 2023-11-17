@@ -1,6 +1,7 @@
-package endpoint
+package health
 
 import (
+	"log"
 	"net"
 	"net/url"
 	"sync"
@@ -17,6 +18,14 @@ type HealthCheck struct {
 	isAvailable bool
 }
 
+type CheckFunction func(addr *url.URL) bool
+
+func NewHealthCheck(url *url.URL, check CheckFunction, period time.Duration) *HealthCheck {
+	hc := HealthCheck{url: url}
+	hc.SetHealthCheck(check, period)
+	return &hc
+}
+
 func (hc *HealthCheck) IsAvailable() bool {
 	hc.mutex.Lock()
 	defer hc.mutex.Unlock()
@@ -29,7 +38,7 @@ func (hc *HealthCheck) Stop() {
 	hc.stopHealthCheck()
 }
 
-func (hc *HealthCheck) SetHealthCheck(check func(addr *url.URL) bool, period time.Duration) {
+func (hc *HealthCheck) SetHealthCheck(check CheckFunction, period time.Duration) {
 	hc.mutex.Lock()
 	defer hc.mutex.Unlock()
 
@@ -71,8 +80,9 @@ func (hc *HealthCheck) stopHealthCheck() {
 	}
 }
 
-var defaultHealthCheck = func(addr *url.URL) bool {
-	conn, err := net.DialTimeout("tcp", addr.Host, 10)
+var DefaultHealthCheck = func(addr *url.URL) bool {
+	log.Printf(addr.Host)
+	conn, err := net.DialTimeout("tcp", addr.Host, 2*time.Second)
 	if err != nil {
 		return false
 	}
