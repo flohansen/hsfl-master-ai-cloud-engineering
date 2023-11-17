@@ -27,7 +27,7 @@ func (r *roundRobin) Next() (endpoint *endpoint.Endpoint, err error) {
 	if len(r.endpoints) > 0 {
 		stopIndex := r.currentIndex
 		r.currentIndex = (r.currentIndex + 1) % len(r.endpoints)
-		for i := r.currentIndex; !r.endpoints[i].IsAvailable() && r.currentIndex != stopIndex; i++ {
+		for i := r.currentIndex; !r.endpoints[r.currentIndex].IsAvailable() && r.currentIndex != stopIndex; i++ {
 			r.currentIndex = (r.currentIndex + i) % len(r.endpoints)
 		}
 
