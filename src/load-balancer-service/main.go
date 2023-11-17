@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/endpoint/health"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/scheduler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/orchestrator"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/utils"
@@ -26,7 +27,8 @@ func main() {
 
 	loadBalancer := balancer.NewBalancer(
 		defaultOrchestrator.GetContainerEndpoints(containers, *networkName),
-		scheduler.NewRoundRobin)
+		scheduler.NewLeastResponseTime)
+	loadBalancer.SetHealthCheckFunction(health.DefaultHealthCheck, 5*time.Second)
 
 	server := &http.Server{
 		Addr:    ":3000",
