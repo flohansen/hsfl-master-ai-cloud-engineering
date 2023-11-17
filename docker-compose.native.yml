@@ -6,28 +6,23 @@ services:
     image: onyxmoon/pw-http-proxy-service:latest
     environment:
       - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
+      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.native.yaml
     ports:
       - 80:8080
       - 443:8443
     depends_on:
-      - load-balancer-web
+      - web
     networks:
       - public
       - internal
 
-  load-balancer-web:
+  web:
     build:
       context: ./
-      dockerfile: ./src/load-balancer-service/Dockerfile
-    environment:
-      - IMAGE=onyxmoon/pw-web-service:latest
-      - REPLICAS=5
-      - NETWORK_NAME=bridge
+      dockerfile: ./src/web-service/Dockerfile
+    image: onyxmoon/pw-web-service:latest
     ports:
       - 3000:3000
-    volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - products
       - shoppinglists

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"io"
@@ -26,7 +27,7 @@ func NewDefaultOrchestrator() *defaultOrchestrator {
 	return &defaultOrchestrator{}
 }
 
-func (orchestrator *defaultOrchestrator) StartContainers(image string, replicas int) []string {
+func (orchestrator *defaultOrchestrator) StartContainers(image string, replicas int, networkName string) []string {
 	cli, err := client.NewClientWithOpts()
 	if err != nil {
 		panic(err)
@@ -45,7 +46,11 @@ func (orchestrator *defaultOrchestrator) StartContainers(image string, replicas 
 	for i := 0; i < replicas; i++ {
 		createResponse, err := cli.ContainerCreate(context.Background(), &container.Config{
 			Image: image,
-		}, &container.HostConfig{PublishAllPorts: true}, nil, nil, "")
+		}, &container.HostConfig{PublishAllPorts: true}, &network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				networkName: {},
+			},
+		}, nil, "")
 		if err != nil {
 			panic(err)
 		}
@@ -103,7 +108,7 @@ func (orchestrator *defaultOrchestrator) StopContainers(containers ...string) er
 			RemoveVolumes: true,
 			Force:         true,
 		}); err != nil {
-			return err
+			log.Printf(err.Error())
 		}
 		log.Printf("Container removed: %s", currentContainer)
 	}
@@ -117,8 +122,8 @@ func (orchestrator *defaultOrchestrator) GetContainerEndpoints(containers []stri
 	}
 
 	endpoints := make([]*url.URL, len(containers))
-	for i, container := range containers {
-		inspectResponse, err := cli.ContainerInspect(context.Background(), container)
+	for i, c := range containers {
+		inspectResponse, err := cli.ContainerInspect(context.Background(), c)
 		if err != nil {
 			panic(err)
 		}

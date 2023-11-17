@@ -23,7 +23,7 @@ func main() {
 	log.Printf("No. of Replicas is: %d", *replicas)
 	log.Printf("Network is: %s", *networkName)
 
-	containers := defaultOrchestrator.StartContainers(*image, *replicas)
+	containers := defaultOrchestrator.StartContainers(*image, *replicas, *networkName)
 
 	loadBalancer := balancer.NewBalancer(
 		defaultOrchestrator.GetContainerEndpoints(containers, *networkName),

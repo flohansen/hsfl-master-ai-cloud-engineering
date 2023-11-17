@@ -1,0 +1,37 @@
+services:
+  proxy:
+    build:
+      context: ./
+      dockerfile: ./src/http-proxy-service/Dockerfile
+    image: onyxmoon/pw-http-proxy-service:latest
+
+  load-balancer-web:
+    build:
+      context: ./
+      dockerfile: ./src/load-balancer-service/Dockerfile
+    image: onyxmoon/pw-load-balancer-service:latest
+
+  web:
+    build:
+      context: ./
+      dockerfile: ./src/web-service/Dockerfile
+    image: onyxmoon/pw-web-service:latest
+
+
+  products:
+    build:
+      context: ./
+      dockerfile: ./src/product-service/Dockerfile
+    image: onyxmoon/pw-product-service:latest
+
+  users:
+    build:
+      context: ./
+      dockerfile: ./src/user-service/Dockerfile
+    image: onyxmoon/pw-user-service:latest
+
+  shoppinglists:
+    build:
+      context: ./
+      dockerfile: ./src/shoppinglist-service/Dockerfile
+    image: onyxmoon/pw-shoppinglist-service:latest
