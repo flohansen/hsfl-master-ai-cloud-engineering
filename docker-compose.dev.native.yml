@@ -5,32 +5,22 @@ services:
       dockerfile: ./src/http-proxy-service/Dockerfile
     environment:
       - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
+      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.native.yaml
     ports:
       - 8080:8080
     depends_on:
-      - lbweb
-    networks:
-      - dev-network
+      - web
 
-  lbweb:
+  web:
     build:
       context: ./
-      dockerfile: ./src/load-balancer-service/Dockerfile
-    environment:
-      - IMAGE=onyxmoon/pw-web-service:latest
-      - REPLICAS=5
-      - NETWORK_NAME=dev-network
+      dockerfile: ./src/web-service/Dockerfile
     ports:
       - 3000:3000
-    volumes:
-      - //var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - products
       - shoppinglists
       - users
-    networks:
-      - dev-network
 
   products:
     build:
@@ -38,8 +28,6 @@ services:
       dockerfile: ./src/product-service/Dockerfile
     ports:
       - 3003:3003
-    networks:
-      - dev-network
 
   users:
     build:
@@ -47,8 +35,6 @@ services:
       dockerfile: ./src/user-service/Dockerfile
     ports:
       - 3001:3001
-    networks:
-      - dev-network
 
   shoppinglists:
     build:
@@ -56,9 +42,3 @@ services:
       dockerfile: ./src/shoppinglist-service/Dockerfile
     ports:
       - 3002:3002
-    networks:
-      - dev-network
-
-networks:
-  dev-network:
-    name: dev-network

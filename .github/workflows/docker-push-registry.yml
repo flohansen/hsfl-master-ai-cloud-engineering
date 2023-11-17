@@ -26,4 +26,4 @@ jobs:
         working-directory: ./
         run: |
           docker-compose build
-          docker-compose push
+          docker-compose -f docker-compose.push.yml push

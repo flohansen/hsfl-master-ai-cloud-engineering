@@ -19,6 +19,6 @@ proxy:
     - name: Data Processing Service
       context: /api/v1/processing
       target: http://localhost:3004/api/v1/processing
-    - name: Load Balancer Web Service
+    - name: Web Service
       context: /
-      target: http://lbweb:3000
+      target: http://web:3000
