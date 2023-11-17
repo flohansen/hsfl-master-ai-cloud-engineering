@@ -3,6 +3,7 @@ package scheduler
 import (
 	"fmt"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/endpoint"
+	"sort"
 )
 
 type leastResponseTime struct {
@@ -22,22 +23,19 @@ func (r *leastResponseTime) SetEndpoints(endpoints []*endpoint.Endpoint) {
 
 func (r *leastResponseTime) Next() (*endpoint.Endpoint, error) {
 	if len(r.endpoints) > 0 {
-		var leastResponseEndpoint *endpoint.Endpoint
-		var minResponseTime = r.endpoints[0].GetLastResponseTime()
+		sortedEndpoints := make([]*endpoint.Endpoint, len(r.endpoints))
+		copy(sortedEndpoints, r.endpoints)
 
-		for _, ep := range r.endpoints {
-			currentResponseTime := ep.GetLastResponseTime()
+		sort.Slice(sortedEndpoints, func(i, j int) bool {
+			return sortedEndpoints[i].GetLastResponseTime() < sortedEndpoints[j].GetLastResponseTime()
+		})
 
-			if currentResponseTime < minResponseTime {
-				minResponseTime = currentResponseTime
-				leastResponseEndpoint = ep
+		for _, ep := range sortedEndpoints {
+			if ep.IsAvailable() {
+				return ep, nil
 			}
-		}
-
-		if leastResponseEndpoint != nil {
-			return leastResponseEndpoint, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no endpoints are available")
+	return nil, fmt.Errorf("no available endpoints")
 }

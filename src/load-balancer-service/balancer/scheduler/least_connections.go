@@ -3,7 +3,7 @@ package scheduler
 import (
 	"fmt"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/load-balancer-service/balancer/endpoint"
-	"math"
+	"sort"
 )
 
 type leastConnections struct {
@@ -23,23 +23,19 @@ func (r *leastConnections) SetEndpoints(endpoints []*endpoint.Endpoint) {
 
 func (r *leastConnections) Next() (*endpoint.Endpoint, error) {
 	if len(r.endpoints) > 0 {
-		minRequests := math.MaxUint32
-		var leastConnEndpoint *endpoint.Endpoint
+		sortedEndpoints := make([]*endpoint.Endpoint, len(r.endpoints))
+		copy(sortedEndpoints, r.endpoints)
 
-		for _, ep := range r.endpoints {
-			currentRequests := ep.GetCurrentRequests()
+		sort.Slice(sortedEndpoints, func(i, j int) bool {
+			return sortedEndpoints[i].GetCurrentRequests() < sortedEndpoints[j].GetCurrentRequests()
+		})
 
-			// Update the least connection endpoint if the current one has fewer requests
-			if currentRequests < minRequests {
-				minRequests = currentRequests
-				leastConnEndpoint = ep
+		for _, ep := range sortedEndpoints {
+			if ep.IsAvailable() {
+				return ep, nil
 			}
-		}
-
-		if leastConnEndpoint != nil {
-			return leastConnEndpoint, nil
 		}
 	}
 
-	return nil, fmt.Errorf("no endpoints are available")
+	return nil, fmt.Errorf("no available endpoints")
 }
