@@ -1,6 +1,5 @@
 <script lang="ts">
     import {page} from "$app/stores";
-    import Header from "$lib/general/Header.svelte";
     import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
 
     interface Data {
@@ -11,7 +10,17 @@
     export let data: Data;
 </script>
 
-<Header headline="{$page.data.headline}"/>
+<header class="px-5 mt-16 flex flex-wrap items-center justify-between sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto xl:max-w-5xl">
+    <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
+        {$page.data.headline}
+    </h1>
+
+    <button
+        aria-label="Neue Einkaufsliste erstellen"
+        class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
+        <span class="text-white font-semibold text-xl">+</span>
+    </button>
+</header>
 
 <main>
     <h2 class="px-5 text-gray-dark text-sm font-medium mt-6 lg:mt-10 lg:text-base">
