@@ -9,3 +9,11 @@ type Repository interface {
 	FindById(id uint64) (*model.User, error)
 	Update(*model.User) (*model.User, error)
 }
+
+const (
+	ErrorUserList          = "user list not available"
+	ErrorUserNotFound      = "user could not be found"
+	ErrorUserUpdate        = "user can not be updated"
+	ErrorUserDeletion      = "user could not be deleted"
+	ErrorUserAlreadyExists = "user already exists"
+)
