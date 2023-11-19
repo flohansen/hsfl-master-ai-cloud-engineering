@@ -49,6 +49,7 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -73,6 +74,12 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 }
 
 func (controller defaultController) PostList(writer http.ResponseWriter, request *http.Request) {
+	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	var requestData JsonFormatCreateListRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -80,7 +87,7 @@ func (controller defaultController) PostList(writer http.ResponseWriter, request
 	}
 
 	if _, err := controller.userShoppingListRepository.Create(&model.UserShoppingList{
-		UserId:      requestData.UserId,
+		UserId:      userId,
 		Description: requestData.Description,
 		Completed:   false,
 	}); err != nil {

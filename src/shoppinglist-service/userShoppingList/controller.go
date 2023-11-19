@@ -9,7 +9,6 @@ type JsonFormatUpdateListRequest struct {
 }
 
 type JsonFormatCreateListRequest struct {
-	UserId      uint64 `json:"userId,omitempty"`
 	Description string `json:"description,omitempty"`
 }
 
