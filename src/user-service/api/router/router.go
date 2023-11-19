@@ -22,6 +22,7 @@ func New(
 	r.POST("/api/v1/user/register", registerHandler.Register)
 
 	r.GET("/api/v1/user/:userId", userHandler.GetUser)
+	r.POST("/api/v1/user", userHandler.PostUser)
 
 	return &Router{r}
 }

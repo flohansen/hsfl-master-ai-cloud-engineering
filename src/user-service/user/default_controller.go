@@ -2,6 +2,9 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
 	"net/http"
 	"strconv"
 )
@@ -35,4 +38,27 @@ func (controller defaultController) GetUser(writer http.ResponseWriter, request 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (controller defaultController) PostUser(writer http.ResponseWriter, request *http.Request) {
+	var requestData JsonFormatCreateUserRequest
+	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	bcryptHasher := crypto.NewBcryptHasher()
+	hashedPassword, _ := bcryptHasher.Hash(requestData.Password)
+	fmt.Println(requestData)
+
+	if _, err := controller.userRepository.Create(&model.User{
+		Email:    requestData.Email,
+		Password: hashedPassword,
+		Name:     requestData.Name,
+		Role:     model.Customer,
+	}); err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	writer.WriteHeader(http.StatusCreated)
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -137,6 +138,108 @@ func TestDefaultController_GetUser(t *testing.T) {
 			t.Errorf("Got false user role")
 		}
 	})
+}
+
+func TestDefaultController_PostUser(t *testing.T) {
+	type fields struct {
+		userRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		expectedStatus   int
+		expectedResponse string
+	}{
+		{
+			name: "Valid User",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user",
+					strings.NewReader(`{"id": 3, "email": "example@googlemail.com", "password": "password", "name": "Example name"}`),
+				),
+			},
+			expectedStatus:   http.StatusCreated,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid User (Partly Fields)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user",
+					strings.NewReader(`{"email": "example@googlemail.com", "password": "password"}`),
+				),
+			},
+			expectedStatus:   http.StatusCreated,
+			expectedResponse: "",
+		},
+		{
+			name: "Malformed JSON",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user",
+					strings.NewReader(`{"email": "example@googlemail.com"`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name: "Invalid user, incorrect Type for email (Non-numeric)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user",
+					strings.NewReader(`{"id": 3, "email": 1234, "password": "password", "name": "Example name"}`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userRepository: tt.fields.userRepository,
+			}
+			controller.PostUser(tt.args.writer, tt.args.request)
+
+			// You can then assert the response status and content, and check against your expectations.
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+
+			if tt.expectedResponse != "" {
+				actualResponse := tt.args.writer.Body.String()
+				if actualResponse != tt.expectedResponse {
+					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
+				}
+			}
+		})
+	}
 }
 
 func setupMockRepository() Repository {
