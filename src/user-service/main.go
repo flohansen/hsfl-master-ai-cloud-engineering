@@ -14,7 +14,10 @@ import (
 func main() {
 	loginHandler := setupLoginHandler()
 	registerHandler := setUpRegisterHandler()
-	userRouter := router.New(loginHandler, registerHandler)
+
+	userRepository := user.NewDemoRepository()
+	userController := user.NewDefaultController(userRepository)
+	userRouter := router.New(loginHandler, registerHandler, userController)
 
 	if err := http.ListenAndServe(":3001", userRouter); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
