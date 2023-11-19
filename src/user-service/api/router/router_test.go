@@ -16,7 +16,10 @@ import (
 func TestRouter(t *testing.T) {
 	loginHandler := setupLoginHandler()
 	registerHandler := setUpRegisterHandler()
-	router := New(loginHandler, registerHandler)
+
+	userRepo := setupUserRepository()
+	pricesController := user.NewDefaultController(userRepo)
+	router := New(loginHandler, registerHandler, pricesController)
 
 	t.Run("/api/v1/user/login", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
@@ -97,6 +100,19 @@ func setupMockRepository() user.Repository {
 	userSlice := setupDemoUserSlice()
 	for _, newUser := range userSlice {
 		_, _ = repository.Create(newUser)
+	}
+
+	return repository
+}
+
+func setupUserRepository() user.Repository {
+	repository := user.NewDemoRepository()
+	userSlice := setupDemoUserSlice()
+	for _, u := range userSlice {
+		_, err := repository.Create(u)
+		if err != nil {
+			return nil
+		}
 	}
 
 	return repository
