@@ -18,9 +18,10 @@ func TestDemoRepository_Create(t *testing.T) {
 	repo := NewDemoRepository()
 
 	list := &model.UserShoppingList{
-		Id:        1,
-		UserId:    1,
-		Completed: false,
+		Id:          1,
+		UserId:      1,
+		Description: "New Shoppinglist",
+		Completed:   false,
 	}
 
 	t.Run("Create shopping list with success", func(t *testing.T) {
@@ -31,6 +32,10 @@ func TestDemoRepository_Create(t *testing.T) {
 
 		if createdList.Id != list.Id {
 			t.Errorf("Expected created shopping list to have ID %d, but got %d", list.Id, createdList.Id)
+		}
+
+		if createdList.Description != list.Description {
+			t.Errorf("Expected created shopping list to have description %s, but got %s", list.Description, createdList.Description)
 		}
 	})
 

@@ -17,6 +17,7 @@ func (repo *DemoRepository) Create(shoppingList *model.UserShoppingList) (*model
 	var listId uint64
 	if shoppingList.Id == 0 {
 		listId = repo.findNextAvailableID()
+		shoppingList.Id = listId
 	} else {
 		listId = shoppingList.Id
 	}

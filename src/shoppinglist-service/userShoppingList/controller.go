@@ -8,6 +8,10 @@ type JsonFormatUpdateListRequest struct {
 	Checked     bool   `json:"checked,omitempty"`
 }
 
+type JsonFormatCreateListRequest struct {
+	Description string `json:"description,omitempty"`
+}
+
 type Controller interface {
 	GetList(http.ResponseWriter, *http.Request)
 	GetLists(http.ResponseWriter, *http.Request)

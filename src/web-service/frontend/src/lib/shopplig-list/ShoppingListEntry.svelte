@@ -5,7 +5,7 @@
 
     export let productId: number;
     export let productCount: number;
-    export let view: ViewState;
+    export let view: ViewState = "detailed";
 
     type ViewState = "detailed" | "compressed";
 

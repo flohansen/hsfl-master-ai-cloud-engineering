@@ -11,9 +11,13 @@ export const load = async (context: { params: { id: string } }): Promise<object>
         fetch(apiUrlEntries).then(handleErrors),
     ]);
 
+    if (entries === null || list === null) {
+        console.warn('Entries or Shoppinglist not found');
+    }
+
     return {
-        list,
-        entries,
+        list: list ?? [],
+        entries: entries ?? [],
         metaTitle: 'Liste: ' + list?.description,
     };
 };
