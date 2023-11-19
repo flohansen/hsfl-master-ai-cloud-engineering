@@ -3,6 +3,9 @@
  */
 export async function handleErrors(response: Response) : Promise<any> {
     if (! response.ok) {
+        if (response.status === 404) {
+            return null;
+        }
         throw new Error(response.statusText);
     }
 

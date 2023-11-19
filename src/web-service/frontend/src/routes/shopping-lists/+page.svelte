@@ -16,7 +16,7 @@
     </h1>
 
     <a
-        href="/add/shopping-list"
+        href="/shopping-lists/add"
         aria-label="Neue Einkaufsliste erstellen"
         class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
         <span class="text-white font-semibold text-xl">+</span>

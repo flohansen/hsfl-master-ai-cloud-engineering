@@ -24,7 +24,7 @@ func (controller defaultController) GetEntries(writer http.ResponseWriter, reque
 
 	values, err := controller.userShoppingListEntryRepository.FindAll(listId)
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusNotFound)
 	}
 
 	writer.Header().Set("Content-Type", "application/json")
