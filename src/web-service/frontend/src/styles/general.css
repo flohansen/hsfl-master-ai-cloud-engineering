@@ -47,3 +47,8 @@ html {
 main {
     @apply mt-8 mb-32 sm:mb-0 sm:ml-20 md:ml-24 lg:max-w-[54rem] lg:mx-auto lg:mt-10 xl:max-w-5xl;
 }
+
+input:focus-visible,
+textarea:focus-visible {
+    @apply outline outline-1 outline-offset-2 outline-blue-light;
+}

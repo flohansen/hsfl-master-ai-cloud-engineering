@@ -73,20 +73,16 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 }
 
 func (controller defaultController) PostList(writer http.ResponseWriter, request *http.Request) {
-	userIdValue := request.Context().Value("userId")
-	if userIdValue == nil {
-		http.Error(writer, "User ID not provided", http.StatusBadRequest)
-		return
-	}
-
-	userId, err := strconv.ParseUint(userIdValue.(string), 10, 64)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	var requestData JsonFormatCreateListRequest
+	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if _, err := controller.userShoppingListRepository.Create(&model.UserShoppingList{
-		UserId: userId,
+		UserId:      requestData.UserId,
+		Description: requestData.Description,
+		Completed:   false,
 	}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return

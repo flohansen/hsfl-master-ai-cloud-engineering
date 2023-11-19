@@ -176,7 +176,8 @@ func TestDefaultController_PostList(t *testing.T) {
 			userShoppingListRepository: setupMockListRepository(),
 		}
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("POST", "/api/v1/shoppinglist/2", nil)
+		requestBody := `{"description": "New list"}`
+		request := httptest.NewRequest("POST", "/api/v1/shoppinglist/2", strings.NewReader(requestBody))
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
 
 		controller.PostList(writer, request)
