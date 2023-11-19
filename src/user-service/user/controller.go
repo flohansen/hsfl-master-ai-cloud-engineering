@@ -1,6 +1,13 @@
 package user
 
-import "net/http"
+import (
+	"net/http"
+)
+
+type JsonFormatUpdateUserRequest struct {
+	Email string
+	Name  string
+}
 
 type JsonFormatCreateUserRequest struct {
 	Email    string
@@ -10,5 +17,7 @@ type JsonFormatCreateUserRequest struct {
 
 type Controller interface {
 	GetUser(http.ResponseWriter, *http.Request)
+	PutUser(http.ResponseWriter, *http.Request)
 	PostUser(http.ResponseWriter, *http.Request)
+	DeleteUser(http.ResponseWriter, *http.Request)
 }

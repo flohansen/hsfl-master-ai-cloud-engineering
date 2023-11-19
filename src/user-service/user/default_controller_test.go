@@ -140,6 +140,121 @@ func TestDefaultController_GetUser(t *testing.T) {
 	})
 }
 
+func TestDefaultController_PutUser(t *testing.T) {
+	type fields struct {
+		userRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name             string
+		fields           fields
+		args             args
+		expectedStatus   int
+		expectedResponse string
+	}{
+		{
+			name: "Valid Update",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/user/1",
+						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Update (Partly Fields)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/user/2",
+						strings.NewReader(`{"email": "updated@googlemail.com"}`))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Malformed JSON",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/user/2",
+						strings.NewReader(`{"email": "updated@googlemail.com"`))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
+			name:   "Incorrect Type for EAN (Non-numeric)",
+			fields: fields{
+				// Set up your repository mock or test double here if needed
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/2",
+						strings.NewReader(`{"ean": "Wrong Type"`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userRepository: tt.fields.userRepository,
+			}
+			controller.PutUser(tt.args.writer, tt.args.request)
+
+			// You can then assert the response status and content, and check against your expectations.
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+
+			if tt.expectedResponse != "" {
+				actualResponse := tt.args.writer.Body.String()
+				if actualResponse != tt.expectedResponse {
+					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
+				}
+			}
+		})
+	}
+}
+
 func TestDefaultController_PostUser(t *testing.T) {
 	type fields struct {
 		userRepository Repository
@@ -237,6 +352,79 @@ func TestDefaultController_PostUser(t *testing.T) {
 				if actualResponse != tt.expectedResponse {
 					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
 				}
+			}
+		})
+	}
+}
+
+func TestDefaultController_DeleteUser(t *testing.T) {
+	type fields struct {
+		userRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "Successfully delete existing user (expect 200)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Bad non-numeric request (expect 400)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/user/abc", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown user to delete (expect 500)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/userId/5", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userRepository: tt.fields.userRepository,
+			}
+			controller.DeleteUser(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.wantStatus {
+				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
 			}
 		})
 	}
