@@ -213,7 +213,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name:   "Incorrect Type for EAN (Non-numeric)",
+			name:   "Incorrect Type for email (Non-numeric)",
 			fields: fields{
 				// Set up your repository mock or test double here if needed
 			},
@@ -222,9 +222,9 @@ func TestDefaultController_PutUser(t *testing.T) {
 				request: func() *http.Request {
 					var request = httptest.NewRequest(
 						"PUT",
-						"/api/v1/product/2",
-						strings.NewReader(`{"ean": "Wrong Type"`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
+						"/api/v1/user/2",
+						strings.NewReader(`{"email": 1234`))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
 					return request
 				}(),
 			},
