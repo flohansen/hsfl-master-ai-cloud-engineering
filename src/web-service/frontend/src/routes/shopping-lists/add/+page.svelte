@@ -4,6 +4,7 @@
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
     import {handleErrors} from "../../../assets/helper/handleErrors";
     import Checkmark from "../../../assets/svg/Checkmark.svelte";
+    import Badge from "$lib/general/Badge.svelte";
 
     let listHeadline: string = '';
     let formSubmitted: boolean = false;
@@ -26,7 +27,7 @@
     }
 </script>
 
-<header class="px-5 mt-16 flex flex-wrap items-center justify-between sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto xl:max-w-5xl">
+<header>
     {#if ! formSubmitted}
         <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
             {$page.data.metaTitle}
@@ -55,35 +56,32 @@
 <main>
     <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if ! formSubmitted}
-        <header class="grid grid-cols-[3.5rem,auto] items-center gap-x-4 lg:gap-x-6 lg:grid-cols-[4rem,auto]">
-            <figure class="bg-green-light/25 rounded-full w-14 h-14 flex items-center justify-center lg:w-16 lg:h-16">
-                <Placeholder classes="w-6 h-6 text-green-dark"/>
-            </figure>
-            <div class="w-full">
-                <label
-                    for="listName"
-                    class="text-sm text-gray-dark font-medium block mb-2">
-                    Name der Einkaufsliste:*
-                </label>
-                <input
-                    id="listName"
-                    name="listName"
-                    type="text"
-                    required
-                    placeholder="Name der Einkaufsliste"
-                    bind:value={listHeadline}
-                    class="text-sm rounded-lg border px-3 py-2 w-full text-left text-green-dark/75 flex items-center justify-between transition-all duration-300 ease-in-out hover:bg-blue-light/25 lg:px-4 lg:py-3"/>
-            </div>
-        </header>
+            <section class="grid grid-cols-[3.5rem,auto] items-center gap-x-4 lg:gap-x-6 lg:grid-cols-[4rem,auto]">
+                <figure class="bg-green-light/25 rounded-full w-14 h-14 flex items-center justify-center lg:w-16 lg:h-16">
+                    <Placeholder classes="w-6 h-6 text-green-dark"/>
+                </figure>
+                <div class="w-full">
+                    <label
+                        for="listName"
+                        class="text-sm text-gray-dark font-medium block mb-2">
+                        Name der Einkaufsliste:*
+                    </label>
+                    <input
+                        id="listName"
+                        name="listName"
+                        type="text"
+                        required
+                        placeholder="Name der Einkaufsliste"
+                        bind:value={listHeadline}
+                        class="text-sm rounded-lg border px-3 py-2 w-full text-left text-green-dark/75 flex items-center justify-between transition-all duration-300 ease-in-out hover:bg-blue-light/25 lg:px-4 lg:py-3"/>
+                </div>
+            </section>
 
-        <div class="mt-10">
-            <SubmitButton on:submit={submit} />
-        </div>
-        {:else}
-            <div class="flex mb-4 items-center gap-x-2 bg-green-light/25 max-w-max py-1 px-2 rounded-full">
-                <Checkmark classes="w-4 h-4 text-green-dark"/>
-                <p class="text-green-dark text-sm font-medium">Erfolgreich</p>
+            <div class="mt-10">
+                <SubmitButton on:submit={submit} />
             </div>
+        {:else}
+            <Badge />
             <h2 class="font-semibold text-lg lg:text-xl">
                 Deine Einkaufsliste wurde erfolgreich gespeichert.
             </h2>
