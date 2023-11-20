@@ -5,6 +5,7 @@
     import Badge from "$lib/general/Badge.svelte";
     import {page} from "$app/stores";
     import Add from "../../assets/svg/Add.svelte";
+    import DataList from "$lib/profle/DataList.svelte";
 
     interface Data {
         user: { id: number, email: string, name: string, role: number },
@@ -62,27 +63,10 @@
     <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if data.user.name}
             {#if ! successfulDeleted}
-                <section class="mt-10 lg:flex lg:items-center lg:justify-center lg:gap-x-16">
-                    <figure class="mx-auto w-28 h-28 rounded-full bg-green-light/25 flex items-center justify-center lg:mx-0">
-                        <Profile classes="w-12 h-12 text-green-dark"/>
-                    </figure>
-                    <div>
-                        <h2 class="text-center mt-4 font-semibold text-lg mb-12 md:text-xl lg:mb-6 lg:text-left xl:text-2xl">
-                            {data.user.name}
-                        </h2>
-                        <dl class="mx-auto max-w-[30rem] lg:max-w-none lg:mx-0">
-                            <div class="mb-4 md:grid md:grid-cols-[auto,1fr] md:gap-x-4">
-                                <dt class="text-gray-dark mb-2 md:mb-0">E-Mail:</dt>
-                                <dd>{data.user.email}</dd>
-                            </div>
-
-                            <div class="mb-4 md:grid md:grid-cols-[auto,1fr] md:gap-x-4">
-                                <dt class="text-gray-dark mb-2 md:mb-0">Benutzerrolle:</dt>
-                                <dd>{userRole}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </section>
+                <DataList
+                    name="{data.user.name}"
+                    email="{data.user.email}"
+                    role="{userRole}" />
 
                 <section class="mt-28 border-t-gray-dark/25 border-t pt-5 flex items-center">
                     {#if userRole !== 'Kund:in'}
