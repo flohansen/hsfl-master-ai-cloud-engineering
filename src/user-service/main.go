@@ -64,7 +64,7 @@ func setupDemoUserSlice() []*model.User {
 			Email:    "alan.turing@gmail.com",
 			Password: hashedPassword,
 			Name:     "Alan Turing",
-			Role:     model.Customer,
+			Role:     model.Merchant,
 		},
 	}
 }

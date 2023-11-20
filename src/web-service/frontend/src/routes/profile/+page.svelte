@@ -4,6 +4,7 @@
     import {handleErrors} from "../../assets/helper/handleErrors";
     import Badge from "$lib/general/Badge.svelte";
     import {page} from "$app/stores";
+    import Add from "../../assets/svg/Add.svelte";
 
     interface Data {
         user: { id: number, email: string, name: string, role: number },
@@ -83,7 +84,14 @@
                     </div>
                 </section>
 
-                <section class="mt-28 border-t-gray-dark/25 border-t pt-5">
+                <section class="mt-28 border-t-gray-dark/25 border-t pt-5 flex items-center">
+                    {#if userRole !== 'Kund:in'}
+                        <a href="/products/add"
+                           class="text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
+                            <Add classes="w-5 h-5"/>
+                            Produkt hinzufügen
+                        </a>
+                    {/if}
                     <button
                         on:click={deleteAccount}
                         class="ml-auto mr-0 text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
