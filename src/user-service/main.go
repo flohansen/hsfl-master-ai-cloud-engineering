@@ -12,10 +12,11 @@ import (
 )
 
 func main() {
-	loginHandler := setupLoginHandler()
-	registerHandler := setUpRegisterHandler()
-
 	userRepository := user.NewDemoRepository()
+
+	loginHandler := setupLoginHandler(userRepository)
+	registerHandler := setUpRegisterHandler(userRepository)
+
 	userController := user.NewDefaultController(userRepository)
 	userRouter := router.New(loginHandler, registerHandler, userController)
 
@@ -24,27 +25,26 @@ func main() {
 	}
 }
 
-func setupLoginHandler() *handler.LoginHandler {
+func setupLoginHandler(userRepository user.Repository) *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
 		auth.JwtConfig{SignKey: "../../auth/test-token"})
 
-	return handler.NewLoginHandler(setupMockRepository(),
+	return handler.NewLoginHandler(setupMockRepository(userRepository),
 		crypto.NewBcryptHasher(), jwtToken)
 }
 
-func setUpRegisterHandler() *handler.RegisterHandler {
-	return handler.NewRegisterHandler(setupMockRepository(),
+func setUpRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
+	return handler.NewRegisterHandler(setupMockRepository(userRepository),
 		crypto.NewBcryptHasher())
 }
 
-func setupMockRepository() user.Repository {
-	repository := user.NewDemoRepository()
+func setupMockRepository(userRepository user.Repository) user.Repository {
 	userSlice := setupDemoUserSlice()
 	for _, newUser := range userSlice {
-		_, _ = repository.Create(newUser)
+		_, _ = userRepository.Create(newUser)
 	}
 
-	return repository
+	return userRepository
 }
 
 func setupDemoUserSlice() []*model.User {
@@ -61,10 +61,10 @@ func setupDemoUserSlice() []*model.User {
 		},
 		{
 			Id:       2,
-			Email:    "alan.turin@gmail.com",
+			Email:    "alan.turing@gmail.com",
 			Password: hashedPassword,
 			Name:     "Alan Turing",
-			Role:     model.Customer,
+			Role:     model.Merchant,
 		},
 	}
 }

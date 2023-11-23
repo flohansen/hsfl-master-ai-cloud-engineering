@@ -10,7 +10,7 @@
     export let data: Data;
 </script>
 
-<header class="px-5 mt-16 flex flex-wrap items-center justify-between sm:ml-20 md:ml-24 lg:max-w-4xl lg:mx-auto xl:max-w-5xl">
+<header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
         {$page.data.headline}
     </h1>
