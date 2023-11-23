@@ -1,10 +1,96 @@
 <script lang="ts">
+    import Profile from "../../assets/svg/Profile.svelte";
+    import Trash from "../../assets/svg/Trash.svelte";
+    import {handleErrors} from "../../assets/helper/handleErrors";
+    import Badge from "$lib/general/Badge.svelte";
     import {page} from "$app/stores";
-    import Header from "$lib/general/Header.svelte";
+    import Add from "../../assets/svg/Add.svelte";
+    import DataList from "$lib/profle/DataList.svelte";
+
+    interface Data {
+        user: { id: number, email: string, name: string, role: number },
+        metaTitle: string,
+        headline: string,
+    }
+
+    export let data: Data;
+    let userRole: string = resolveUserRole(data.user.role);
+    let successfulDeleted: boolean = false;
+
+    function resolveUserRole(role: number): string {
+        switch (role) {
+            case 1:
+                return 'Händler:in';
+            case 2:
+                return 'Administrator:in';
+            default:
+                return 'Kund:in';
+        }
+    }
+
+    function deleteAccount() : void {
+        if (! data.user) return;
+
+        const apiUrl: string = `/api/v1/user/${data.user.id}`
+        const requestOptions = {
+            method: "DELETE",
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        fetch(apiUrl, requestOptions)
+            .then(handleErrors)
+            .then(()=> successfulDeleted = true)
+            .catch(error => console.error("Failed to fetch data:", error.message));
+    }
 </script>
 
-<Header headline="{$page.data.headline}"/>
+<header>
+    {#if ! successfulDeleted}
+        <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
+            {$page.data.metaTitle}
+        </h1>
+    {:else}
+        <a href="/" class="flex gap-x-2 items-center text-gray-dark transition-all duration-300 ease-in-out hover:text-green-dark lg:gap-x-4">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+            </svg>
+            <p class="text-sm lg:text-base">Zu Startseite</p>
+        </a>
+    {/if}
+</header>
 
 <main>
-    <p class="mx-5">TODO: Add content about current user</p>
+    <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
+        {#if data.user.name}
+            {#if ! successfulDeleted}
+                <DataList
+                    name="{data.user.name}"
+                    email="{data.user.email}"
+                    role="{userRole}" />
+
+                <section class="mt-28 border-t-gray-dark/25 border-t pt-5 flex items-center">
+                    {#if userRole !== 'Kund:in'}
+                        <a href="/products/add"
+                           class="text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
+                            <Add classes="w-5 h-5"/>
+                            Produkt hinzufügen
+                        </a>
+                    {/if}
+                    <button
+                        on:click={deleteAccount}
+                        class="ml-auto mr-0 text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
+                        <Trash classes="w-5 h-5"/>
+                        Account löschen
+                    </button>
+                </section>
+            {:else}
+                <Badge />
+                <h2 class="font-semibold text-lg lg:text-xl">
+                    Dein Account wurde erfolgreich gelöscht.
+                </h2>
+            {/if}
+        {:else}
+            <p>Leider bist du nicht eingeloggt.</p>
+        {/if}
+    </div>
 </main>
