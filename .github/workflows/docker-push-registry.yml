@@ -22,7 +22,20 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
-      - name: Build and push
+      - name: Build and push (default)
+        working-directory: ./
+        run: |
+          docker-compose -f docker-compose.push.yml build
+          docker-compose -f docker-compose.push.yml push
+          
+
+      - name: Check and set release version
+        run: |
+          echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION: '$RELEASE_VERSION'"
+
+      - if: ${{ env.RELEASE_VERSION != '' && contains(github.ref, 'main') }}
+        name: Build and push (versioned)
         working-directory: ./
         run: |
           docker-compose -f docker-compose.push.yml build
