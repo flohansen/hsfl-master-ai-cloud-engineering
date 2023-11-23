@@ -23,7 +23,7 @@
     let priceData: Price = { price: 0 };
     let merchant: string = 'Aldi';
 
-    const apiUrlProduct = `/api/v1/product/${productId}`;
+    const apiUrlProduct = `/api/v1/product/id/${productId}`;
     const apiUrlPrice = `/api/v1/price/${productId}/1`;
 
     onMount(async () => {

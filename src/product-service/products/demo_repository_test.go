@@ -140,6 +140,43 @@ func TestDemoRepository_FindById(t *testing.T) {
 	})
 }
 
+func TestDemoRepository_FindByEan(t *testing.T) {
+	// Prepare test
+	demoRepository := NewDemoRepository()
+
+	product := model.Product{
+		Id:          1,
+		Description: "Strauchtomaten",
+		Ean:         4014819040771,
+	}
+
+	_, err := demoRepository.Create(&product)
+	if err != nil {
+		t.Fatal("Failed to add prepare product for test")
+	}
+
+	t.Run("Fetch product with existing ean", func(t *testing.T) {
+		_, err := demoRepository.FindByEan(product.Ean)
+		if err != nil {
+			t.Errorf("Can't find expected product with ean %d", product.Ean)
+		}
+
+		t.Run("Is fetched product matching with added product?", func(t *testing.T) {
+			fetchedProduct, _ := demoRepository.FindByEan(product.Ean)
+			if !reflect.DeepEqual(product, *fetchedProduct[0]) {
+				t.Error("Fetched product does not match original product")
+			}
+		})
+	})
+
+	t.Run("Non-existing product test", func(t *testing.T) {
+		_, err = demoRepository.FindByEan(42)
+		if err.Error() != ErrorProductNotFound {
+			t.Error(err)
+		}
+	})
+}
+
 func TestDemoRepository_Update(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()
