@@ -40,6 +40,22 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
+			name: "Invalid Request - Empty Password",
+			fields: fields{
+				registerHandler: setUpRegisterHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/register",
+					strings.NewReader(`{"email": "grace.hopper2@gmail.com", "password": "", "name": "Grace Hopper", "role": 0}`),
+				),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
 			name: "User already exists",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),

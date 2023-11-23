@@ -16,6 +16,19 @@ func TestJwtAuthorizer(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	tokenGenerator := JwtTokenGenerator{privateKey}
 
+	t.Run("Create new JWT Token Generator", func(t *testing.T) {
+		t.Run("Invaid Config expect error", func(t *testing.T) {
+			var jwtToken, err = NewJwtTokenGenerator(JwtConfig{SignKey: "./auth/test-token-nonexistent"})
+			assert.Nil(t, jwtToken)
+			assert.Error(t, err)
+		})
+		t.Run("Valid Config expect non-nill Token Generator", func(t *testing.T) {
+			var jwtToken, err = NewJwtTokenGenerator(JwtConfig{SignKey: "./test-token"})
+			assert.NoError(t, err)
+			assert.NotNil(t, jwtToken)
+		})
+	})
+
 	t.Run("CreateToken", func(t *testing.T) {
 		t.Run("should generate valid JWT token", func(t *testing.T) {
 			// given
