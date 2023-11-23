@@ -52,7 +52,7 @@ func TestRegisterHandler(t *testing.T) {
 					strings.NewReader(`{"email": "grace.hopper2@gmail.com", "password": "", "name": "Grace Hopper", "role": 0}`),
 				),
 			},
-			expectedStatus:   http.StatusOK,
+			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
 		},
 		{
