@@ -61,6 +61,19 @@ func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
 	return nil, errors.New(ErrorProductNotFound)
 }
 
+func (repo *DemoRepository) FindByEan(ean uint64) ([]*model.Product, error) {
+	var entries []*model.Product
+	for _, entry := range repo.products {
+		if entry.Ean == ean {
+			entries = append(entries, entry)
+		}
+	}
+	if len(entries) == 0 {
+		return nil, errors.New(ErrorProductNotFound)
+	}
+	return entries, nil
+}
+
 func (repo *DemoRepository) Update(product *model.Product) (*model.Product, error) {
 	existingProduct, foundError := repo.FindById(product.Id)
 
