@@ -34,7 +34,7 @@ export default {
     },
     extend: {
       dropShadow: {
-        'navBar': 'drop-shadow(0px -4px 100px rgba(0, 0, 0, 1))',
+        'navBar': 'drop-shadow(0px -4px 100px rgba(38, 38, 38, 1))',
       }
     },
   },

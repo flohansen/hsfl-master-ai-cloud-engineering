@@ -27,7 +27,7 @@ func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
 
 func (repo *DemoRepository) Delete(priceToDelete *model.Price) error {
 	for i, price := range repo.prices {
-		if reflect.DeepEqual(price, priceToDelete) {
+		if price.ProductId == priceToDelete.ProductId && price.UserId == priceToDelete.UserId {
 			repo.prices = append(repo.prices[:i], repo.prices[i+1:]...)
 			return nil
 		}
@@ -39,7 +39,6 @@ func (repo *DemoRepository) Delete(priceToDelete *model.Price) error {
 func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {
 	for _, price := range repo.prices {
 		if price.ProductId == productId && price.UserId == userId {
-			println(price)
 			return price, nil
 		}
 	}
@@ -48,11 +47,13 @@ func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.P
 }
 
 func (repo *DemoRepository) Update(price *model.Price) (*model.Price, error) {
-	price, foundError := repo.FindByIds(price.ProductId, price.UserId)
+	existingPrice, foundError := repo.FindByIds(price.ProductId, price.UserId)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorPriceUpdate)
 	}
 
-	return price, nil
+	existingPrice.Price = price.Price
+
+	return existingPrice, nil
 }

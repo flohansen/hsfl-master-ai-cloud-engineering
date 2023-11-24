@@ -4,27 +4,37 @@ services:
       context: ./
       dockerfile: ./src/http-proxy-service/Dockerfile
     image: onyxmoon/pw-http-proxy-service:latest
+    environment:
+      - PROXY_DOCKER_CONFIG_PATH=./config
+      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
     ports:
-      - 8080:8080
+      - 80:8080
+      - 443:8443
     depends_on:
-      - web
-    links:
-      - web
-  web:
+      - load-balancer-web
+    networks:
+      - public
+      - internal
+
+  load-balancer-web:
     build:
       context: ./
-      dockerfile: ./src/web-service/Dockerfile
-    image: onyxmoon/pw-web-service:latest
+      dockerfile: ./src/load-balancer-service/Dockerfile
+    image: onyxmoon/pw-load-balancer-service:latest
+    environment:
+      - IMAGE=onyxmoon/pw-web-service:latest
+      - REPLICAS=5
+      - NETWORK_NAME=bridge
     ports:
       - 3000:3000
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - products
       - shoppinglists
       - users
-    links:
-      - products
-      - shoppinglists
-      - users
+    networks:
+      - internal
 
   products:
     build:
@@ -33,6 +43,8 @@ services:
     image: onyxmoon/pw-product-service:latest
     ports:
       - 3003:3003
+    networks:
+      - internal
 
   users:
     build:
@@ -41,6 +53,8 @@ services:
     image: onyxmoon/pw-user-service:latest
     ports:
       - 3001:3001
+    networks:
+      - internal
 
   shoppinglists:
     build:
@@ -49,3 +63,13 @@ services:
     image: onyxmoon/pw-shoppinglist-service:latest
     ports:
       - 3002:3002
+    networks:
+      - internal
+
+
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true

@@ -61,13 +61,17 @@ func (repo *DemoRepository) FindById(id uint64) (*model.User, error) {
 }
 
 func (repo *DemoRepository) Update(user *model.User) (*model.User, error) {
-	user, foundError := repo.FindById(user.Id)
+	existingUser, foundError := repo.FindById(user.Id)
 
 	if foundError != nil {
 		return nil, errors.New("user can not be updated")
 	}
 
-	return user, nil
+	existingUser.Name = user.Name
+	existingUser.Email = user.Email
+	existingUser.Role = user.Role
+
+	return existingUser, nil
 }
 
 func (repo *DemoRepository) findNextAvailableID() uint64 {

@@ -6,54 +6,58 @@ import (
 )
 
 type DemoRepository struct {
-	shoppinglists map[uint64]*model.UserShoppingList
+	shoppingLists map[uint64]*model.UserShoppingList
 }
 
 func NewDemoRepository() *DemoRepository {
-	return &DemoRepository{shoppinglists: make(map[uint64]*model.UserShoppingList)}
+	return &DemoRepository{shoppingLists: make(map[uint64]*model.UserShoppingList)}
 }
 
-func (repo *DemoRepository) Create(shoppinglist *model.UserShoppingList) (*model.UserShoppingList, error) {
+func (repo *DemoRepository) Create(shoppingList *model.UserShoppingList) (*model.UserShoppingList, error) {
 	var listId uint64
-	if shoppinglist.Id == 0 {
+	if shoppingList.Id == 0 {
 		listId = repo.findNextAvailableID()
+		shoppingList.Id = listId
 	} else {
-		listId = shoppinglist.Id
+		listId = shoppingList.Id
 	}
 
-	_, found := repo.shoppinglists[listId]
+	_, found := repo.shoppingLists[listId]
 	if found {
 		return nil, errors.New(ErrorListAlreadyExists)
 	}
-	repo.shoppinglists[listId] = shoppinglist
+	repo.shoppingLists[listId] = shoppingList
 
-	return shoppinglist, nil
+	return shoppingList, nil
 }
 
-func (repo *DemoRepository) Delete(shoppinglist *model.UserShoppingList) error {
-	_, found := repo.shoppinglists[shoppinglist.Id]
+func (repo *DemoRepository) Delete(shoppingList *model.UserShoppingList) error {
+	_, found := repo.shoppingLists[shoppingList.Id]
 	if found {
-		delete(repo.shoppinglists, shoppinglist.Id)
+		delete(repo.shoppingLists, shoppingList.Id)
 		return nil
 	}
 
 	return errors.New(ErrorListDeletion)
 }
 
-func (repo *DemoRepository) Update(shoppinglist *model.UserShoppingList) (*model.UserShoppingList, error) {
-	product, foundError := repo.findById(shoppinglist.Id)
+func (repo *DemoRepository) Update(shoppingList *model.UserShoppingList) (*model.UserShoppingList, error) {
+	existingShoppingList, foundError := repo.findById(shoppingList.Id)
 
 	if foundError != nil {
 		return nil, errors.New(ErrorListUpdate)
 	}
 
-	return product, nil
+	existingShoppingList.Description = shoppingList.Description
+	existingShoppingList.Completed = shoppingList.Completed
+
+	return existingShoppingList, nil
 }
 
 func (repo *DemoRepository) FindAllById(userId uint64) ([]*model.UserShoppingList, error) {
 	lists := []*model.UserShoppingList{}
 
-	for _, shoppingList := range repo.shoppinglists {
+	for _, shoppingList := range repo.shoppingLists {
 		if shoppingList.UserId == userId {
 			lists = append(lists, shoppingList)
 		}
@@ -67,19 +71,18 @@ func (repo *DemoRepository) FindAllById(userId uint64) ([]*model.UserShoppingLis
 }
 
 func (repo *DemoRepository) findById(Id uint64) (*model.UserShoppingList, error) {
-	product, found := repo.shoppinglists[Id]
+	shoppingList, found := repo.shoppingLists[Id]
 	if found {
-		return product, nil
+		return shoppingList, nil
 	}
 
 	return nil, errors.New(ErrorListNotFound)
 }
 
 func (repo *DemoRepository) FindByIds(userId uint64, listId uint64) (*model.UserShoppingList, error) {
-	for _, shoppinglist := range repo.shoppinglists {
-		if shoppinglist.UserId == userId && shoppinglist.Id == listId {
-			println(shoppinglist)
-			return shoppinglist, nil
+	for _, shoppingList := range repo.shoppingLists {
+		if shoppingList.UserId == userId && shoppingList.Id == listId {
+			return shoppingList, nil
 		}
 	}
 
@@ -88,7 +91,7 @@ func (repo *DemoRepository) FindByIds(userId uint64, listId uint64) (*model.User
 
 func (repo *DemoRepository) findNextAvailableID() uint64 {
 	var maxID uint64
-	for id := range repo.shoppinglists {
+	for id := range repo.shoppingLists {
 		if id > maxID {
 			maxID = id
 		}

@@ -1,5 +1,5 @@
 proxy:
-  listenAddress: localhost:8080
+  listenAddress: 0.0.0.0:8080
   proxyRoutes:
     - name: User Service
       context: /api/v1/user

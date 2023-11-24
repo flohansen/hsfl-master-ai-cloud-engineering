@@ -90,7 +90,7 @@ func (controller defaultController) DeletePrice(writer http.ResponseWriter, requ
 		return
 	}
 
-	if err := controller.priceRepository.Delete(&model.Price{UserId: userId, ProductId: productId, Price: 2.99}); err != nil {
+	if err := controller.priceRepository.Delete(&model.Price{ProductId: productId, UserId: userId}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

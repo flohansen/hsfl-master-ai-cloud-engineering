@@ -95,7 +95,7 @@ func TestDemoRepository_Update(t *testing.T) {
 		ProductId:      1,
 		Count:          3,
 		Note:           "I really want this",
-		Checked:        false,
+		Checked:        true,
 	}
 
 	_, _ = repo.Create(entry)
@@ -106,9 +106,19 @@ func TestDemoRepository_Update(t *testing.T) {
 			t.Error(err)
 		}
 
-		if updatedEntry.ShoppingListId != entry.ShoppingListId || updatedEntry.ProductId != entry.ProductId {
-			t.Errorf("Expected updated entry to have ShoppingListId %d and ProductId %d, but got ShoppingListId %d and ProductId %d",
-				entry.ShoppingListId, entry.ProductId, updatedEntry.ShoppingListId, updatedEntry.ProductId)
+		if updatedEntry.Count != entry.Count {
+			t.Errorf("Expected updated shopping list entry to have count %d, but got count %d",
+				entry.Count, updatedEntry.Count)
+		}
+
+		if updatedEntry.Note != entry.Note {
+			t.Errorf("Expected updated shopping list entry to have note %s, but got note %s",
+				entry.Note, updatedEntry.Note)
+		}
+
+		if updatedEntry.Checked != entry.Checked {
+			t.Errorf("Expected updated shopping list entry to have checked value %t, but got note %t",
+				entry.Checked, updatedEntry.Checked)
 		}
 	})
 

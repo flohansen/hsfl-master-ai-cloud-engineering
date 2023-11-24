@@ -18,9 +18,10 @@ func TestDemoRepository_Create(t *testing.T) {
 	repo := NewDemoRepository()
 
 	list := &model.UserShoppingList{
-		Id:        1,
-		UserId:    1,
-		Completed: false,
+		Id:          1,
+		UserId:      1,
+		Description: "New Shoppinglist",
+		Completed:   false,
 	}
 
 	t.Run("Create shopping list with success", func(t *testing.T) {
@@ -31,6 +32,10 @@ func TestDemoRepository_Create(t *testing.T) {
 
 		if createdList.Id != list.Id {
 			t.Errorf("Expected created shopping list to have ID %d, but got %d", list.Id, createdList.Id)
+		}
+
+		if createdList.Description != list.Description {
+			t.Errorf("Expected created shopping list to have description %s, but got %s", list.Description, createdList.Description)
 		}
 	})
 
@@ -84,9 +89,10 @@ func TestDemoRepository_Update(t *testing.T) {
 	repo := NewDemoRepository()
 
 	list := &model.UserShoppingList{
-		Id:        1,
-		UserId:    1,
-		Completed: false,
+		Id:          1,
+		UserId:      1,
+		Description: "Update list description",
+		Completed:   true,
 	}
 
 	_, _ = repo.Create(list)
@@ -97,8 +103,14 @@ func TestDemoRepository_Update(t *testing.T) {
 			t.Error(err)
 		}
 
-		if updatedList.Id != list.Id {
-			t.Errorf("Expected updated shopping list to have ID %d, but got %d", list.Id, updatedList.Id)
+		if updatedList.Description != list.Description {
+			t.Errorf("Expected updated shopping list to have description %s, but got %s",
+				list.Description, updatedList.Description)
+		}
+
+		if updatedList.Completed != list.Completed {
+			t.Errorf("Expected updated shopping list to have completed value %t, but got %t",
+				list.Completed, updatedList.Completed)
 		}
 	})
 
@@ -227,7 +239,7 @@ func TestDemoRepository_findNextAvailableID(t *testing.T) {
 	})
 
 	t.Run("Next available ID with gaps in IDs", func(t *testing.T) {
-		delete(repo.shoppinglists, 2)
+		delete(repo.shoppingLists, 2)
 		nextID := repo.findNextAvailableID()
 		if nextID != 2 {
 			t.Errorf("Expected next available ID to be 2, but got %d", nextID)

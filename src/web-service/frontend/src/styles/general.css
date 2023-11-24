@@ -1,3 +1,4 @@
+/* Load fonts */
 @font-face{
     font-family: 'Manrope';
     src: url('../../../frontend/src/assets/fonts/Manrope-Light.ttf') format('ttf');
@@ -38,6 +39,20 @@
     font-display: swap;
 }
 
+/* Add some general classes */
 html {
     @apply font-manrope text-base text-black bg-gray-light selection:bg-green-light/50 selection:text-black;
+}
+
+main {
+    @apply mt-8 mb-32 sm:mb-0 sm:ml-20 md:ml-24 lg:max-w-[54rem] lg:mx-auto lg:mt-10 xl:max-w-5xl;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+    @apply outline outline-1 outline-offset-2 outline-blue-light;
+}
+
+header {
+    @apply px-5 mt-16 flex flex-wrap items-center justify-between sm:ml-20 md:ml-24 lg:max-w-4xl lg:px-10 lg:mx-auto xl:max-w-5xl xl:px-6;
 }

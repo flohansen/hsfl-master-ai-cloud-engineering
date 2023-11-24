@@ -130,7 +130,7 @@ func TestRouter(t *testing.T) {
 		})
 	})
 
-	t.Run("/api/v1/products", func(t *testing.T) {
+	t.Run("/api/v1/price", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
 			tests := []string{"DELETE", "PUT", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "GET"}
 

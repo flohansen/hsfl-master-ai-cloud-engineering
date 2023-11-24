@@ -46,7 +46,7 @@ func (controller defaultController) PostProduct(writer http.ResponseWriter, requ
 	writer.WriteHeader(http.StatusCreated)
 }
 
-func (controller defaultController) GetProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller defaultController) GetProductById(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -66,6 +66,30 @@ func (controller defaultController) GetProduct(writer http.ResponseWriter, reque
 	err = json.NewEncoder(writer).Encode(value)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (controller defaultController) GetProductsByEan(writer http.ResponseWriter, request *http.Request) {
+	productEan, err := strconv.ParseUint(request.Context().Value("productEan").(string), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	values, err := controller.productRepository.FindByEan(productEan)
+	if err != nil {
+		if err.Error() == ErrorProductNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(writer).Encode(values)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 

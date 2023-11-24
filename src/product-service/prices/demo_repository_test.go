@@ -129,7 +129,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 			t.Errorf("Failed to delete price with product id %d and user id %d", price.ProductId, price.UserId)
 		}
 
-		t.Run("Try to fetch deleted product", func(t *testing.T) {
+		t.Run("Try to fetch deleted price", func(t *testing.T) {
 			fetchedPrice, err = demoRepository.FindByIds(price.ProductId, price.UserId)
 			if err.Error() != ErrorPriceNotFound {
 				t.Errorf("Price with with product id %d and user id %d was not deleted", price.ProductId, price.UserId)
