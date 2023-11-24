@@ -14,7 +14,8 @@ type JsonFormatCreateProductRequest struct {
 
 type Controller interface {
 	GetProducts(http.ResponseWriter, *http.Request)
-	GetProduct(http.ResponseWriter, *http.Request)
+	GetProductsByEan(http.ResponseWriter, *http.Request)
+	GetProductById(http.ResponseWriter, *http.Request)
 	PostProduct(http.ResponseWriter, *http.Request)
 	PutProduct(http.ResponseWriter, *http.Request)
 	DeleteProduct(http.ResponseWriter, *http.Request)

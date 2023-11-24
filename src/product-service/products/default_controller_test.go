@@ -109,7 +109,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 	}
 }
 
-func TestDefaultController_GetProduct(t *testing.T) {
+func TestDefaultController_GetProductById(t *testing.T) {
 	type fields struct {
 		productRepository Repository
 	}
@@ -159,7 +159,7 @@ func TestDefaultController_GetProduct(t *testing.T) {
 			controller := defaultController{
 				productRepository: tt.fields.productRepository,
 			}
-			controller.GetProduct(tt.args.writer, tt.args.request)
+			controller.GetProductById(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
 			}
@@ -176,7 +176,7 @@ func TestDefaultController_GetProduct(t *testing.T) {
 		}
 
 		// when
-		controller.GetProduct(writer, request)
+		controller.GetProductById(writer, request)
 
 		// then
 		if writer.Code != http.StatusOK {
@@ -206,6 +206,72 @@ func TestDefaultController_GetProduct(t *testing.T) {
 		if response.Ean != 4014819040771 {
 			t.Errorf("Expected ean of product %d, got %d", 4014819040771, response.Ean)
 		}
+
+	})
+}
+
+func TestDefaultController_GetProductsByEan(t *testing.T) {
+	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
+		controller := defaultController{
+			productRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=abc", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "productEan", "abc"))
+
+		// Test request
+		controller.GetProductsByEan(writer, request)
+
+		if writer.Code != http.StatusBadRequest {
+			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
+		}
+	})
+
+	t.Run("Unknown product (expect 404)", func(t *testing.T) {
+		controller := defaultController{
+			productRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=123", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "productEan", "123"))
+
+		// Test request
+		controller.GetProductsByEan(writer, request)
+
+		if writer.Code != http.StatusNotFound {
+			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
+		}
+	})
+
+	t.Run("Should return products by EAN", func(t *testing.T) {
+		controller := defaultController{
+			productRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=4014819040771", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "productEan", "4014819040771"))
+
+		// Test request
+		controller.GetProductsByEan(writer, request)
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		res := writer.Result()
+		var response []model.Product
+		err := json.NewDecoder(res.Body).Decode(&response)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		// Add assertions based on your expected response.
+		// For example, check the length, content, etc.
+		// ...
 
 	})
 }
