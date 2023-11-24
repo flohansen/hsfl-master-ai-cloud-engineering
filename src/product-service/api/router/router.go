@@ -15,8 +15,8 @@ func New(productController products.Controller, pricesController prices.Controll
 	r := router.New()
 
 	r.GET("/api/v1/product/", productController.GetProducts)
-	r.GET("/api/v1/product/id/:productId", productController.GetProductById)
 	r.GET("/api/v1/product/ean/:productEan", productController.GetProductsByEan)
+	r.GET("/api/v1/product/:productId", productController.GetProductById)
 	r.PUT("/api/v1/product/:productId", productController.PutProduct)
 	r.POST("/api/v1/product/", productController.PostProduct)
 	r.DELETE("/api/v1/product/:productId", productController.DeleteProduct)

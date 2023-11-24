@@ -75,14 +75,14 @@ func TestRouter(t *testing.T) {
 
 	})
 
-	t.Run("/api/v1/product/id/:productid", func(t *testing.T) {
+	t.Run("/api/v1/product/:productid", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not GET, DELETE or PUT", func(t *testing.T) {
 			tests := []string{"POST", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
 
 			for _, test := range tests {
 				// given
 				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/product/id/1", nil)
+				r := httptest.NewRequest(test, "/api/v1/product/1", nil)
 
 				// when
 				router.ServeHTTP(w, r)
@@ -95,7 +95,7 @@ func TestRouter(t *testing.T) {
 		t.Run("should call GET handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", "/api/v1/product/id/1", nil)
+			r := httptest.NewRequest("GET", "/api/v1/product/1", nil)
 
 			// when
 			router.ServeHTTP(w, r)

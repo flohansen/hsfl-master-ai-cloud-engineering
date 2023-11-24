@@ -131,7 +131,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 			args: args{
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
-					var request = httptest.NewRequest("GET", "/api/v1/product/Id/abc", nil)
+					var request = httptest.NewRequest("GET", "/api/v1/product/abc", nil)
 					request = request.WithContext(context.WithValue(request.Context(), "productId", "abc"))
 					return request
 				}(),
@@ -146,7 +146,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 			args: args{
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
-					var request = httptest.NewRequest("GET", "/api/v1/product/Id/4", nil)
+					var request = httptest.NewRequest("GET", "/api/v1/product/4", nil)
 					request = request.WithContext(context.WithValue(request.Context(), "productId", "4"))
 					return request
 				}(),
@@ -168,7 +168,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 
 	t.Run("Successfully get existing product (expect 200 and product)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/product/Id/1", nil)
+		request := httptest.NewRequest("GET", "/api/v1/product/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 
 		controller := defaultController{
