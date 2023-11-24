@@ -9,30 +9,25 @@
     import Checkmark from "../../../assets/svg/Checkmark.svelte";
     import FindProduct from "$lib/products/FindProduct.svelte";
 
-    interface Product {
-        id: number,
-        description: string,
-        ean: number,
-    }
-
     let productPrice: number;
-    let formSubmitted: boolean = false;
+    let productId: number;
+    let productDescription: number;
+    let productEan: number;
 
-    let productData: Product = { id: 0, description: '', ean: 0 };
+    let formSubmitted: boolean = false;
+    let eanSubmitted: boolean = false;
 
     function submit(): void {
-        if (! productPrice || ! productData.ean) return;
+        if (! productPrice || ! productEan) return;
         createProduct();
     }
 
     function createProduct(): void {
-        if (! productData.id) return;
-
         const apiUrl: string = `/api/v1/product/`
         const requestOptions = {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
-            body: `{"description": "${productData.description}", "ean": ${productData.ean}}`,
+            body: `{"description": "${productDescription}", "ean": ${productEan}}`,
         };
 
         fetchData(apiUrl, requestOptions);
@@ -65,17 +60,18 @@
     <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if ! formSubmitted}
             <FindProduct
-                bind:productId={productData.id}
-                bind:productEan={productData.ean}/>
+                bind:eanSubmitted={eanSubmitted}
+                bind:productId={productId}
+                bind:productEan={productEan}/>
 
-            {#if productData.ean}
+            {#if eanSubmitted}
                 <section>
                     <div class="flex flex-col gap-y-6 lg:gap-y-8">
-                        {#if ! productData.id}
+                        {#if ! productId}
                             <InputText
                                 fieldName="productName"
                                 label="Name des Produktes"
-                                bind:value={productData.description} />
+                                bind:value={productDescription}/>
                         {/if}
                         <InputText
                             fieldName="productPrice"
@@ -85,7 +81,7 @@
                     </div>
 
                     <div class="mt-10">
-                        <SubmitButton on:submit={submit} />
+                        <SubmitButton on:submit={submit}/>
                     </div>
                 </section>
             {/if}

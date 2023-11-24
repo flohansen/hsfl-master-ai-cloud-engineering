@@ -4,7 +4,7 @@
     import Checkmark from "../../assets/svg/Checkmark.svelte";
     import Close from "../../assets/svg/Close.svelte";
 
-    let eanSubmitted: boolean = false;
+    export let eanSubmitted: boolean = false;
     export let productId: number;
     export let productEan: number;
 
@@ -15,7 +15,11 @@
         const apiUrl: string = `/api/v1/product/ean/${productEan}`
         fetch(apiUrl)
             .then(handleErrors)
-            .then(data => productId = data.id)
+            .then(data => {
+                if (data && data.id !== undefined) {
+                    productId = data.id;
+                }
+            })
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
