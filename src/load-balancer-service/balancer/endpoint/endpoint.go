@@ -54,3 +54,7 @@ func (e *Endpoint) GetCurrentRequests() int {
 func (e *Endpoint) GetLastResponseTime() time.Duration {
 	return e.lastResponseTime
 }
+
+func (e *Endpoint) GetURL() *url.URL {
+	return e.url
+}

@@ -3,35 +3,35 @@ services:
     build:
       context: ./
       dockerfile: ./src/http-proxy-service/Dockerfile
-    image: onyxmoon/pw-http-proxy-service:latest
+    image: onyxmoon/pw-http-proxy-service:${RELEASE_VERSION:-latest}
 
   load-balancer-web:
     build:
       context: ./
       dockerfile: ./src/load-balancer-service/Dockerfile
-    image: onyxmoon/pw-load-balancer-service:latest
+    image: onyxmoon/pw-load-balancer-service:${RELEASE_VERSION:-latest}
 
   web:
     build:
       context: ./
       dockerfile: ./src/web-service/Dockerfile
-    image: onyxmoon/pw-web-service:latest
+    image: onyxmoon/pw-web-service:${RELEASE_VERSION:-latest}
 
 
   products:
     build:
       context: ./
       dockerfile: ./src/product-service/Dockerfile
-    image: onyxmoon/pw-product-service:latest
+    image: onyxmoon/pw-product-service:${RELEASE_VERSION:-latest}
 
   users:
     build:
       context: ./
       dockerfile: ./src/user-service/Dockerfile
-    image: onyxmoon/pw-user-service:latest
+    image: onyxmoon/pw-user-service:${RELEASE_VERSION:-latest}
 
   shoppinglists:
     build:
       context: ./
       dockerfile: ./src/shoppinglist-service/Dockerfile
-    image: onyxmoon/pw-shoppinglist-service:latest
+    image: onyxmoon/pw-shoppinglist-service:${RELEASE_VERSION:-latest}

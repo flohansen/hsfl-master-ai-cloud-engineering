@@ -45,6 +45,38 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
+			name: "Invalid User Mail",
+			fields: fields{
+				loginHandler: setupLoginHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/login",
+					strings.NewReader(`{"email": "adaa.lovelace@gmail.com", "password": "123456"}`),
+				),
+			},
+			expectedStatus:   http.StatusInternalServerError,
+			expectedResponse: "",
+		},
+		{
+			name: "Invalid Request - Empty Password",
+			fields: fields{
+				loginHandler: setupLoginHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/login",
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": ""}`),
+				),
+			},
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: "",
+		},
+		{
 			name: "Wrong password",
 			fields: fields{
 				loginHandler: setupLoginHandler(),

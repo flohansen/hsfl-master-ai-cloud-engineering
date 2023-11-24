@@ -27,7 +27,7 @@ func main() {
 
 	loadBalancer := balancer.NewBalancer(
 		defaultOrchestrator.GetContainerEndpoints(containers, *networkName),
-		scheduler.NewLeastResponseTime)
+		scheduler.NewRoundRobin)
 	loadBalancer.SetHealthCheckFunction(health.DefaultHealthCheck, 5*time.Second)
 
 	server := &http.Server{

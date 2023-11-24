@@ -34,7 +34,9 @@ func (b *Balancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
+
 	endpoint.ServeHTTP(w, r)
+	log.Printf("Request %s %s served by %s endpoint.", r.Method, r.URL.String(), endpoint.GetURL().String())
 }
 
 func (b *Balancer) SetHealthCheckFunction(check health.CheckFunction, period time.Duration) {
