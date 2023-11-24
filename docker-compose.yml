@@ -20,6 +20,7 @@ services:
     build:
       context: ./
       dockerfile: ./src/load-balancer-service/Dockerfile
+    image: onyxmoon/pw-load-balancer-service:latest
     environment:
       - IMAGE=onyxmoon/pw-web-service:latest
       - REPLICAS=5
