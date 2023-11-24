@@ -21,6 +21,11 @@ func (repo *DemoRepository) Create(product *model.Product) (*model.Product, erro
 		productId = product.Id
 	}
 
+	foundProductWithEan, _ := repo.FindByEan(product.Ean)
+	if foundProductWithEan != nil {
+		return nil, errors.New(ErrorEanAlreadyExists)
+	}
+
 	_, found := repo.products[productId]
 	if found {
 		return nil, errors.New(ErrorProductAlreadyExists)

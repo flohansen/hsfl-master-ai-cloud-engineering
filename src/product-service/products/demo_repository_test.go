@@ -26,6 +26,12 @@ func TestDemoRepository_Create(t *testing.T) {
 		Ean:         4014819040771,
 	}
 
+	productWithDublicateEan := model.Product{
+		Id:          2,
+		Description: "Dinkelnudeln",
+		Ean:         4014819040771,
+	}
+
 	t.Run("Create product with success", func(t *testing.T) {
 		_, err := demoRepository.Create(&product)
 		if err != nil {
@@ -33,9 +39,16 @@ func TestDemoRepository_Create(t *testing.T) {
 		}
 	})
 
+	t.Run("Check if products with duplicate ean can not be created", func(t *testing.T) {
+		_, err := demoRepository.Create(&productWithDublicateEan)
+		if err.Error() != ErrorEanAlreadyExists {
+			t.Error(err)
+		}
+	})
+
 	t.Run("Check for doublet", func(t *testing.T) {
 		_, err := demoRepository.Create(&product)
-		if err.Error() != ErrorProductAlreadyExists {
+		if err.Error() != ErrorProductAlreadyExists && err.Error() != ErrorEanAlreadyExists {
 			t.Error(err)
 		}
 	})

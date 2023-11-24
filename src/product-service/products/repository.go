@@ -19,4 +19,5 @@ const (
 	ErrorProductUpdate        = "product can not be updated"
 	ErrorProductDeletion      = "product could not be deleted"
 	ErrorProductAlreadyExists = "product already exists"
+	ErrorEanAlreadyExists     = "product ean already exists"
 )
