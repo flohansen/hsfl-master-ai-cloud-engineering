@@ -262,7 +262,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		}
 
 		res := writer.Result()
-		var response []model.Product
+		var response model.Product
 		err := json.NewDecoder(res.Body).Decode(&response)
 
 		if err != nil {

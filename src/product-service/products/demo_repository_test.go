@@ -176,7 +176,7 @@ func TestDemoRepository_FindByEan(t *testing.T) {
 
 		t.Run("Is fetched product matching with added product?", func(t *testing.T) {
 			fetchedProduct, _ := demoRepository.FindByEan(product.Ean)
-			if !reflect.DeepEqual(product, *fetchedProduct[0]) {
+			if !reflect.DeepEqual(product, *fetchedProduct) {
 				t.Error("Fetched product does not match original product")
 			}
 		})
