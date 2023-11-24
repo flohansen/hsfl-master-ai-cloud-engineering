@@ -1,7 +1,7 @@
 <script lang="ts">
-    import ShoppingListEntry from "$lib/shopplig-list/ShoppingListEntry.svelte";
-    import AddEntryModal from "$lib/shopplig-list/AddEntryModal.svelte";
-    import ViewSelect from "$lib/shopplig-list/ViewSelect.svelte";
+    import ShoppingListEntry from "$lib/shopping-list/ShoppingListEntry.svelte";
+    import AddEntryModal from "$lib/shopping-list/AddEntryModal.svelte";
+    import ViewSelect from "$lib/shopping-list/ViewSelect.svelte";
 
     interface Data {
         list: { id: number, description: string },
