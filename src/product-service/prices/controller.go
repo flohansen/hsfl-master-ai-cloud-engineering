@@ -9,9 +9,7 @@ type JsonFormatCreatePriceRequest struct {
 }
 
 type JsonFormatUpdatePriceRequest struct {
-	UserId    uint64  `json:"userId,omitempty"`
-	ProductId uint64  `json:"productId,omitempty"`
-	Price     float32 `json:"price,omitempty"`
+	Price float32 `json:"price,omitempty"`
 }
 
 type Controller interface {

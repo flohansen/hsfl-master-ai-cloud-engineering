@@ -23,7 +23,7 @@ func New(productController products.Controller, pricesController prices.Controll
 
 	r.GET("/api/v1/price/:productId/:userId", pricesController.GetPrice)
 	r.PUT("/api/v1/price/:productId/:userId", pricesController.PutPrice)
-	r.POST("/api/v1/price/", pricesController.PostPrice)
+	r.POST("/api/v1/price/:productId/:userId", pricesController.PostPrice)
 	r.DELETE("/api/v1/price/:productId/:userId", pricesController.DeletePrice)
 
 	return &Router{r}
