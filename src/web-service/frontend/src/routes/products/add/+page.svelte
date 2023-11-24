@@ -6,14 +6,43 @@
     import InputText from "$lib/forms/InputText.svelte";
     import CloseButton from "$lib/general/CloseButton.svelte";
     import BackLink from "$lib/general/BackLink.svelte";
+    import Checkmark from "../../../assets/svg/Checkmark.svelte";
+    import FindProduct from "$lib/products/FindProduct.svelte";
 
-    let productName: string;
-    let productEan: number;
+    interface Product {
+        id: number,
+        description: string,
+        ean: number,
+    }
+
     let productPrice: number;
     let formSubmitted: boolean = false;
 
+    let productData: Product = { id: 0, description: '', ean: 0 };
+
     function submit(): void {
-        if ( productName === '') return;
+        if (! productPrice || ! productData.ean) return;
+        createProduct();
+    }
+
+    function createProduct(): void {
+        if (! productData.id) return;
+
+        const apiUrl: string = `/api/v1/product/`
+        const requestOptions = {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: `{"description": "${productData.description}", "ean": ${productData.ean}}`,
+        };
+
+        fetchData(apiUrl, requestOptions);
+    }
+
+    function fetchData(apiUrl: string, requestOptions: object): void {
+        fetch(apiUrl, requestOptions)
+            .then(handleErrors)
+            .then(()=> formSubmitted = true)
+            .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
 
@@ -35,31 +64,35 @@
 <main>
     <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if ! formSubmitted}
-            <section class="flex flex-col gap-y-6 lg:gap-y-8">
-                <InputText
-                    fieldName="productName"
-                    label="Name des Produktes"
-                    bind:value={productName} />
-                <InputText
-                    fieldName="productEan"
-                    label="EAN des Produktes"
-                    type="number"
-                    bind:value={productEan} />
-                <InputText
-                    fieldName="productPrice"
-                    label="Preis des Produktes"
-                    type="number"
-                    bind:value={productPrice} />
-                <p>TODO: Absenden des Produktes</p>
-            </section>
+            <FindProduct
+                bind:productId={productData.id}
+                bind:productEan={productData.ean}/>
 
-            <div class="mt-10">
-                <SubmitButton on:submit={submit} />
-            </div>
+            {#if productData.ean}
+                <section>
+                    <div class="flex flex-col gap-y-6 lg:gap-y-8">
+                        {#if ! productData.id}
+                            <InputText
+                                fieldName="productName"
+                                label="Name des Produktes"
+                                bind:value={productData.description} />
+                        {/if}
+                        <InputText
+                            fieldName="productPrice"
+                            label="Preis des Produktes"
+                            type="number"
+                            bind:value={productPrice} />
+                    </div>
+
+                    <div class="mt-10">
+                        <SubmitButton on:submit={submit} />
+                    </div>
+                </section>
+            {/if}
         {:else}
             <Badge />
             <h2 class="font-semibold text-lg lg:text-xl">
-                Deine Einkaufsliste wurde erfolgreich gespeichert.
+                Dein Produkt und dein Preis wurden erfolgreich gespeichert.
             </h2>
         {/if}
     </div>
