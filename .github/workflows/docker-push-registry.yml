@@ -31,7 +31,7 @@ jobs:
 
       - name: Check and set release version
         run: |
-          echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$(git tag -l --format='%(contents:subject)'${GITHUB_REF#refs/*/})" >> $GITHUB_ENV
           echo "RELEASE_VERSION: '$RELEASE_VERSION'"
 
       - if: ${{ env.RELEASE_VERSION != '' && contains(github.ref, 'main') }}
