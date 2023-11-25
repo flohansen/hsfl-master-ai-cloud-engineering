@@ -24,7 +24,7 @@
     let merchant: string = 'Aldi';
 
     const apiUrlProduct = `/api/v1/product/${productId}`;
-    const apiUrlPrice = `/api/v1/price/${productId}/1`;
+    const apiUrlPrice = `/api/v1/price/${productId}/2`;
 
     onMount(async () => {
         fetch(apiUrlProduct)
