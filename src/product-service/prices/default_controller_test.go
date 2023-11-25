@@ -218,27 +218,15 @@ func TestDefaultController_PostPrice(t *testing.T) {
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/price",
-					strings.NewReader(`{"userId": 3, "productId": 3, "price": 0.99}`),
-				),
-			},
-			expectedStatus:   http.StatusOK,
-			expectedResponse: "",
-		},
-		{
-			name: "Valid Price (Partly Fields)",
-			fields: fields{
-				priceRepository: setupMockRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/price",
-					strings.NewReader(`{"price": 7.10}`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/price/4/4",
+						strings.NewReader(`{"price": 0.99}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "4"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "4"))
+					return request
+				}(),
 			},
 			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
@@ -250,11 +238,15 @@ func TestDefaultController_PostPrice(t *testing.T) {
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/price",
-					strings.NewReader(`{"price": 7.10`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/price/5/5",
+						strings.NewReader(`{"price": 0.99`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "5"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
+					return request
+				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
@@ -266,11 +258,15 @@ func TestDefaultController_PostPrice(t *testing.T) {
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/product",
-					strings.NewReader(`{"userId": 4, "productId": 4, "price": "0.99"}`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/price/5/5",
+						strings.NewReader(`{"price": "0.99"}`))
+					request = request.WithContext(context.WithValue(request.Context(), "productId", "5"))
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
+					return request
+				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",

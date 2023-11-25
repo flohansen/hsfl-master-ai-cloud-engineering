@@ -15,33 +15,30 @@
     }
 
     let productEan: number;
-    let productDescription: string;
+    let productPrice: number;
     let productData: Product;
+    let priceIsAlreadyCreated: boolean = false;
 
     let formSubmitted: boolean = false;
-    let eanSubmitted: boolean = false;
 
     function submit(): void {
-        if (! productDescription) return;
-        productData ? updateProduct() : createProduct();
+        if (! productPrice || ! productData) return;
+        priceIsAlreadyCreated ? updatePrice() : fetchContent("POST");
     }
 
-    function updateProduct(): void {
+    function updatePrice(): void {
         if (! productData.id) return;
-        const apiUrl: string = `/api/v1/product/${productData.id}`
-        fetchContent(apiUrl, "PUT");
+        fetchContent("PUT");
     }
 
-    function createProduct(): void {
-        const apiUrl: string = `/api/v1/product/`
-        fetchContent(apiUrl, "POST");
-    }
+    function fetchContent(method: string): void {
+        const userId: number = 2; // TODO: add current user id
+        const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`
 
-    function fetchContent(apiUrl: string, method: string): void {
         const requestOptions = {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: `{"description": "${productDescription}", "ean": ${productEan}}`,
+            body: `{"price": ${productPrice}}`,
         };
 
         fetch(apiUrl, requestOptions)
@@ -58,7 +55,7 @@
         </h1>
         <CloseButton
             url="/profile"
-            label="Erstellen eines Produktes abbrechen" />
+            label="Erstellen eines Preises abbrechen" />
     {:else}
         <BackLink
             url="/"
@@ -70,16 +67,18 @@
     <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if ! formSubmitted}
             <FindProduct
-                bind:eanSubmitted={eanSubmitted}
                 bind:productData={productData}
-                bind:productEan={productEan} />
+                bind:productEan={productEan}
+                bind:priceIsAlreadyCreated={priceIsAlreadyCreated}
+                shouldFindPrice />
 
-            {#if eanSubmitted}
+            {#if productData}
                 <section>
                     <InputText
-                        fieldName="productName"
-                        label="Name des Produktes"
-                        bind:value={productDescription} />
+                        fieldName="productPrice"
+                        label="Preis des Produktes"
+                        type="number"
+                        bind:value={productPrice} />
 
                     <div class="mt-10">
                         <SubmitButton on:submit={submit}/>
@@ -88,13 +87,9 @@
             {/if}
         {:else}
             <Badge />
-            <h2 class="font-semibold mb-6 text-lg lg:text-xl lg:mb-8">
-                Dein Produkt wurde erfolgreich gespeichert.
+            <h2 class="font-semibold text-lg lg:text-xl">
+                Dein Preis wurde erfolgreich gespeichert.
             </h2>
-            <BackLink
-                url="/prices/add"
-                label="Preis erstellen"
-                reverse />
         {/if}
     </div>
 </main>

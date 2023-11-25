@@ -24,7 +24,7 @@
     let merchant: string = 'Aldi';
 
     const apiUrlProduct = `/api/v1/product/${productId}`;
-    const apiUrlPrice = `/api/v1/price/${productId}/1`;
+    const apiUrlPrice = `/api/v1/price/${productId}/2`;
 
     onMount(async () => {
         fetch(apiUrlProduct)
@@ -46,7 +46,7 @@
             {productCount} Stk.
         </span>
     </div>
-    {#if view === 'detailed'}
+    {#if view === 'detailed' && priceData}
         <p class="text-gray-dark mt-1 ml-[2.1rem] text-sm flex flex-wrap items-center gap-2 lg:text-sm">
             Am günstigsten bei
             <strong class="text-green-dark font-semibold">{merchant}</strong>für

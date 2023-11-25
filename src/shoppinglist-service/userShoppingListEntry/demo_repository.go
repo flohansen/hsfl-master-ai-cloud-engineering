@@ -19,7 +19,6 @@ func NewDemoRepository() *DemoRepository {
 }
 
 func (repo *DemoRepository) Create(entry *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error) {
-
 	_, err := repo.FindByIds(entry.ShoppingListId, entry.ProductId)
 	if err == nil {
 		return nil, errors.New(ErrorEntryAlreadyExists)
@@ -63,7 +62,7 @@ func (repo *DemoRepository) Update(entry *model.UserShoppingListEntry) (*model.U
 	return existingEntry, nil
 }
 
-func (repo *DemoRepository) FindByIds(shoppingListId, productId uint64) (*model.UserShoppingListEntry, error) {
+func (repo *DemoRepository) FindByIds(shoppingListId uint64, productId uint64) (*model.UserShoppingListEntry, error) {
 	key := shoppingListEntryKey{
 		ShoppingListID: shoppingListId,
 		ProductID:      productId,
