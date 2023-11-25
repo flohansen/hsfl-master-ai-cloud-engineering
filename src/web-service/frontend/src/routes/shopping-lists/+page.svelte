@@ -1,6 +1,6 @@
 <script lang="ts">
     import {page} from "$app/stores";
-    import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
+    import ShoppingList from "$lib/shopping-list/ShoppingList.svelte";
 
     interface Data {
         lists: { id: number, description: string }[]

@@ -262,7 +262,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		}
 
 		res := writer.Result()
-		var response []model.Product
+		var response model.Product
 		err := json.NewDecoder(res.Body).Decode(&response)
 
 		if err != nil {
@@ -361,7 +361,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
@@ -377,7 +377,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"description": "Incomplete Product"}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{

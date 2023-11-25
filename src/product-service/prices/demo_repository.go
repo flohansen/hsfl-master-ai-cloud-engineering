@@ -6,12 +6,17 @@ import (
 	"reflect"
 )
 
+type priceEntryKey struct {
+	UserId    uint64
+	ProductId uint64
+}
+
 type DemoRepository struct {
-	prices []*model.Price
+	prices map[priceEntryKey]*model.Price
 }
 
 func NewDemoRepository() *DemoRepository {
-	return &DemoRepository{prices: make([]*model.Price, 0)}
+	return &DemoRepository{prices: make(map[priceEntryKey]*model.Price)}
 }
 
 func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
@@ -20,30 +25,45 @@ func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
 			return nil, errors.New(ErrorPriceAlreadyExists)
 		}
 	}
-	repo.prices = append(repo.prices, price)
+
+	key := priceEntryKey{
+		ProductId: price.ProductId,
+		UserId:    price.UserId,
+	}
+
+	repo.prices[key] = price
 
 	return price, nil
 }
 
-func (repo *DemoRepository) Delete(priceToDelete *model.Price) error {
-	for i, price := range repo.prices {
-		if price.ProductId == priceToDelete.ProductId && price.UserId == priceToDelete.UserId {
-			repo.prices = append(repo.prices[:i], repo.prices[i+1:]...)
-			return nil
-		}
+func (repo *DemoRepository) Delete(price *model.Price) error {
+	key := priceEntryKey{
+		UserId:    price.UserId,
+		ProductId: price.ProductId,
 	}
 
-	return errors.New(ErrorPriceDeletion)
+	_, exists := repo.prices[key]
+	if !exists {
+		return errors.New(ErrorPriceDeletion)
+	}
+
+	delete(repo.prices, key)
+	return nil
 }
 
 func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {
-	for _, price := range repo.prices {
-		if price.ProductId == productId && price.UserId == userId {
-			return price, nil
-		}
+	key := priceEntryKey{
+		UserId:    userId,
+		ProductId: productId,
 	}
 
-	return nil, errors.New(ErrorPriceNotFound)
+	price, exists := repo.prices[key]
+
+	if !exists {
+		return nil, errors.New(ErrorPriceNotFound)
+	}
+
+	return price, nil
 }
 
 func (repo *DemoRepository) Update(price *model.Price) (*model.Price, error) {

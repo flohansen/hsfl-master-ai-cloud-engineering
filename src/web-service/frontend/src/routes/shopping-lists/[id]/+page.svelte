@@ -1,7 +1,7 @@
 <script lang="ts">
-    import ShoppingListEntry from "$lib/shopplig-list/ShoppingListEntry.svelte";
-    import AddEntryModal from "$lib/shopplig-list/AddEntryModal.svelte";
-    import ViewSelect from "$lib/shopplig-list/ViewSelect.svelte";
+    import ShoppingListEntry from "$lib/shopping-list/ShoppingListEntry.svelte";
+    import AddEntryModal from "$lib/shopping-list/AddEntryModal.svelte";
+    import ViewSelect from "$lib/shopping-list/ViewSelect.svelte";
 
     interface Data {
         list: { id: number, description: string },
@@ -33,7 +33,7 @@
                 <h1 class="text-lg font-semibold lg:text-xl xl:text-2xl">
                     {data.list.description}
                 </h1>
-                <p class="text-gray-dark text-sm mt-1">
+                <p class="text-gray-dark text-sm mt-1">x
                     Anzahl der Einträge: {data.entries.length}
                 </p>
             </div>

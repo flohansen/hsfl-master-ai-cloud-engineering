@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
@@ -70,7 +71,7 @@ func TestRouter(t *testing.T) {
 			router.ServeHTTP(w, r)
 
 			// then
-			assert.Equal(t, http.StatusCreated, w.Code)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
 	})
@@ -150,8 +151,8 @@ func TestRouter(t *testing.T) {
 		t.Run("should call POST handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			jsonRequest := `{"userId": 3, "productId": 3, "price": 0.99}`
-			r := httptest.NewRequest("POST", "/api/v1/price/", strings.NewReader(jsonRequest))
+			jsonRequest := `{"price": 0.99}`
+			r := httptest.NewRequest("POST", "/api/v1/price/3/3", strings.NewReader(jsonRequest))
 
 			// when
 			router.ServeHTTP(w, r)
@@ -162,8 +163,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("/api/v1/price/:productId/:userId", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not GET, DELETE or PUT", func(t *testing.T) {
-			tests := []string{"POST", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
+		t.Run("should return 404 NOT FOUND if method is not GET, DELETE, POST or PUT", func(t *testing.T) {
+			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
 
 			for _, test := range tests {
 				// given
@@ -172,6 +173,8 @@ func TestRouter(t *testing.T) {
 
 				// when
 				router.ServeHTTP(w, r)
+
+				fmt.Println(w.Code)
 
 				// then
 				assert.Equal(t, http.StatusNotFound, w.Code)

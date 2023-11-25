@@ -29,17 +29,17 @@ func main() {
 func createContentForPrices(priceRepository prices.Repository) {
 	pricesSlice := []*priceModel.Price{
 		{
-			UserId:    1,
+			UserId:    2,
 			ProductId: 1,
 			Price:     2.99,
 		},
 		{
-			UserId:    1,
+			UserId:    2,
 			ProductId: 2,
 			Price:     5.99,
 		},
 		{
-			UserId:    1,
+			UserId:    2,
 			ProductId: 3,
 			Price:     0.55,
 		},

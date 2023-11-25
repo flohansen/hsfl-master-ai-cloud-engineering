@@ -17,6 +17,7 @@ func NewDefaultController(userShoppingListEntryRepository Repository) *defaultCo
 
 func (controller defaultController) GetEntries(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -37,6 +38,7 @@ func (controller defaultController) GetEntries(writer http.ResponseWriter, reque
 func (controller defaultController) GetEntry(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -60,6 +62,7 @@ func (controller defaultController) GetEntry(writer http.ResponseWriter, request
 func (controller defaultController) PostEntry(writer http.ResponseWriter, request *http.Request) {
 	listId, listIdErr := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+
 	if listIdErr != nil || productIdErr != nil {
 		http.Error(writer, "Invalid listId or productId", http.StatusBadRequest)
 		return
@@ -87,6 +90,7 @@ func (controller defaultController) PostEntry(writer http.ResponseWriter, reques
 func (controller defaultController) PutEntry(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -113,6 +117,7 @@ func (controller defaultController) PutEntry(writer http.ResponseWriter, request
 func (controller defaultController) DeleteEntry(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return

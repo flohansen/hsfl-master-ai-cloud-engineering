@@ -36,14 +36,22 @@ func (controller defaultController) PostProduct(writer http.ResponseWriter, requ
 		return
 	}
 
-	if _, err := controller.productRepository.Create(&model.Product{
+	product, err := controller.productRepository.Create(&model.Product{
 		Description: requestData.Description,
 		Ean:         requestData.Ean,
-	}); err != nil {
+	})
+
+	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	writer.WriteHeader(http.StatusCreated)
+
+	writer.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(writer).Encode(product)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (controller defaultController) GetProductById(writer http.ResponseWriter, request *http.Request) {

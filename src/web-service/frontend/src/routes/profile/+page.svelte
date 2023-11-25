@@ -68,17 +68,22 @@
                     email="{data.user.email}"
                     role="{userRole}" />
 
-                <section class="mt-28 border-t-gray-dark/25 border-t pt-5 flex items-center">
+                <section class="mt-28 border-t-gray-dark/25 border-t pt-5 flex flex-col items-center gap-x-6 gap-y-4 md:flex-row">
                     {#if userRole !== 'Kund:in'}
                         <a href="/products/add"
                            class="text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
                             <Add classes="w-5 h-5"/>
                             Produkt hinzufügen
                         </a>
+                        <a href="/prices/add"
+                           class="text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
+                            <Add classes="w-5 h-5"/>
+                            Preis hinzufügen
+                        </a>
                     {/if}
                     <button
                         on:click={deleteAccount}
-                        class="ml-auto mr-0 text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light">
+                        class="mx-auto text-green-dark flex items-center gap-x-2 font-medium transition-all ease-in-out duration-300 hover:text-green-light md:ml-auto md:mr-0">
                         <Trash classes="w-5 h-5"/>
                         Account löschen
                     </button>

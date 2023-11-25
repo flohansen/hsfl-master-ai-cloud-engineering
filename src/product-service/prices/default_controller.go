@@ -16,6 +16,14 @@ func NewDefaultController(priceRepository Repository) *defaultController {
 }
 
 func (controller defaultController) PostPrice(writer http.ResponseWriter, request *http.Request) {
+	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+	userId, userIdErr := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+
+	if productIdErr != nil || userIdErr != nil {
+		http.Error(writer, "Invalid listId or productId", http.StatusBadRequest)
+		return
+	}
+
 	var requestData JsonFormatCreatePriceRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -23,8 +31,8 @@ func (controller defaultController) PostPrice(writer http.ResponseWriter, reques
 	}
 
 	if _, err := controller.priceRepository.Create(&model.Price{
-		UserId:    requestData.UserId,
-		ProductId: requestData.ProductId,
+		ProductId: productId,
+		UserId:    userId,
 		Price:     requestData.Price,
 	}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
