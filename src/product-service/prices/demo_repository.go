@@ -2,7 +2,6 @@ package prices
 
 import (
 	"errors"
-	"fmt"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"reflect"
 )
@@ -31,7 +30,7 @@ func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
 		ProductId: price.ProductId,
 		UserId:    price.UserId,
 	}
-	fmt.Println(key)
+
 	repo.prices[key] = price
 
 	return price, nil

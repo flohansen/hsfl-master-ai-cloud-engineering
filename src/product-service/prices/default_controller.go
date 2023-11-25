@@ -2,7 +2,6 @@ package prices
 
 import (
 	"encoding/json"
-	"fmt"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"net/http"
 	"strconv"
@@ -30,8 +29,6 @@ func (controller defaultController) PostPrice(writer http.ResponseWriter, reques
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(productId, userId)
 
 	if _, err := controller.priceRepository.Create(&model.Price{
 		ProductId: productId,

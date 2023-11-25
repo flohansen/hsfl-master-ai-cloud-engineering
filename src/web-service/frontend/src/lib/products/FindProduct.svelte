@@ -3,10 +3,17 @@
     import {handleErrors} from "../../assets/helper/handleErrors";
     import Checkmark from "../../assets/svg/Checkmark.svelte";
     import Close from "../../assets/svg/Close.svelte";
+    import FetchFeedback from "$lib/products/FetchFeedback.svelte";
+
+    interface Product {
+        id: number,
+        description: string,
+        ean: number,
+    }
 
     export let eanSubmitted: boolean = false;
-    export let productId: number;
     export let productEan: number;
+    export let productData: Product;
 
     function findProduct(): void {
         if (! productEan) return;
@@ -15,22 +22,20 @@
         const apiUrl: string = `/api/v1/product/ean/${productEan}`
         fetch(apiUrl)
             .then(handleErrors)
-            .then(data => {
-                if (data && data.id !== undefined) {
-                    productId = data.id;
-                }
-            })
+            .then(data => productData = data)
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
 
 <section class="mb-6 lg:mb-8">
-    <InputText
-        fieldName="productEan"
-        label="EAN des Produktes"
-        type="number"
-        readonly={eanSubmitted}
-        bind:value={productEan} />
+    {#if ! productData}
+        <InputText
+            fieldName="productEan"
+            label="EAN des Produktes"
+            type="number"
+            readonly={eanSubmitted}
+            bind:value={productEan} />
+    {/if}
 
     {#if ! eanSubmitted}
         <button
@@ -39,22 +44,9 @@
             <span class="text-sm lg:text-base">Produkt suchen</span>
         </button>
     {:else}
-        <div class="flex items-start gap-x-2 mt-3">
-            <figure class="w-6 h-6 rounded-full flex items-center justify-center { productId ? 'bg-green-light/25' : 'bg-red/25' }">
-                {#if productId}
-                    <Checkmark classes="text-green-dark w-4 h-4"/>
-                {:else}
-                    <Close classes="text-red w-4 h-4"/>
-                {/if }
-            </figure>
-            <span class="text-sm text-gray-dark">
-                {#if productId}
-                    Produkt gefunden
-                {:else}
-                    Produkt mit angegebener EAN konnte nicht gefunden werden.<br>
-                    Das Produkt muss neu hinzugefügt werden.
-                {/if}
-            </span>
-        </div>
+        <FetchFeedback
+            productData={productData}
+            successfulMessage="Produkt mit angegebener EAN wurde gefunden"
+            notSuccessfulMessage="Produkt mit angegebener EAN konnte nicht gefunden werden. Das Produkt muss neu hinzugefügt werden." />
     {/if}
 </section>
