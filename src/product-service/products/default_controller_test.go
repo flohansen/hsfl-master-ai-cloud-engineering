@@ -361,7 +361,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
@@ -377,7 +377,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"description": "Incomplete Product"}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{

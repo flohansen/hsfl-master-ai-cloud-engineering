@@ -14,23 +14,19 @@ func NewDemoRepository() *DemoRepository {
 }
 
 func (repo *DemoRepository) Create(product *model.Product) (*model.Product, error) {
-	var productId uint64
 	if product.Id == 0 {
-		productId = repo.findNextAvailableID()
-	} else {
-		productId = product.Id
+		product.Id = repo.findNextAvailableID()
 	}
 
-	foundProductWithEan, _ := repo.FindByEan(product.Ean)
-	if foundProductWithEan != nil {
+	if foundProductWithEan, _ := repo.FindByEan(product.Ean); foundProductWithEan != nil {
 		return nil, errors.New(ErrorEanAlreadyExists)
 	}
 
-	_, found := repo.products[productId]
-	if found {
+	if _, found := repo.products[product.Id]; found {
 		return nil, errors.New(ErrorProductAlreadyExists)
 	}
-	repo.products[productId] = product
+
+	repo.products[product.Id] = product
 
 	return product, nil
 }
