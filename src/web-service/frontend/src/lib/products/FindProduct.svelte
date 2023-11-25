@@ -11,18 +11,42 @@
         ean: number,
     }
 
+    interface Price {
+        price: number,
+    }
+
     export let eanSubmitted: boolean = false;
     export let productEan: number;
     export let productData: Product;
+    export let shouldFindPrice: boolean = false;
+    export let priceIsAlreadyCreated: boolean = false;
+    let priceData: Price;
 
     function findProduct(): void {
         if (! productEan) return;
 
         eanSubmitted = true;
         const apiUrl: string = `/api/v1/product/ean/${productEan}`
+
         fetch(apiUrl)
             .then(handleErrors)
-            .then(data => productData = data)
+            .then(data => { productData = data; findPrice()})
+            .catch(error => console.error("Failed to fetch data:", error.message));
+    }
+
+    function findPrice() {
+        if (! shouldFindPrice || ! productData.id) return;
+
+        const userId: number = 2 // TODO: add current user id
+        const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`
+
+        fetch(apiUrl)
+            .then(handleErrors)
+            .then(data => {
+                if (! data) return;
+                priceData = data;
+                priceIsAlreadyCreated = true;
+            })
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
@@ -46,6 +70,7 @@
     {:else}
         <FetchFeedback
             productData={productData}
+            priceData={priceData}
             successfulMessage="Produkt mit angegebener EAN wurde gefunden"
             notSuccessfulMessage="Produkt mit angegebener EAN konnte nicht gefunden werden. Das Produkt muss neu hinzugefügt werden." />
     {/if}

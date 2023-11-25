@@ -8,7 +8,12 @@
         ean: number,
     }
 
+    interface Price {
+        price: number,
+    }
+
     export let productData: Product;
+    export let priceData: Price;
     export let successfulMessage: string;
     export let notSuccessfulMessage: string;
 </script>
@@ -36,6 +41,9 @@
                 Produkt-ID: {productData.id}<br>
                 Produkt-Beschreibung: {productData.description}<br>
                 Produkt-EAN: {productData.ean}
+                {#if priceData}
+                    <br>Produkt-Preis: {priceData.price} €
+                {/if}
             </p>
         {/if}
     </div>
