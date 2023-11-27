@@ -41,6 +41,18 @@ func (repo *DemoRepository) Delete(user *model.User) error {
 	return errors.New("user could not be deleted")
 }
 
+func (repo *DemoRepository) FindAll() ([]*model.User, error) {
+	if repo.users != nil {
+		r := make([]*model.User, 0, len(repo.users))
+		for _, v := range repo.users {
+			r = append(r, v)
+		}
+		return r, nil
+	}
+
+	return nil, errors.New(ErrorUserList)
+}
+
 func (repo *DemoRepository) FindByEmail(email string) (*model.User, error) {
 	for _, user := range repo.users {
 		if user.Email == email {

@@ -3,6 +3,7 @@ package user
 import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -28,6 +29,72 @@ func TestDemoRepository_CreateUser(t *testing.T) {
 	_, err = demoRepository.Create(&user)
 	if err.Error() != "user already exists" {
 		t.Error(err)
+	}
+}
+
+func TestDemoRepository_FindAll(t *testing.T) {
+	// Prepare test
+	demoRepository := NewDemoRepository()
+
+	users := []*model.User{
+		{
+			Id:       1,
+			Email:    "ada.lovelace@gmail.com",
+			Password: []byte("123456"),
+			Name:     "Ada Lovelace",
+			Role:     model.Customer,
+		},
+		{
+			Id:       2,
+			Email:    "alan.turin@gmail.com",
+			Password: []byte("123456"),
+			Name:     "Alan Turing",
+			Role:     model.Customer,
+		},
+	}
+
+	for _, user := range users {
+		_, err := demoRepository.Create(user)
+		if err != nil {
+			t.Error("Failed to add prepared product for test")
+		}
+	}
+
+	t.Run("Fetch all users", func(t *testing.T) {
+		fetchedUsers, err := demoRepository.FindAll()
+		if err != nil {
+			t.Error("Can't fetch users")
+		}
+
+		if len(fetchedUsers) != len(users) {
+			t.Errorf("Unexpected product count. Expected %d, got %d", len(users), len(fetchedUsers))
+		}
+	})
+
+	userTests := []struct {
+		name string
+		want *model.User
+	}{
+		{
+			name: "first",
+			want: users[0],
+		},
+		{
+			name: "second",
+			want: users[1],
+		},
+	}
+
+	for i, tt := range userTests {
+		t.Run("Is fetched product matching with "+tt.name+" added product?", func(t *testing.T) {
+			fetchedUsers, _ := demoRepository.FindAll()
+			sort.Slice(fetchedUsers, func(i, j int) bool {
+				return fetchedUsers[i].Id < fetchedUsers[j].Id
+			})
+			if !reflect.DeepEqual(tt.want, fetchedUsers[i]) {
+				t.Error("Fetched product does not match original product")
+			}
+		})
 	}
 }
 

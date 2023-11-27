@@ -16,6 +16,20 @@ func NewDefaultController(userRepository Repository) *defaultController {
 	return &defaultController{userRepository}
 }
 
+func (controller defaultController) GetUsers(writer http.ResponseWriter, request *http.Request) {
+	values, err := controller.userRepository.FindAll()
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(writer).Encode(values)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (controller defaultController) GetUser(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {

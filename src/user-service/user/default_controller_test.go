@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -34,6 +35,58 @@ func TestNewDefaultController(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDefaultController_GetUsers(t *testing.T) {
+	t.Run("should return all products", func(t *testing.T) {
+		controller := defaultController{
+			userRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+
+		// Test request
+		controller.GetUsers(writer, request)
+
+		res := writer.Result()
+		var response []model.User
+		err := json.NewDecoder(res.Body).Decode(&response)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		users := setupDemoUserSlice()
+
+		sort.Slice(response, func(i, j int) bool {
+			return response[i].Id < response[j].Id
+		})
+
+		if len(response) != len(users) {
+			t.Errorf("Expected count of product is %d, got %d",
+				2, len(response))
+		}
+
+		for i, user := range users {
+			if user.Id != response[i].Id {
+				t.Errorf("Expected id of user %d, got %d", user.Id, response[i].Id)
+			}
+
+			if user.Name != response[i].Name {
+				t.Errorf("Expected name of user %s, got %s", user.Name, response[i].Name)
+			}
+		}
+	})
 }
 
 func TestDefaultController_GetUser(t *testing.T) {
@@ -430,12 +483,11 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 	}
 }
 
-func setupMockRepository() Repository {
+func setupDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
 	hashedPassword, _ := bcryptHasher.Hash([]byte("123456"))
 
-	repository := NewDemoRepository()
-	usersSlice := []*model.User{
+	return []*model.User{
 		{
 			Id:       1,
 			Email:    "ada.lovelace@gmail.com",
@@ -451,6 +503,12 @@ func setupMockRepository() Repository {
 			Role:     model.Customer,
 		},
 	}
+}
+
+func setupMockRepository() Repository {
+	repository := NewDemoRepository()
+	usersSlice := setupDemoUserSlice()
+
 	for _, user := range usersSlice {
 		repository.Create(user)
 	}

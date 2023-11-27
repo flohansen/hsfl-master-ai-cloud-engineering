@@ -18,8 +18,8 @@ func TestRouter(t *testing.T) {
 	registerHandler := setUpRegisterHandler()
 
 	userRepo := setupUserRepository()
-	pricesController := user.NewDefaultController(userRepo)
-	router := New(loginHandler, registerHandler, pricesController)
+	userController := user.NewDefaultController(userRepo)
+	router := New(loginHandler, registerHandler, userController)
 
 	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
 		// given
@@ -117,6 +117,18 @@ func TestRouter(t *testing.T) {
 				// then
 				assert.Equal(t, http.StatusNotFound, w.Code)
 			}
+		})
+
+		t.Run("should call GET handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/user", nil)
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
 		t.Run("should call GET handler", func(t *testing.T) {
