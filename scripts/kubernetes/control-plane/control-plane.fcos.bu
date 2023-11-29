@@ -1,0 +1,66 @@
+variant: fcos
+version: 1.4.0
+storage:
+  files:
+    # CRI-O DNF module
+    - path: /etc/dnf/modules.d/cri-o.module
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [cri-o]
+          name=cri-o
+          stream=1.17
+          profiles=
+          state=enabled
+    # YUM repository for kubeadm, kubelet and kubectl
+    - path: /etc/yum.repos.d/kubernetes.repo
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+          enabled=1
+          gpgcheck=0
+          repo_gpgcheck=0
+          gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    # configuring automatic loading of br_netfilter on startup
+    - path: /etc/modules-load.d/br_netfilter.conf
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: br_netfilter
+    # setting kernel parameters required by kubelet
+    - path: /etc/sysctl.d/kubernetes.conf
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          net.bridge.bridge-nf-call-iptables=1
+          net.ipv4.ip_forward=1
+systemd:
+  units:
+    - name: install-kubernetes.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install Kubernetes components
+        After=network-online.target
+        Wants=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/rpm-ostree install kubelet kubeadm kubectl cri-o
+        RemainAfterExit=yes
+        ExecStartPost=/bin/systemctl daemon-reload
+        ExecStartPost=/bin/systemctl enable --now crio kubelet
+
+        [Install]
+        WantedBy=multi-user.target
+passwd: # setting login credentials
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDZYdjOuErWh8owah5YkHpU4mO9qMiT6eJOqp9oB5uh/9qFOh+0j9+wzzKVXazN5G0ctZuw/F2exgGyh1uCxx0LYMgw2Ysu6VNOvsYYKsBquLHS1RlaW9CxcQCnRnHMqVwTQyq+YnMbHflZQskPe6UQYBd2IbE61CFdgoQZ796tJh814PXsxD/cnEIilSWHqYEK2deY7whBs8v4A2w5+bdNbM9DPbi32e/ehI78qoFwgJKISSebA6FdLbBMkNtoh/Ys+++kCRf1dHkKCZpP/nyiiKfARfh5P37mtRRiJ9oVBgRDU9IiFbMCvrHG24sQnG6TYhQb+YhdAr2YE9YXLGx9qxhxJJFpTVUzrFc4CaGKYCLoQvx9vxEdDkUeMcxXsQ0uvmg5qQIm+FjvApvGNl2jDiHdXetSBLLFjg3Q1bzLiOmdpZaYdRT1dFmGnjn8DQzZv0kpghXB962+Cpw/XDGgbn4zNojZ4uft3tQsjUNdstQZ7MtLqBLqPZ1xIucQBvM=
