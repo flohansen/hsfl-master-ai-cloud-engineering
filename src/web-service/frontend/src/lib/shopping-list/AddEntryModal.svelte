@@ -62,6 +62,6 @@
 <Modal on:submit={submit} bind:isOpen>
     <h3 class="text-lg font-semibold lg:text-xl">Eintrag hinzufügen:</h3>
 
-    <Select bind:entryId={entry.id}/>
+    <Select bind:justValue={entry.id}/>
     <Count bind:count={entry.count}/>
 </Modal>

@@ -9,7 +9,7 @@
     const label = 'description';
 
     let items: { id: number, description: string }[] = [];
-    export let entryId: number;
+    export let justValue: number;
 
     onMount(async () => {
         const apiUrlProducts: string = '/api/v1/product';
@@ -25,11 +25,13 @@
     <p class="text-gray-dark text-sm font-medium mb-2 lg:mb-3 lg:text-base">
         Anzahl auswählen:
     </p>
+
     <Select
         {itemId}
         {label}
         {items}
         {placeholder}
+        bind:justValue
         clearable={false}
         listOffset={0}
         showChevron
