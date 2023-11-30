@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web-container
+          image: onyxmoon/pw-web-service:latest
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+        - name: products-container
+          image: onyxmoon/pw-product-service:latest
+          ports:
+            - containerPort: 3003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products
+spec:
+  selector:
+    app: products
+  ports:
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users
+  template:
+    metadata:
+      labels:
+        app: users
+    spec:
+      containers:
+        - name: users-container
+          image: onyxmoon/pw-user-service:latest
+          ports:
+            - containerPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users
+spec:
+  selector:
+    app: users
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoppinglists-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shoppinglists
+  template:
+    metadata:
+      labels:
+        app: shoppinglists
+    spec:
+      containers:
+        - name: shoppinglists-container
+          image: onyxmoon/pw-shoppinglist-service:latest
+          ports:
+            - containerPort: 3002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shoppinglists
+spec:
+  selector:
+    app: shoppinglists
+  ports:
+    - protocol: TCP
+      port: 3002
+      targetPort: 3002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: proxy-container
+          image: onyxmoon/pw-http-proxy-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PROXY_DOCKER_CONFIG_PATH
+              value: "./config"
+            - name: PROXY_DOCKER_CONFIG_FILENAME
+              value: "proxyConfig.docker.native.yaml"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+spec:
+  type: LoadBalancer
+  selector:
+    app: proxy
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

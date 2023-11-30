@@ -132,4 +132,3 @@ fabric.properties
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,goland+all,go
-scripts/kubernetes-cluster/ansible/**/*.pub

@@ -13,13 +13,11 @@ sed -e "/^.*$2.*/d" -i /etc/hosts
 # Update /etc/hosts about other hosts
 cat >> /etc/hosts <<EOF
 127.0.0.1   localhost
-${NETWORK}.111  kubemaster
-${NETWORK}.201  kubenode01
-${NETWORK}.202  kubenode02
-${NETWORK}.203  kubenode03
-${NETWORK}.204  kubenode04
-${NETWORK}.205  kubenode05
-${NETWORK}.206  kubenode06
+${NETWORK}.11  kubemaster
+${NETWORK}.101  kubenode01
+${NETWORK}.102  kubenode02
+${NETWORK}.103  kubenode03
+${NETWORK}.104  kubenode04
 EOF
 
 sed -e 's/PasswordAuthentication no/PasswordAuthentication yes/' -i /etc/ssh/sshd_config
