@@ -33,8 +33,8 @@ Vagrant.configure("2") do |config|
 
         node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
 
-        node.vm.provision "copy_public_key", type: "file", source: "ubuntu/vagrant/onyxmoon.pub", destination: "/tmp/onyxmoon.pub"
-        node.vm.provision  "update_public_key", type: "shell", inline: "cat /tmp/onyxmoon.pub > /home/ubuntu/.ssh/authorized_keys"
+        node.vm.provision "copy_public_key", type: "file", source: "ubuntu/vagrant/id_rsa.pub", destination: "/tmp/id_rsa.pub"
+        node.vm.provision  "update_public_key", type: "shell", inline: "cat /tmp/id_rsa.pub > /home/ubuntu/.ssh/authorized_keys"
 
       end
   end
@@ -58,8 +58,8 @@ Vagrant.configure("2") do |config|
 
         node.vm.provision "setup-dns", type: "shell", :path => "ubuntu/update-dns.sh"
 
-        node.vm.provision "copy_public_key", type: "file", source: "ubuntu/vagrant/my_key.pub", destination: "/tmp/my_key.pub"
-        node.vm.provision  "update_public_key", type: "shell", inline: "cat /tmp/my_key.pub > /home/ubuntu/.ssh/authorized_keys"
+        node.vm.provision "copy_public_key", type: "file", source: "ubuntu/vagrant/id_rsa.pub", destination: "/tmp/id_rsa.pub"
+        node.vm.provision  "update_public_key", type: "shell", inline: "cat /tmp/id_rsa.pub > /home/ubuntu/.ssh/authorized_keys"
 
     end
   end
