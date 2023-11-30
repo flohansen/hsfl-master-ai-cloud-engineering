@@ -5,10 +5,11 @@
     import Select from 'svelte-select';
 
     let placeholder: string = 'Eintrag auswählen';
+    let listOpen: boolean = false;
     const itemId = 'id';
     const label = 'description';
-
     let items: { id: number, description: string }[] = [];
+
     export let justValue: number;
 
     onMount(async () => {
@@ -31,6 +32,7 @@
         {label}
         {items}
         {placeholder}
+        bind:listOpen
         bind:justValue
         clearable={false}
         listOffset={0}
@@ -48,6 +50,6 @@
         --list-background="#F4F4F9"
         --chevron-width="1.75rem"
         --chevron-height="1rem">
-        <Chevron slot="chevron-icon" classes="w-4 h-4 text-green-dark/75 mr-3"/>
+        <Chevron slot="chevron-icon" classes="w-4 h-4 text-green-dark/75 mr-3 transition-all ease-in-out duration-300 { listOpen ? 'rotate-180' : '' }"/>
     </Select>
 </div>
