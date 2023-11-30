@@ -26,10 +26,10 @@
 
     <slot></slot>
 
-    <div class="md:flex md:items-center md:gap-x-4 md:justify-center">
+    <div class="mt-8 flex flex-col items-center justify-center gap-4 md:flex-row">
         <button
             on:click={() => isOpen = !isOpen}
-            class="border-[1.5px] border-green-light mt-8 text-green-light rounded-xl px-5 py-2 flex items-center justify-center gap-x-2 transition-all ease-in-out duration-300 hover:bg-green-dark hover:border-green-dark hover:text-white">
+            class="border-[1.5px] border-green-light text-green-light rounded-xl px-5 py-2 flex items-center justify-center gap-x-2 transition-all ease-in-out duration-300 hover:bg-green-dark hover:border-green-dark hover:text-white">
             <span class="text-sm lg:text-base">Abbrechen</span>
             <Close classes="w-5 h-5"/>
         </button>
