@@ -17,7 +17,7 @@
     }
 
     let isOpen: boolean = false;
-    let entry: NewEntry = { id: 0, count: 0, checked: false };
+    let entry: NewEntry = { id: 0, count: 1, checked: false };
 
     export let listId: number;
     export let currentEntries: ShoppingListEntry[];
