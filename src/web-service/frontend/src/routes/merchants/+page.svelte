@@ -25,7 +25,7 @@
         {#if data.merchants}
             {#each data.merchants as merchant}
                 <li class="bg-white w-full rounded-2xl flex items-center justify-between transition-all ease-in-out duration-300 group hover:bg-blue-light/25">
-                    <a href="/" class="w-full px-3 py-5 lg:px-6 lg:py-8">
+                    <a href="/merchants/{merchant.id}" class="w-full px-3 py-5 lg:px-6 lg:py-8">
                         <div class="text-left">
                             <h3 class="font-semibold text-base transition-all ease-in-out duration-300 group-hover:text-blue-dark lg:text-lg">
                                 {merchant.name}
