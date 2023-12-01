@@ -102,6 +102,44 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 	}
 }
 
+func TestDefaultController_GetPrices(t *testing.T) {
+	t.Run("should return all prices", func(t *testing.T) {
+		controller := defaultController{
+			priceRepository: setupMockRepository(),
+		}
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+
+		// Test request
+		controller.GetPrices(writer, request)
+
+		res := writer.Result()
+		var response []model.Price
+		err := json.NewDecoder(res.Body).Decode(&response)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		prices := setupDemoPricesSlice()
+
+		if len(response) != len(prices) {
+			t.Errorf("Expected count of prices is %d, got %d",
+				2, len(response))
+		}
+	})
+}
+
 func TestDefaultController_GetPrice(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
@@ -426,7 +464,16 @@ func createRequestWithValues(method string, path string, productId string, userI
 
 func setupMockRepository() Repository {
 	repository := NewDemoRepository()
-	pricesSlice := []*model.Price{
+	pricesSlice := setupDemoPricesSlice()
+	for _, price := range pricesSlice {
+		repository.Create(price)
+	}
+
+	return repository
+}
+
+func setupDemoPricesSlice() []*model.Price {
+	return []*model.Price{
 		{
 			UserId:    1,
 			ProductId: 1,
@@ -438,9 +485,4 @@ func setupMockRepository() Repository {
 			Price:     5.99,
 		},
 	}
-	for _, price := range pricesSlice {
-		repository.Create(price)
-	}
-
-	return repository
 }

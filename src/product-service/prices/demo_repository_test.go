@@ -39,6 +39,73 @@ func TestDemoRepository_Create(t *testing.T) {
 	})
 }
 
+func TestDemoRepository_FindAll(t *testing.T) {
+	demoRepository := NewDemoRepository()
+
+	prices := []*model.Price{
+		{
+			UserId:    1,
+			ProductId: 1,
+			Price:     2.99,
+		},
+		{
+			UserId:    2,
+			ProductId: 3,
+			Price:     0.55,
+		},
+	}
+
+	for _, price := range prices {
+		_, err := demoRepository.Create(price)
+		if err != nil {
+			t.Error("Failed to add prepared product for test")
+		}
+	}
+
+	t.Run("Fetch all prices", func(t *testing.T) {
+		fetchedPrices, err := demoRepository.FindAll()
+		if err != nil {
+			t.Error("Can't fetch products")
+		}
+
+		if len(fetchedPrices) != len(prices) {
+			t.Errorf("Unexpected price count. Expected %d, got %d", len(prices), len(fetchedPrices))
+		}
+	})
+
+	priceTest := []struct {
+		name string
+		want *model.Price
+	}{
+		{
+			name: "first",
+			want: prices[0],
+		},
+		{
+			name: "second",
+			want: prices[1],
+		},
+	}
+
+	for _, tt := range priceTest {
+		t.Run("Is fetched price matching with "+tt.name+" added price?", func(t *testing.T) {
+			fetchedPrices, _ := demoRepository.FindAll()
+			found := false
+
+			for _, fetchedPrice := range fetchedPrices {
+				if reflect.DeepEqual(tt.want, fetchedPrice) {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				t.Error("Fetched price does not match original price")
+			}
+		})
+	}
+}
+
 func TestDemoRepository_FindByIds(t *testing.T) {
 	demoRepository := NewDemoRepository()
 

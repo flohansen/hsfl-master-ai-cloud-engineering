@@ -102,14 +102,14 @@ func TestRouter(t *testing.T) {
 		})
 	})
 
-	t.Run("/api/v1/user/:userId", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not GET, DELETE, PUT or POST", func(t *testing.T) {
-			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
+	t.Run("/api/v1/user", func(t *testing.T) {
+		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
+			tests := []string{"DELETE", "PUT", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
 
 			for _, test := range tests {
 				// given
 				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/user/1", nil)
+				r := httptest.NewRequest(test, "/api/v1/products", nil)
 
 				// when
 				router.ServeHTTP(w, r)
@@ -122,13 +122,44 @@ func TestRouter(t *testing.T) {
 		t.Run("should call GET handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", "/api/v1/user", nil)
+			r := httptest.NewRequest("GET", "/api/v1/user/", nil)
 
 			// when
 			router.ServeHTTP(w, r)
 
 			// then
 			assert.Equal(t, http.StatusOK, w.Code)
+		})
+
+		t.Run("should call POST handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			jsonRequest := `{"id": 3, "email": "example@googlemail.com", "password": "password", "name": "Example name"}`
+			r := httptest.NewRequest("POST", "/api/v1/user/", strings.NewReader(jsonRequest))
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusCreated, w.Code)
+		})
+	})
+
+	t.Run("/api/v1/user/:userId", func(t *testing.T) {
+		t.Run("should return 404 NOT FOUND if method is not GET, DELETE or PUT", func(t *testing.T) {
+			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "POST"}
+
+			for _, test := range tests {
+				// given
+				w := httptest.NewRecorder()
+				r := httptest.NewRequest(test, "/api/v1/user/1", nil)
+
+				// when
+				router.ServeHTTP(w, r)
+
+				// then
+				assert.Equal(t, http.StatusNotFound, w.Code)
+			}
 		})
 
 		t.Run("should call GET handler", func(t *testing.T) {
@@ -154,19 +185,6 @@ func TestRouter(t *testing.T) {
 
 			// then
 			assert.Equal(t, http.StatusOK, w.Code)
-		})
-
-		t.Run("should call POST handler", func(t *testing.T) {
-			// given
-			w := httptest.NewRecorder()
-			jsonRequest := `{"id": 3, "email": "example@googlemail.com", "password": "password", "name": "Example name"}`
-			r := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(jsonRequest))
-
-			// when
-			router.ServeHTTP(w, r)
-
-			// then
-			assert.Equal(t, http.StatusCreated, w.Code)
 		})
 
 		t.Run("should call DELETE handler", func(t *testing.T) {

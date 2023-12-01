@@ -21,10 +21,10 @@ func New(
 	r.POST("/api/v1/user/login", loginHandler.Login)
 	r.POST("/api/v1/user/register", registerHandler.Register)
 
-	r.GET("/api/v1/user", userHandler.GetUsers)
+	r.GET("/api/v1/user/", userHandler.GetUsers)
 	r.GET("/api/v1/user/:userId", userHandler.GetUser)
 	r.PUT("/api/v1/user/:userId", userHandler.PutUser)
-	r.POST("/api/v1/user", userHandler.PostUser)
+	r.POST("/api/v1/user/", userHandler.PostUser)
 	r.DELETE("/api/v1/user/:userId", userHandler.DeleteUser)
 
 	return &Router{r}

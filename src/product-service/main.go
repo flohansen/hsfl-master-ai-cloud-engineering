@@ -43,6 +43,11 @@ func createContentForPrices(priceRepository prices.Repository) {
 			ProductId: 3,
 			Price:     0.55,
 		},
+		{
+			UserId:    1,
+			ProductId: 3,
+			Price:     0.55,
+		},
 	}
 
 	for _, price := range pricesSlice {

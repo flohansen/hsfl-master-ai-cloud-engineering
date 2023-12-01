@@ -73,7 +73,6 @@ func TestRouter(t *testing.T) {
 			// then
 			assert.Equal(t, http.StatusOK, w.Code)
 		})
-
 	})
 
 	t.Run("/api/v1/product/:productid", func(t *testing.T) {
@@ -146,6 +145,18 @@ func TestRouter(t *testing.T) {
 				// then
 				assert.Equal(t, http.StatusNotFound, w.Code)
 			}
+		})
+
+		t.Run("should call GET handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/price/", nil)
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
 		t.Run("should call POST handler", func(t *testing.T) {
