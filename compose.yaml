@@ -1,4 +1,20 @@
 services:
+  load-balancer:
+    build:
+      context: ./
+      dockerfile: ./src/load-balancer/Dockerfile
+    ports:
+      - '3001:3000'
+    environment:
+      - PORT=3000
+      - IMAGE=docker.io/yeasy/simple-web
+      - NETWORK_NAME=bulletinboard
+      - REPLICAS=3
+      - HEALTH_CHECK_INTERVAL_SECONDS=5
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - bulletinboard
   gateway:
     build:
       context: ./
@@ -68,3 +84,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+networks:
+  bulletinboard:
+    driver: bridge
+    name: bulletinboard
