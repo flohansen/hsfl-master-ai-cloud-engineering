@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 
 	dir := http.Dir("./src/web-service/public")
 

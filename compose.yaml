@@ -37,7 +37,7 @@ services:
       context: ./
       dockerfile: ./src/web-service/Dockerfile
     environment:
-      - PORT=3000
+      - SERVER_PORT=3000
   auth-service:
     build:
       context: ./
