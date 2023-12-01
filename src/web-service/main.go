@@ -10,7 +10,7 @@ import (
 func main() {
 	port := os.Getenv("SERVER_PORT")
 
-	dir := http.Dir("./src/web-service/public")
+	dir := http.Dir("./public")
 
 	fs := http.FileServer(dir)
 
