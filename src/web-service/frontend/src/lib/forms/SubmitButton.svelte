@@ -2,7 +2,7 @@
     import Checkmark from "../../assets/svg/Checkmark.svelte";
     import {createEventDispatcher} from "svelte";
 
-    export let label: string;
+    export let label: string = 'Speichern';
     export let centered: boolean = true;
     const dispatch = createEventDispatcher()
 </script>
