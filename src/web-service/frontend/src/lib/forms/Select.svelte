@@ -2,18 +2,22 @@
     import Chevron from "../../assets/svg/Chevron.svelte";
     import {onMount} from "svelte";
     import {handleErrors} from "../../assets/helper/handleErrors";
+    import Select from 'svelte-select';
 
-    let isOpen: boolean = false;
-    let label: string = 'Eintrag auswählen';
-    let products: { id: number, description: string }[] = [];
-    export let entryId: number;
+    let placeholder: string = 'Eintrag auswählen';
+    let listOpen: boolean = false;
+    const itemId = 'id';
+    const label = 'description';
+    let items: { id: number, description: string }[] = [];
+
+    export let justValue: number;
 
     onMount(async () => {
         const apiUrlProducts: string = '/api/v1/product';
 
         fetch(apiUrlProducts)
             .then(handleErrors)
-            .then(data => products = data)
+            .then(data => items = data)
             .catch(error => console.error("Failed to fetch data:", error.message));
     });
 </script>
@@ -23,31 +27,29 @@
         Anzahl auswählen:
     </p>
 
-    <button
-        aria-haspopup="listbox"
-        aria-expanded="{isOpen}"
-        aria-controls="select-options"
-        on:click={() => isOpen = ! isOpen}
-        class="rounded-lg border px-3 py-2 w-full text-left text-green-dark/75 flex items-center justify-between transition-all duration-300 ease-in-out hover:bg-blue-light/25 lg:px-4 lg:py-3
-            {isOpen ? 'border-green-dark' : 'border-green-dark/50'}">
-        <span class="font-medium text-sm lg:text-base">{label}</span>
-        <Chevron classes="w-4 h-4 transition-all duration-300 ease-in-out {isOpen ? 'rotate-180' : ''}"/>
-    </button>
-
-    <div class:hidden={! isOpen}>
-        <ul
-            id="select-options"
-            role="listbox"
-            class="absolute h-full min-h-[20vh] overflow-y-auto top-[4.4rem] w-full bg-gray-light rounded-lg shadow-gray-dark/30 shadow-lg lg:top-[5.75rem]">
-            {#each products as product}
-                <li role="option" aria-selected="false" class="px-4 group transition-all ease-in-out duration-300 hover:bg-gray-dark/25 lg:px-6">
-                    <button
-                        on:click={() => {entryId = product.id; label = product.description; isOpen = false}}
-                        class="w-full text-left text-sm py-2.5 sm:py-3 border-t border-t-gray-dark/20 group-first:border-none lg:py-4 lg:text-base">
-                        {product.description}
-                    </button>
-                </li>
-            {/each}
-        </ul>
-    </div>
+    <Select
+        {itemId}
+        {label}
+        {items}
+        {placeholder}
+        bind:listOpen
+        bind:justValue
+        clearable={false}
+        listOffset={0}
+        showChevron
+        --border="1px solid rgba(49, 112, 80, 0.5)"
+        --border-radius="0.5rem"
+        --border-focused="1px solid rgba(49, 112, 80, 1)"
+        --placeholder-color="rgba(49, 112, 80, 0.75)"
+        --input-color="rgba(49, 112, 80, 1)"
+        --selected-item-color="rgba(49, 112, 80, 1)"
+        --font-size="0.875rem"
+        --list-border-radius="0 0 0.5rem 0.5rem"
+        --item-hover-bg="rgba(143, 143, 143, 0.25)"
+        --item-is-active-bg="rgba(49, 112, 80, 0.75)"
+        --list-background="#F4F4F9"
+        --chevron-width="1.75rem"
+        --chevron-height="1rem">
+        <Chevron slot="chevron-icon" classes="w-4 h-4 text-green-dark/75 mr-3 transition-all ease-in-out duration-300 { listOpen ? 'rotate-180' : '' }"/>
+    </Select>
 </div>

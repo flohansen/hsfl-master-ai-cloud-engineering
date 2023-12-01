@@ -17,7 +17,7 @@
     }
 
     let isOpen: boolean = false;
-    let entry: NewEntry = { id: 0, count: 0, checked: false };
+    let entry: NewEntry = { id: 0, count: 1, checked: false };
 
     export let listId: number;
     export let currentEntries: ShoppingListEntry[];
@@ -62,6 +62,6 @@
 <Modal on:submit={submit} bind:isOpen>
     <h3 class="text-lg font-semibold lg:text-xl">Eintrag hinzufügen:</h3>
 
-    <Select bind:entryId={entry.id}/>
+    <Select bind:justValue={entry.id}/>
     <Count bind:count={entry.count}/>
 </Modal>
