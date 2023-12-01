@@ -77,9 +77,9 @@ jobs:
 
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v3
-          with:
-            name: build-artifact
-            path: ./src/web-service/public
+        with:
+          name: build-artifact
+          path: ./src/web-service/public
   build-and-push-image:
     name: Build and push web-service image
     runs-on: ubuntu-latest
