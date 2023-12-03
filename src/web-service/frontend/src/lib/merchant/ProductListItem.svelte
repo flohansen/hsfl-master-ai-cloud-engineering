@@ -52,9 +52,4 @@
             <Trash classes="w-5 h-5" />
         </button>
     </section>
-
-    <div class="flex items-center gap-x-2 mt-1">
-        <button class="text-sm">Preis editieren</button>
-        <button class="text-sm">Produkt editieren</button>
-    </div>
 </li>
