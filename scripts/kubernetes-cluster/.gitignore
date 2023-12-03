@@ -1,0 +1,3 @@
+ansible_playbooks/join_cluster.sh
+ansible/**/*.pub
+.vagrant
