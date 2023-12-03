@@ -1,4 +1,4 @@
-import {handleErrors} from "../../assets/helper/handleErrors";
+import { handleErrors } from "../../assets/helper/handleErrors";
 
 interface Merchant {
     id: number;
@@ -14,34 +14,48 @@ interface Price {
 }
 
 export const load = async (): Promise<object> => {
-    const apiUrlUsers: string = '/api/v1/user/role/1';
-    const apiUrlPrices: string = '/api/v1/price';
+    const apiUrlMerchants = '/api/v1/user/role/1';
 
-    const [merchants, prices] = await Promise.all([
-        fetch(apiUrlUsers).then(handleErrors),
-        fetch(apiUrlPrices).then(handleErrors),
-    ]);
+    try {
+        const merchantsResponse: Response = await fetch(apiUrlMerchants);
+        const merchants: Merchant[] = await handleErrors(merchantsResponse);
+        const prices: Price[] = await getPricesArray(merchants);
 
-    if (merchants === null || prices === null) {
-        console.warn('Products or users not found');
+        merchants.forEach((merchant) => {
+            merchant.productsCount = calculateProductsCount(merchant.id, prices);
+        });
+
+        return {
+            merchants,
+            metaTitle: 'Auflistung der Supermärkte',
+            headline: 'Alle verfügbaren Supermärkte',
+        };
+    } catch (error) {
+        return {
+            merchants: [],
+            metaTitle: 'Auflistung der Supermärkte',
+            headline: 'Alle verfügbaren Supermärkte',
+        };
     }
-
-    return {
-        merchants: merchants ? getMerchantsContent(merchants, prices) : [],
-        metaTitle: 'Auflistung der Supermärkte',
-        headline: 'Alle verfügbaren Supermärkte',
-    };
 };
 
-function getMerchantsContent(merchants: Merchant[], prices: Price[]): Merchant[] {
-    merchants.forEach(merchant => {
-        merchant.productsCount = calculateProductsCount(merchant.id, prices);
-    });
+async function fetchPrices(url: string): Promise<Price[]> {
+    const response: Response = await fetch(url);
 
-    return merchants;
+    return handleErrors(response);
+}
+
+async function getPricesArray(merchants: Merchant[]): Promise<Price[]> {
+    const pricesPromises: Promise<Price[]>[] = merchants.map(
+        (merchant: Merchant) => fetchPrices(`/api/v1/price/user/${merchant.id}`));
+    const pricesArray: Price[][] = await Promise.all(pricesPromises);
+
+    return pricesArray.flat();
 }
 
 function calculateProductsCount(merchantId: number, prices: Price[]): number {
-    const merchantProducts: Price[] = prices.filter(price => price.userId === merchantId);
+    const merchantProducts: Price[] = prices.filter(
+        (price: Price): boolean => price.userId === merchantId);
+
     return merchantProducts.length;
 }
