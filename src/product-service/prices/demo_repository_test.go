@@ -58,14 +58,14 @@ func TestDemoRepository_FindAll(t *testing.T) {
 	for _, price := range prices {
 		_, err := demoRepository.Create(price)
 		if err != nil {
-			t.Error("Failed to add prepared product for test")
+			t.Error("Failed to add prepared price for test")
 		}
 	}
 
 	t.Run("Fetch all prices", func(t *testing.T) {
 		fetchedPrices, err := demoRepository.FindAll()
 		if err != nil {
-			t.Error("Can't fetch products")
+			t.Error("Can't fetch prices")
 		}
 
 		if len(fetchedPrices) != len(prices) {
@@ -104,6 +104,67 @@ func TestDemoRepository_FindAll(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDemoRepository_FindAllByUser(t *testing.T) {
+	demoRepository := NewDemoRepository()
+
+	prices := []*model.Price{
+		{
+			UserId:    1,
+			ProductId: 1,
+			Price:     2.99,
+		},
+		{
+			UserId:    2,
+			ProductId: 3,
+			Price:     0.55,
+		},
+	}
+
+	for _, price := range prices {
+		_, err := demoRepository.Create(price)
+		if err != nil {
+			t.Fatalf("Failed to add prepared price for test: %v", err)
+		}
+	}
+
+	t.Run("Fetch prices for a specific user", func(t *testing.T) {
+		fetchedPrices, err := demoRepository.FindAllByUser(2)
+		if err != nil {
+			t.Fatalf("Error fetching prices: %v", err)
+		}
+
+		if len(fetchedPrices) != 1 {
+			t.Errorf("Unexpected price count. Expected 1, got %d", len(fetchedPrices))
+		}
+
+		if !reflect.DeepEqual(prices[1], fetchedPrices[0]) {
+			t.Error("Fetched price does not match the expected price")
+		}
+	})
+
+	t.Run("Verify fetched prices match added prices", func(t *testing.T) {
+		fetchedPrices, err := demoRepository.FindAll()
+		if err != nil {
+			t.Fatalf("Error fetching prices: %v", err)
+		}
+
+		for _, tt := range prices {
+			found := false
+
+			for _, fetchedPrice := range fetchedPrices {
+				if reflect.DeepEqual(tt, fetchedPrice) {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				t.Errorf("Fetched price for user id %d does not match the original price", tt.UserId)
+			}
+		}
+	})
 }
 
 func TestDemoRepository_FindByIds(t *testing.T) {

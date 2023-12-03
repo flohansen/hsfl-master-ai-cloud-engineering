@@ -52,15 +52,31 @@ func (repo *DemoRepository) Delete(price *model.Price) error {
 }
 
 func (repo *DemoRepository) FindAll() ([]*model.Price, error) {
-	if repo.prices != nil {
-		r := make([]*model.Price, 0, len(repo.prices))
-		for _, v := range repo.prices {
-			r = append(r, v)
-		}
-		return r, nil
+	if repo.prices == nil {
+		return nil, errors.New(ErrorPriceList)
 	}
 
-	return nil, errors.New(ErrorPriceList)
+	prices := make([]*model.Price, 0, len(repo.prices))
+	for _, price := range repo.prices {
+		prices = append(prices, price)
+	}
+
+	return prices, nil
+}
+
+func (repo *DemoRepository) FindAllByUser(userId uint64) ([]*model.Price, error) {
+	if repo.prices == nil {
+		return nil, errors.New(ErrorPriceList)
+	}
+
+	var userPrices []*model.Price
+	for _, price := range repo.prices {
+		if price.UserId == userId {
+			userPrices = append(userPrices, price)
+		}
+	}
+
+	return userPrices, nil
 }
 
 func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {

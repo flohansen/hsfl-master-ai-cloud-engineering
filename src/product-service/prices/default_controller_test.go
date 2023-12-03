@@ -109,7 +109,7 @@ func TestDefaultController_GetPrices(t *testing.T) {
 		}
 
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+		request := httptest.NewRequest("GET", "/api/v1/price", nil)
 
 		// Test request
 		controller.GetPrices(writer, request)
@@ -136,6 +136,90 @@ func TestDefaultController_GetPrices(t *testing.T) {
 		if len(response) != len(prices) {
 			t.Errorf("Expected count of prices is %d, got %d",
 				2, len(response))
+		}
+	})
+}
+
+func TestDefaultController_GetPricesByUser(t *testing.T) {
+	type fields struct {
+		priceRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "Bad non-numeric request (expect 400)",
+			fields: fields{
+				priceRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/price/user/abc", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				priceRepository: tt.fields.priceRepository,
+			}
+			controller.GetPricesByUser(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.wantStatus {
+				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
+			}
+		})
+	}
+
+	t.Run("Successfully get existing prices by user (expect 200 and prices)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/price/user/1", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+
+		controller := defaultController{
+			priceRepository: setupMockRepository(),
+		}
+
+		// when
+		controller.GetPricesByUser(writer, request)
+
+		// then
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		result := writer.Result()
+		var response []model.Price
+		err := json.NewDecoder(result.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if len(response) != 1 {
+			t.Errorf("Expected count of prices is %d, got %d",
+				1, len(response))
+		}
+
+		for i, price := range response {
+			if price.UserId != 1 {
+				t.Errorf("Expected role of user %d, got %d", 1, response[i].UserId)
+			}
 		}
 	})
 }

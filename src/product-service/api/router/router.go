@@ -22,6 +22,7 @@ func New(productController products.Controller, pricesController prices.Controll
 	r.DELETE("/api/v1/product/:productId", productController.DeleteProduct)
 
 	r.GET("/api/v1/price/", pricesController.GetPrices)
+	r.GET("/api/v1/price/user/:userId", pricesController.GetPricesByUser)
 	r.GET("/api/v1/price/:productId/:userId", pricesController.GetPrice)
 	r.PUT("/api/v1/price/:productId/:userId", pricesController.PutPrice)
 	r.POST("/api/v1/price/:productId/:userId", pricesController.PostPrice)
