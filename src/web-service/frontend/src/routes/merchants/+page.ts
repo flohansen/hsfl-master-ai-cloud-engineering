@@ -7,23 +7,16 @@ interface Merchant {
     productsCount?: number;
 }
 
-interface Price {
-    userId: number;
-    productId: number;
-    price: number;
-}
-
 export const load = async (): Promise<object> => {
-    const apiUrlMerchants = '/api/v1/user/role/1';
+    const apiUrlMerchants: string = "/api/v1/user/role/1";
 
     try {
         const merchantsResponse: Response = await fetch(apiUrlMerchants);
         const merchants: Merchant[] = await handleErrors(merchantsResponse);
-        const prices: Price[] = await getPricesArray(merchants);
 
-        merchants.forEach((merchant) => {
-            merchant.productsCount = calculateProductsCount(merchant.id, prices);
-        });
+        for (const merchant of merchants) {
+            merchant.productsCount = await calculateProductsCount(merchant.id);
+        }
 
         return {
             merchants,
@@ -39,23 +32,15 @@ export const load = async (): Promise<object> => {
     }
 };
 
-async function fetchPrices(url: string): Promise<Price[]> {
-    const response: Response = await fetch(url);
+async function calculateProductsCount(merchantId: number): Promise<number> {
+    const apiUrl: string = `/api/v1/price/user/${merchantId}`;
 
-    return handleErrors(response);
-}
+    try {
+        const response: Response = await fetch(apiUrl);
+        const data: any = await handleErrors(response);
 
-async function getPricesArray(merchants: Merchant[]): Promise<Price[]> {
-    const pricesPromises: Promise<Price[]>[] = merchants.map(
-        (merchant: Merchant) => fetchPrices(`/api/v1/price/user/${merchant.id}`));
-    const pricesArray: Price[][] = await Promise.all(pricesPromises);
-
-    return pricesArray.flat();
-}
-
-function calculateProductsCount(merchantId: number, prices: Price[]): number {
-    const merchantProducts: Price[] = prices.filter(
-        (price: Price): boolean => price.userId === merchantId);
-
-    return merchantProducts.length;
+        return data !== null && data.length !== 0 ? data.length : 0;
+    } catch (error) {
+        return 0;
+    }
 }

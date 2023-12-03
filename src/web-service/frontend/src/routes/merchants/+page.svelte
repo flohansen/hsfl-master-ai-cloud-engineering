@@ -30,11 +30,13 @@
                             <h3 class="font-semibold text-base transition-all ease-in-out duration-300 group-hover:text-blue-dark lg:text-lg">
                                 {merchant.name}
                             </h3>
-                            {#if merchant.productsCount}
-                                <p class="text-xs text-gray-dark mt-1 lg:text-sm">
+                            <p class="text-xs text-gray-dark mt-1 lg:text-sm">
+                                {#if merchant.productsCount}
                                     {merchant.productsCount} Produkte
-                                </p>
-                            {/if}
+                                {:else}
+                                    0 Produkte
+                                {/if}
+                            </p>
                         </div>
                     </a>
                 </li>
