@@ -38,13 +38,13 @@ func TestNewDefaultController(t *testing.T) {
 }
 
 func TestDefaultController_GetUsers(t *testing.T) {
-	t.Run("should return all products", func(t *testing.T) {
+	t.Run("should return all users", func(t *testing.T) {
 		controller := defaultController{
 			userRepository: setupMockRepository(),
 		}
 
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+		request := httptest.NewRequest("GET", "/api/v1/user", nil)
 
 		// Test request
 		controller.GetUsers(writer, request)
@@ -73,7 +73,7 @@ func TestDefaultController_GetUsers(t *testing.T) {
 		})
 
 		if len(response) != len(users) {
-			t.Errorf("Expected count of product is %d, got %d",
+			t.Errorf("Expected count of user is %d, got %d",
 				2, len(response))
 		}
 
@@ -84,6 +84,105 @@ func TestDefaultController_GetUsers(t *testing.T) {
 
 			if user.Name != response[i].Name {
 				t.Errorf("Expected name of user %s, got %s", user.Name, response[i].Name)
+			}
+		}
+	})
+}
+
+func TestDefaultController_GetUsersByRole(t *testing.T) {
+	type fields struct {
+		userRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "Bad non-numeric request (expect 400)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/role/abc", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userRole", "abc"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown user role (expect 404)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/role/10", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userRole", "10"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userRepository: tt.fields.userRepository,
+			}
+			controller.GetUsersByRole(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.wantStatus {
+				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
+			}
+		})
+	}
+
+	t.Run("Successfully get existing users by role (expect 200 and users)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "userRole", "1"))
+
+		controller := defaultController{
+			userRepository: setupMockRepository(),
+		}
+
+		// when
+		controller.GetUsersByRole(writer, request)
+
+		// then
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		result := writer.Result()
+		var response []model.User
+		err := json.NewDecoder(result.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if len(response) != 1 {
+			t.Errorf("Expected count of user is %d, got %d",
+				1, len(response))
+		}
+
+		for i, user := range response {
+			if user.Role != model.Merchant {
+				t.Errorf("Expected role of user %d, got %d", model.Merchant, response[i].Role)
 			}
 		}
 	})
@@ -500,7 +599,7 @@ func setupDemoUserSlice() []*model.User {
 			Email:    "alan.turin@gmail.com",
 			Password: hashedPassword,
 			Name:     "Alan Turing",
-			Role:     model.Customer,
+			Role:     model.Merchant,
 		},
 	}
 }

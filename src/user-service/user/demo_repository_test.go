@@ -98,6 +98,46 @@ func TestDemoRepository_FindAll(t *testing.T) {
 	}
 }
 
+func TestDemoRepository_FindAllByRole(t *testing.T) {
+	demoRepository := NewDemoRepository()
+
+	users := []*model.User{
+		{
+			Id:       1,
+			Email:    "ada.lovelace@gmail.com",
+			Password: []byte("123456"),
+			Name:     "Ada Lovelace",
+			Role:     model.Customer,
+		},
+		{
+			Id:       2,
+			Email:    "alan.turin@gmail.com",
+			Password: []byte("123456"),
+			Name:     "Alan Turing",
+			Role:     model.Merchant,
+		},
+	}
+
+	for _, user := range users {
+		_, err := demoRepository.Create(user)
+		if err != nil {
+			t.Error("Failed to add prepared user for test")
+		}
+	}
+
+	t.Run("Fetch all users by merchant role", func(t *testing.T) {
+		merchantRole := model.Merchant
+		fetchedUsers, err := demoRepository.FindAllByRole(&merchantRole)
+		if err != nil {
+			t.Error("Can't fetch users")
+		}
+
+		if len(fetchedUsers) != 1 {
+			t.Errorf("Unexpected user count. Expected 1, got %d", len(fetchedUsers))
+		}
+	})
+}
+
 func TestDemoRepository_FindById(t *testing.T) {
 	// Prepare test
 	demoRepository := NewDemoRepository()

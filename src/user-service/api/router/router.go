@@ -22,6 +22,7 @@ func New(
 	r.POST("/api/v1/user/register", registerHandler.Register)
 
 	r.GET("/api/v1/user/", userHandler.GetUsers)
+	r.GET("/api/v1/user/role/:userRole", userHandler.GetUsersByRole)
 	r.GET("/api/v1/user/:userId", userHandler.GetUser)
 	r.PUT("/api/v1/user/:userId", userHandler.PutUser)
 	r.POST("/api/v1/user/", userHandler.PostUser)

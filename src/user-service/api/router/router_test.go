@@ -102,6 +102,40 @@ func TestRouter(t *testing.T) {
 		})
 	})
 
+	t.Run("/api/v1/user/role/:userRole", func(t *testing.T) {
+		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
+			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "POST", "DELETE", "PUT"}
+
+			for _, test := range tests {
+				// given
+				w := httptest.NewRecorder()
+				r := httptest.NewRequest(test, "/api/v1/user/register", nil)
+
+				// when
+				router.ServeHTTP(w, r)
+
+				// then
+				if test == "POST" || test == "PUT" || test == "DELETE" {
+					assert.Equal(t, http.StatusBadRequest, w.Code)
+				} else {
+					assert.Equal(t, http.StatusNotFound, w.Code)
+				}
+			}
+		})
+
+		t.Run("should call GET handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
 	t.Run("/api/v1/user", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
 			tests := []string{"DELETE", "PUT", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}

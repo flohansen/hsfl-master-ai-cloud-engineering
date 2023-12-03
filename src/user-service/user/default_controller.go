@@ -30,6 +30,40 @@ func (controller defaultController) GetUsers(writer http.ResponseWriter, request
 	}
 }
 
+func (controller defaultController) GetUsersByRole(writer http.ResponseWriter, request *http.Request) {
+	userRoleStr, ok := request.Context().Value("userRole").(string)
+	if !ok {
+		http.Error(writer, "Invalid userRole value", http.StatusBadRequest)
+		return
+	}
+
+	userRole, err := strconv.ParseUint(userRoleStr, 10, 64)
+	if err != nil {
+		http.Error(writer, "Invalid userRole value", http.StatusBadRequest)
+		return
+	}
+
+	userRoleModel := getUserRole(userRole)
+
+	if userRoleModel == nil {
+		http.Error(writer, "Unknown user role", http.StatusNotFound)
+		return
+	}
+
+	values, err := controller.userRepository.FindAllByRole(userRoleModel)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(writer).Encode(values)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (controller defaultController) GetUser(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
@@ -108,5 +142,15 @@ func (controller defaultController) DeleteUser(writer http.ResponseWriter, reque
 	if err := controller.userRepository.Delete(&model.User{Id: userId}); err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+}
+
+func getUserRole(role uint64) *model.Role {
+	switch model.Role(role) {
+	case model.Customer, model.Merchant, model.Administrator:
+		validRole := model.Role(role)
+		return &validRole
+	default:
+		return nil
 	}
 }
