@@ -210,7 +210,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetProductsByEan(t *testing.T) {
+func TestDefaultController_GetProductByEan(t *testing.T) {
 	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
 		controller := defaultController{
 			productRepository: setupMockRepository(),
@@ -221,7 +221,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "abc"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusBadRequest {
 			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
@@ -238,7 +238,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "123"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusNotFound {
 			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
@@ -255,7 +255,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "4014819040771"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)

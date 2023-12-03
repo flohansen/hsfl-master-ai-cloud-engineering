@@ -1,6 +1,7 @@
 <script lang="ts">
     import {page} from "$app/stores";
     import ShoppingList from "$lib/shopping-list/ShoppingList.svelte";
+    import Modal from "$lib/general/Modal.svelte";
 
     interface Data {
         lists: { id: number, description: string }[]
@@ -15,12 +16,11 @@
         {$page.data.headline}
     </h1>
 
-    <a
-        href="/shopping-lists/add"
+    <button
         aria-label="Neue Einkaufsliste erstellen"
         class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
         <span class="text-white font-semibold text-xl">+</span>
-    </a>
+    </button>
 </header>
 
 <main>
