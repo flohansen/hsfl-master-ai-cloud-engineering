@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-deployment
+  namespace: price-whisper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy
+  template:
+    metadata:
+      labels:
+        app: proxy
+    spec:
+      containers:
+        - name: proxy-container
+          image: onyxmoon/pw-http-proxy-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PROXY_DOCKER_CONFIG_PATH
+              value: "./config"
+            - name: PROXY_DOCKER_CONFIG_FILENAME
+              value: "proxyConfig.docker.native.yaml"
