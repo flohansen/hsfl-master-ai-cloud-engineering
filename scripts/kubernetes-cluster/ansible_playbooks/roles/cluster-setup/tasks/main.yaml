@@ -51,3 +51,21 @@
     src: /tmp/join_cluster.sh
     dest: join_cluster.sh
     flat: true
+
+# ====== Configure cluster ==========
+
+- name: Copy kubernetes manifest files
+  ansible.builtin.copy:
+    src: ../manifests
+    dest: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+    remote_src: no
+  changed_when: true
+
+- name: Apply kubernetes manifest files
+  ansible.builtin.shell: |
+    cd /home/ubuntu/manifests
+    kubectl --kubeconfig /etc/kubernetes/admin.conf apply --recursive -f .
+  changed_when: true
