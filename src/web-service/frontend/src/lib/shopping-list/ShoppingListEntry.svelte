@@ -14,7 +14,7 @@
     interface ShoppingListEntry {
         productId: number,
         count: number,
-        checked: boolean
+        checked?: boolean
     }
 
     interface Price {
@@ -58,7 +58,7 @@
 
         fetch(apiUrl, requestOptions)
             .then(handleErrors)
-            .then(()=> location.reload())
+            .then(()=> dispatch('updateCheckedEntriesCount', { state: entry.checked }))
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>

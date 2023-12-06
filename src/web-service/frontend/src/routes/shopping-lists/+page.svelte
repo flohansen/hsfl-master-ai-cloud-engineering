@@ -1,9 +1,17 @@
 <script lang="ts">
     import {page} from "$app/stores";
     import ShoppingList from "$lib/shopping-list/ShoppingList.svelte";
+    import ShoppingListSection from "$lib/shopping-list/ShoppingListSection.svelte";
+
+    interface List {
+        id: number,
+        description: string,
+        complete?: boolean,
+    }
 
     interface Data {
-        lists: { id: number, description: string }[]
+        completedLists: List[],
+        incompleteLists: List[],
         headline: string;
     }
 
@@ -24,16 +32,15 @@
 </header>
 
 <main>
-    <h2 class="px-5 text-gray-dark text-sm font-medium mt-6 lg:mt-10 lg:text-base">
-        Offene Einkaufslisten
-    </h2>
-    <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-        {#if data.lists}
-            {#each data.lists as list}
-                <ShoppingList description={list.description} id="{list.id}"/>
-            {/each}
-        {:else}
-            <p>Es konnten keine Daten geladen werden.</p>
-        {/if}
-    </ul>
+    {#if data.completedLists.length === 0 && data.incompleteLists.length === 0}
+        <p>Es konnten keine Daten geladen werden.</p>
+    {:else}
+        <ShoppingListSection
+            label="Offene Einkaufslisten"
+            lists={data.incompleteLists} />
+
+        <ShoppingListSection
+            label="Abgeschlossene Einkaufslisten"
+            lists={data.completedLists} />
+    {/if}
 </main>
