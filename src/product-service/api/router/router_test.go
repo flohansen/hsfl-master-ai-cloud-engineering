@@ -73,7 +73,6 @@ func TestRouter(t *testing.T) {
 			// then
 			assert.Equal(t, http.StatusOK, w.Code)
 		})
-
 	})
 
 	t.Run("/api/v1/product/:productid", func(t *testing.T) {
@@ -148,11 +147,57 @@ func TestRouter(t *testing.T) {
 			}
 		})
 
+		t.Run("should call GET handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/price/", nil)
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+
 		t.Run("should call POST handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
 			jsonRequest := `{"price": 0.99}`
 			r := httptest.NewRequest("POST", "/api/v1/price/3/3", strings.NewReader(jsonRequest))
+
+			// when
+			router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
+	t.Run("/api/v1/price/user/:userId", func(t *testing.T) {
+		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
+			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "POST", "DELETE", "PUT"}
+
+			for _, test := range tests {
+				// given
+				w := httptest.NewRecorder()
+				r := httptest.NewRequest(test, "/api/v1/price/user/1", nil)
+
+				// when
+				router.ServeHTTP(w, r)
+
+				// then
+				if test == "POST" || test == "PUT" || test == "DELETE" {
+					assert.Equal(t, http.StatusBadRequest, w.Code)
+				} else {
+					assert.Equal(t, http.StatusNotFound, w.Code)
+				}
+			}
+		})
+
+		t.Run("should call GET handler", func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest("GET", "/api/v1/price/user/1", nil)
 
 			// when
 			router.ServeHTTP(w, r)
