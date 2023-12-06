@@ -45,9 +45,9 @@
         <ul class="mt-4">
             {#each data.entries as entry}
                 <ShoppingListEntry
-                    view="{view}"
-                    productId="{entry.productId}"
-                    productCount="{entry.count}"/>
+                    listId={data.list.id}
+                    view={view}
+                    entry={entry} />
             {/each}
         </ul>
 

@@ -4,7 +4,7 @@
 
     export let label: string = 'Speichern';
     export let centered: boolean = true;
-    const dispatch = createEventDispatcher()
+    const dispatch = createEventDispatcher();
 </script>
 
 <button
