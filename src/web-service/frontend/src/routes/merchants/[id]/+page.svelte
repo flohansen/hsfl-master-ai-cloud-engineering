@@ -13,7 +13,9 @@
 </script>
 
 <header>
-    <BackLink url="/merchants" label="Alle Supermärkte" />
+    <BackLink
+        url="/merchants"
+        label="Alle Supermärkte" />
 </header>
 
 <main>
@@ -22,7 +24,7 @@
             {data.merchant.name}
         </h1>
         <button
-            on:click={() => isOpen = !isOpen}
+            on:click={() => isOpen = ! isOpen}
             aria-label="Neues Produkt erstellen"
             class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
             <span class="text-white font-semibold text-xl">+</span>

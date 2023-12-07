@@ -25,7 +25,7 @@
     export let priceIsAlreadyCreated: boolean = false;
 
     export let productData: { id: number, description: string, ean: number };
-    let priceData: { price: number };
+    export let priceData: { price: number };
 
     $: showFeedback = !!currentFeedbackOption;
 

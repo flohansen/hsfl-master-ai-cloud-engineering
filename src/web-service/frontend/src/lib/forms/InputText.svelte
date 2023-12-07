@@ -1,6 +1,6 @@
 <script lang="ts">
     export let value: string | number;
-    export let label: string;
+    export let label: string | null;
     export let fieldName: string;
     export let type: string = 'text';
     export let readonly: boolean = false;

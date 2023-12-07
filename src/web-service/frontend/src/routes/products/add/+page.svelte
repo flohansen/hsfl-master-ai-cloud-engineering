@@ -15,11 +15,13 @@
     }
 
     let productEan: number;
-    let productDescription: string;
     let productData: Product;
+    let productDescription: string;
 
     let formSubmitted: boolean = false;
     let eanSubmitted: boolean = false;
+
+    $: productDescription = productData ? productData.description : '';
 
     function submit(): void {
         if (! productDescription) return;
@@ -53,7 +55,7 @@
 
 <header>
     {#if ! formSubmitted}
-        <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
+        <h1 class="font-bold text-xl w-[90%] md:text-2xl xl:text-3xl">
             {$page.data.headline}
         </h1>
         <CloseButton
