@@ -57,7 +57,7 @@
             {$page.data.headline}
         </h1>
         <CloseButton
-            url="/profile"
+            url="/merchants"
             label="Erstellen eines Produktes abbrechen" />
     {:else}
         <BackLink

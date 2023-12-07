@@ -16,6 +16,8 @@ type JsonFormatCreateUserRequest struct {
 }
 
 type Controller interface {
+	GetUsers(http.ResponseWriter, *http.Request)
+	GetUsersByRole(http.ResponseWriter, *http.Request)
 	GetUser(http.ResponseWriter, *http.Request)
 	PutUser(http.ResponseWriter, *http.Request)
 	PostUser(http.ResponseWriter, *http.Request)

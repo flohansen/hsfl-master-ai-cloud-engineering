@@ -13,6 +13,8 @@ type JsonFormatUpdatePriceRequest struct {
 }
 
 type Controller interface {
+	GetPrices(http.ResponseWriter, *http.Request)
+	GetPricesByUser(http.ResponseWriter, *http.Request)
 	GetPrice(http.ResponseWriter, *http.Request)
 	PostPrice(http.ResponseWriter, *http.Request)
 	PutPrice(http.ResponseWriter, *http.Request)

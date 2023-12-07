@@ -54,7 +54,7 @@
             {$page.data.headline}
         </h1>
         <CloseButton
-            url="/profile"
+            url="/merchants"
             label="Erstellen eines Preises abbrechen" />
     {:else}
         <BackLink
