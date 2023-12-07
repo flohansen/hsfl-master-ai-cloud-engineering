@@ -22,7 +22,7 @@
         Was genau möchtest du neu erstellen oder editieren?
     </h3>
 
-    <div class="flex flex-col mt-6 gap-y-2 gap-x-6 md:flex-row md:items-center md:justify-center">
+    <div class="flex flex-col items-center mt-6 gap-y-2 gap-x-6 md:flex-row md:justify-center">
         <a
             href="/products/add"
             class="border-[1.5px] max-w-max border-green-light text-green-light rounded-xl px-5 py-2 flex items-center justify-center gap-x-2 transition-all ease-in-out duration-300 hover:bg-green-dark hover:border-green-dark hover:text-white">

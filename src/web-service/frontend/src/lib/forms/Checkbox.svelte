@@ -4,12 +4,12 @@
 
     export let label: string;
     export let id: number;
-    export let checked: boolean;
+    export let checked: boolean | undefined;
 
     const dispatch = createEventDispatcher();
 </script>
 
-<div class="flex items-center mr-4 mb-2 relative">
+<div class="flex items-center mr-4 relative">
     <input
         on:click={() => { checked = ! checked; dispatch('updateShoppingListEntry') } }
         type="checkbox"

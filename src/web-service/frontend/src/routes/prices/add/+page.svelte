@@ -15,11 +15,14 @@
     }
 
     let productEan: number;
-    let productPrice: number;
+    let productPrice: number | null;
     let productData: Product;
+    let priceData: { price: number };
     let priceIsAlreadyCreated: boolean = false;
 
     let formSubmitted: boolean = false;
+
+    $: productPrice = priceData ? priceData.price : null;
 
     function submit(): void {
         if (! productPrice || ! productData) return;
@@ -50,7 +53,7 @@
 
 <header>
     {#if ! formSubmitted}
-        <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
+        <h1 class="font-bold text-xl w-[90%] md:text-2xl xl:text-3xl">
             {$page.data.headline}
         </h1>
         <CloseButton
@@ -69,6 +72,7 @@
             <FindProduct
                 bind:productData={productData}
                 bind:productEan={productEan}
+                bind:priceData={priceData}
                 bind:priceIsAlreadyCreated={priceIsAlreadyCreated}
                 shouldFindPrice />
 
