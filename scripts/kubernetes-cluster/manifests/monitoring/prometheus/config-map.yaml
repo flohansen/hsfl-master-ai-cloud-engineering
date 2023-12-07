@@ -6,6 +6,26 @@ metadata:
     name: prometheus-server-conf
   namespace: monitoring
 data:
+  prometheus.rules: |-
+    groups:
+      - name: High Memory
+        rules:
+          - alert: Memory over 95%
+            expr: 100 * (1 - ((avg_over_time(node_memory_MemFree_bytes{kubernetes_name=""}[1m]) + avg_over_time(node_memory_Cached_bytes{kubernetes_name=""}[1m]) + avg_over_time(node_memory_Buffers_bytes{kubernetes_name=""}[1m])) / avg_over_time(node_memory_MemTotal_bytes{kubernetes_name=""}[1m]))) > 95
+            for: 1m
+            labels:
+              job: node-exporter
+            annotations:
+              summary: Running out of memory
+      - name: High CPU
+        rules:
+          - alert: CPU Over 80%
+            expr: (1 - rate(node_cpu_seconds_total{mode="idle", kubernetes_name=""}[1m])) * 100 > 80
+            for: 1m
+            labels:
+              job: node-exporter
+            annotations:
+              summary: High CPU usage
   prometheus.yml: |-
     global:
       scrape_interval: 5s
