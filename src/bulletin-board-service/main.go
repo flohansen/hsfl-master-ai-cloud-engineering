@@ -28,7 +28,7 @@ func GetenvInt(key string) int {
 }
 
 func main() {
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 
 	psqlConfig := database.PsqlConfig{
 		Host:     os.Getenv("DB_HOST"),

@@ -30,7 +30,7 @@ func GetenvInt(key string) int {
 }
 
 func main() {
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 	image := os.Getenv("IMAGE")
 	networkName := os.Getenv("NETWORK_NAME")
 	replicas := GetenvInt("REPLICAS")
