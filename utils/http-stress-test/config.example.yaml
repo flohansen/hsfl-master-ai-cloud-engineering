@@ -1,0 +1,7 @@
+duration: 100
+rampup: 10
+ratelimit: 50
+requests: 1000
+targets:
+    - url: https://google.de:443
+users: 10
