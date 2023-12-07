@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 	feedController := feed.NewDefaultController()
 	handler := router.New(feedController)
 	addr := fmt.Sprintf("0.0.0.0:%s", port)

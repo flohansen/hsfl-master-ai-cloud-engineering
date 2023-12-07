@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	port := os.Getenv("PORT")
+	port := os.Getenv("SERVER_PORT")
 
 	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
 	bulletinBoardServiceURL := os.Getenv("BULLETIN_BOARD_SERVICE_URL")
