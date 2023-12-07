@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoppinglists-deployment
+  namespace: price-whisper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shoppinglists
+  template:
+    metadata:
+      labels:
+        app: shoppinglists
+    spec:
+      containers:
+        - name: shoppinglists-container
+          image: onyxmoon/pw-shoppinglist-service:latest
+          ports:
+            - containerPort: 3002

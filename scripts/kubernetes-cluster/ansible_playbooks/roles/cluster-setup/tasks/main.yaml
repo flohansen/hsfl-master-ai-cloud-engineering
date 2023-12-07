@@ -25,7 +25,7 @@
 
     - name: Install CNI
       ansible.builtin.shell: |
-        kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/manifests/calico.yaml
+        kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
         sleep 30
       changed_when: kubeadm_init.rc == 0
 
@@ -51,3 +51,21 @@
     src: /tmp/join_cluster.sh
     dest: join_cluster.sh
     flat: true
+
+# ====== Configure cluster ==========
+
+- name: Copy kubernetes manifest files
+  ansible.builtin.copy:
+    src: ../manifests
+    dest: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: 0644
+    remote_src: no
+  changed_when: true
+
+- name: Apply kubernetes manifest files
+  ansible.builtin.shell: |
+    cd /home/ubuntu/manifests
+    kubectl --kubeconfig /etc/kubernetes/admin.conf apply --recursive -f .
+  changed_when: true
