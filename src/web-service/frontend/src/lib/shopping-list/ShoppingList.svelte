@@ -4,8 +4,11 @@
 
     export let description: string = 'Name der Einkaufsliste';
     export let id: number = 0;
+    export let hideDeleteButton: boolean = false;
 
     function deleteList() : void {
+        if (hideDeleteButton) return;
+
         const apiUrl: string = `/api/v1/shoppinglist/${id}`
         const requestOptions = {
             method: "DELETE",
@@ -34,10 +37,12 @@
         </div>
     </a>
 
-    <button
-        aria-label="Einkaufsliste löschen"
-        on:click={deleteList}
-        class="h-full p-3 lg:p-6 border-l border-l-blue-light hidden group-hover:block text-blue-dark/50 transition-all ease-in-out duration-300 hover:text-blue-dark">
-        <Trash classes="w-5 h-5" />
-    </button>
+    {#if ! hideDeleteButton}
+        <button
+            aria-label="Einkaufsliste löschen"
+            on:click={deleteList}
+            class="h-full p-3 lg:p-6 border-l border-l-blue-light hidden group-hover:block text-blue-dark/50 transition-all ease-in-out duration-300 hover:text-blue-dark">
+            <Trash classes="w-5 h-5" />
+        </button>
+    {/if}
 </li>

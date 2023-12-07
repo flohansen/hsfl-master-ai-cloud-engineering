@@ -1,6 +1,4 @@
 <script lang="ts">
-    import {page} from "$app/stores";
-    import ShoppingList from "$lib/shopping-list/ShoppingList.svelte";
     import ShoppingListSection from "$lib/shopping-list/ShoppingListSection.svelte";
 
     interface List {
@@ -20,7 +18,7 @@
 
 <header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
-        {$page.data.headline}
+        {data.headline}
     </h1>
 
     <a
