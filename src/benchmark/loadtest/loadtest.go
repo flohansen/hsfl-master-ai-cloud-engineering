@@ -38,6 +38,8 @@ func (l *LoadTest) Run() {
 
 	log.Println("Starting load test with ", users, " users for ", overallDuration, " seconds")
 
+	httpClient := &http.Client{}
+
 	var wg sync.WaitGroup
 
 	responseTimesByTarget := make(map[string]responseTimeEntry)
@@ -60,7 +62,7 @@ func (l *LoadTest) Run() {
 					target := PickRandomTarget(targets)
 
 					go func() {
-						err := MakeRequest(target, id, responseTimesByTarget, &mu)
+						err := MakeRequest(httpClient, target, id, responseTimesByTarget, &mu)
 						if err != nil {
 							log.Println("Error making request: ", err)
 						}
@@ -102,10 +104,10 @@ func PickRandomTarget(targets []string) string {
 	return targets[rand.Intn(len(targets))]
 }
 
-func MakeRequest(target string, id int, responseTimesByTarget map[string]responseTimeEntry, mu *sync.Mutex) error {
+func MakeRequest(httpClient *http.Client, target string, id int, responseTimesByTarget map[string]responseTimeEntry, mu *sync.Mutex) error {
 	requestStart := time.Now()
 
-	resp, err := http.Get(target)
+	resp, err := httpClient.Get(target)
 	if err != nil {
 		return err
 	}

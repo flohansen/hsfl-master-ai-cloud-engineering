@@ -70,8 +70,9 @@ func TestMakeRequest(t *testing.T) {
 	id := 1
 	responseTimesByTarget := make(map[string]responseTimeEntry)
 	mu := &sync.Mutex{}
+	httpClient := &http.Client{}
 
-	err := MakeRequest(target, id, responseTimesByTarget, mu)
+	err := MakeRequest(httpClient, target, id, responseTimesByTarget, mu)
 
 	assert.Equal(t, nil, err)
 	assert.Equal(t, 1, len(responseTimesByTarget))
