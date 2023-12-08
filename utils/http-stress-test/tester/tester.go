@@ -24,11 +24,7 @@ func NewTester(config *config.Configuration, metrics *metrics.Metrics) *tester {
 func (t *tester) Run() {
 	var wg sync.WaitGroup
 
-	if t.metrics != nil {
-		go t.metrics.DisplayMetrics()
-	}
-
-	rampUpInterval := time.Duration(t.config.RampUp/t.config.Users) * time.Second
+	rampUpInterval := time.Duration((int64(t.config.RampUp) * time.Second.Nanoseconds()) / int64(t.config.Users))
 
 	for i := 0; i < t.config.Users; i++ {
 		wg.Add(1)
