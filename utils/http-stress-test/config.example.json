@@ -1,0 +1,12 @@
+{
+  "duration": 100,
+  "rampup": 10,
+  "ratelimit": 50,
+  "requests": 1000,
+  "targets": [
+    {
+      "URL": "https://google.de:443"
+    }
+  ],
+  "users": 10
+}

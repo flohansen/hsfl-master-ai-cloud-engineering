@@ -2,8 +2,8 @@ package tester
 
 import (
 	"http-stress-test/config"
+	"http-stress-test/metrics"
 	"http-stress-test/network"
-	"http-stress-test/tester/metrics"
 	"math/rand"
 	"sync"
 	"time"
@@ -40,7 +40,6 @@ func (t *tester) Run() {
 	}
 
 	wg.Wait()
-
 	time.Sleep(time.Second)
 }
 
