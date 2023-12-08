@@ -1,0 +1,8 @@
+{
+  "users": 50,
+  "rampup": 20,
+  "duration": 60,
+  "targets": [
+    "http://localhost:3001/"
+  ]
+}
