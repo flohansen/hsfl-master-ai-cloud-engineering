@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./internal/proto";
+
+message Product {
+  uint64 id = 1;
+  string description = 2;
+  uint64 ean = 3;
+}
+
+// Definition des CRUD-Service für Produkte
+service ProductService {
+  // Create-Methode zum Hinzufügen eines neuen Produkts
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+
+  // Read-Methode zum Abrufen eines Produkts anhand seiner ID
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+
+  // Methode, um eine Liste aller Produkte zu erhalten
+  rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
+
+  // Update-Methode zum Aktualisieren eines vorhandenen Produkts
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+
+  // Delete-Methode zum Löschen eines Produkts
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+}
+
+// Request- und Response-Nachrichten für CreateProduct
+message CreateProductRequest {
+  Product product = 1;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+// Request- und Response-Nachrichten für GetProduct
+message GetProductRequest {
+  uint64 id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+// Request- und Response-Nachrichten für ListProducts
+message GetAllProductsRequest {
+}
+
+message GetAllProductsResponse {
+  repeated Product products = 1;
+}
+
+// Request- und Response-Nachrichten für UpdateProduct
+message UpdateProductRequest {
+  Product product = 1;
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+// Request- und Response-Nachrichten für DeleteProduct
+message DeleteProductRequest {
+  uint64 id = 1;
+}
+
+message DeleteProductResponse {
+}
