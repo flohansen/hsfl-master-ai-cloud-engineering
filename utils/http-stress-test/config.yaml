@@ -1,10 +1,7 @@
-users: 10
-requests: 2500
+users: 100
+requests: 5000
 duration: 0
 rampUp: 10
-rateLimit: 10000
+rateLimit: 0
 targets:
-  - url: http://localhost:3003/api/v1/product/1
-  - url: http://localhost:3003/api/v1/product/2
-  - url: http://localhost:3003/api/v1/product/3
   - url: http://localhost:3003/api/v1/product/
