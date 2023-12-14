@@ -2,6 +2,8 @@ package rpc
 
 import (
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
@@ -30,7 +32,7 @@ func (p *ProductServer) CreateProduct(ctx context.Context, request *proto.Create
 		Ean:         requestProduct.GetEan(),
 	})
 
-	if err != nil {
+	if err == nil {
 		response := &proto.CreateProductResponse{
 			Product: &proto.Product{
 				Id:          createdProduct.Id,
@@ -40,14 +42,14 @@ func (p *ProductServer) CreateProduct(ctx context.Context, request *proto.Create
 		}
 		return response, nil
 	} else {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 }
 
 func (p *ProductServer) GetProduct(ctx context.Context, request *proto.GetProductRequest) (*proto.GetProductResponse, error) {
 	var foundProduct, err = (*p.productRepository).FindById(request.GetId())
 
-	if err != nil {
+	if err == nil {
 		response := &proto.GetProductResponse{
 			Product: &proto.Product{
 				Id:          foundProduct.Id,
@@ -57,7 +59,7 @@ func (p *ProductServer) GetProduct(ctx context.Context, request *proto.GetProduc
 		}
 		return response, nil
 	} else {
-		return nil, err
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 }
 
@@ -74,13 +76,13 @@ func (p *ProductServer) GetAllProducts(ctx context.Context, request *proto.GetAl
 		}
 	}
 
-	if err != nil {
+	if err == nil {
 		response := &proto.GetAllProductsResponse{
 			Products: productList,
 		}
 		return response, nil
 	} else {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 }
 
@@ -93,7 +95,7 @@ func (p *ProductServer) UpdateProduct(ctx context.Context, request *proto.Update
 		Ean:         requestProduct.GetEan(),
 	})
 
-	if err != nil {
+	if err == nil {
 		response := &proto.UpdateProductResponse{
 			Product: &proto.Product{
 				Id:          updateProduct.Id,
@@ -103,7 +105,7 @@ func (p *ProductServer) UpdateProduct(ctx context.Context, request *proto.Update
 		}
 		return response, nil
 	} else {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 }
 
@@ -114,9 +116,9 @@ func (p *ProductServer) DeleteProduct(ctx context.Context, request *proto.Delete
 		Id: requestProductId,
 	})
 
-	if err != nil {
+	if err == nil {
 		return &proto.DeleteProductResponse{}, nil
 	} else {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 }
