@@ -10,25 +10,24 @@ message Product {
   uint64 ean = 3;
 }
 
-// Definition des CRUD-Service für Produkte
 service ProductService {
-  // Create-Methode zum Hinzufügen eines neuen Produkts
+  // create method for adding a new product
   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
 
-  // Read-Methode zum Abrufen eines Produkts anhand seiner ID
+  // read method for getting a product by id
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
 
-  // Methode, um eine Liste aller Produkte zu erhalten
+  // read method for getting all products
   rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
 
-  // Update-Methode zum Aktualisieren eines vorhandenen Produkts
+  // update method for updating a product
   rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
 
-  // Delete-Methode zum Löschen eines Produkts
+  // delete method to get rid of a product
   rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
 }
 
-// Request- und Response-Nachrichten für CreateProduct
+// Request- and Response-Messages for CreateProduct
 message CreateProductRequest {
   Product product = 1;
 }
@@ -37,7 +36,7 @@ message CreateProductResponse {
   Product product = 1;
 }
 
-// Request- und Response-Nachrichten für GetProduct
+// Request- and Response-Messages for GetProduct
 message GetProductRequest {
   uint64 id = 1;
 }
@@ -46,7 +45,7 @@ message GetProductResponse {
   Product product = 1;
 }
 
-// Request- und Response-Nachrichten für ListProducts
+// Request- and Response-Messages for ListProducts
 message GetAllProductsRequest {
 }
 
@@ -54,7 +53,7 @@ message GetAllProductsResponse {
   repeated Product products = 1;
 }
 
-// Request- und Response-Nachrichten für UpdateProduct
+// Request- and Response-Messages for UpdateProduct
 message UpdateProductRequest {
   Product product = 1;
 }
@@ -63,7 +62,7 @@ message UpdateProductResponse {
   Product product = 1;
 }
 
-// Request- und Response-Nachrichten für DeleteProduct
+// Request- and Response-Messages for DeleteProduct
 message DeleteProductRequest {
   uint64 id = 1;
 }

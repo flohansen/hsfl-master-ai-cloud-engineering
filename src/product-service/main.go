@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"google.golang.org/grpc"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/router"
+	http2 "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/http"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/rpc"
 	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
@@ -58,7 +58,8 @@ func main() {
 func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, productsController *products.Controller, pricesController *prices.Controller) {
 	defer wg.Done()
 
-	handler := router.New(productsController, pricesController)
+	//handler := router.New(productsController, pricesController)
+	handler := http2.NewServer(productsController, pricesController)
 	server := &http.Server{Addr: ":3003", Handler: handler}
 
 	go func() {
