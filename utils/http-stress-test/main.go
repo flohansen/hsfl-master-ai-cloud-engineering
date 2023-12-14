@@ -1,16 +1,31 @@
 package main
 
 import (
+	"context"
 	"http-stress-test/config"
+	"http-stress-test/metrics"
 	"http-stress-test/tester"
-	"http-stress-test/tester/metrics"
+	"log"
 )
 
+const configPath = "config.yaml"
+
 func main() {
-	cfg := config.GetConfig("config.yaml")
+	// Cancel context
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+	cfg, err := config.GetConfig(configPath)
+	if err != nil {
+		log.Fatalf("Couldn't load config: %v", err)
+	}
+
+	// Metric display
 	m := metrics.NewMetrics()
-	t := tester.NewTester(cfg, m)
+	go m.DisplayMetrics(ctx)
 
+	// Run stress test
+	t := tester.NewTester(cfg, m)
 	t.Run()
+
 }
