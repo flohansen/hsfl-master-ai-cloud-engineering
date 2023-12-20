@@ -2,14 +2,15 @@
     import Checkmark from "../../assets/svg/Checkmark.svelte";
     import {createEventDispatcher} from "svelte";
 
-    export let label: string;
     export let id: number;
+    export let label: string;
+    export let count: number;
     export let checked: boolean | undefined;
 
     const dispatch = createEventDispatcher();
 </script>
 
-<div class="flex items-center mr-4 relative">
+<div class="flex items-center relative">
     <input
         on:click={() => { checked = ! checked; dispatch('updateShoppingListEntry') } }
         type="checkbox"
@@ -23,7 +24,10 @@
 
     <label
         for="input-{id}"
-        class="text-sm font-medium cursor-pointer lg:text-base { checked ? 'line-through opacity-50' : '' }">
+        class="text-sm font-medium cursor-pointer flex justify-center items-center gap-x-2 lg:text-base { checked ? 'line-through opacity-50' : '' }">
         {label}
+        <span class="border-l-[1.5px] font-normal border-l-gray-dark/50 pl-2 leading-none text-gray-dark text-sm whitespace-nowrap lg:text-base { checked ? 'hidden' : '' }">
+            {count} Stk.
+        </span>
     </label>
 </div>

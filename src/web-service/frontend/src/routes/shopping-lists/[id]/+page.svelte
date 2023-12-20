@@ -23,6 +23,11 @@
                 checkedEntriesCount++;
             }
         })
+
+        if (data.entries.length > 0 && data.list.completed && checkedEntriesCount != data.entries.length) {
+            data.list.completed = false;
+            updateShoppingList();
+        }
     });
 
     function updateCheckedEntriesCount(event: any): void {
@@ -83,6 +88,10 @@
 
         <p class="text-gray-dark text-sm">Deine Einkaufsliste</p>
         <ul class="mt-4">
+            {#if data.entries.length === 0}
+                <p>Keine Einträge vorhanden.</p>
+            {/if}
+
             {#each data.entries as entry}
                 <ShoppingListEntry
                     listId={data.list.id}
@@ -92,10 +101,8 @@
             {/each}
         </ul>
 
-        {#if ! data.list.completed}
-            <AddEntryModal
-                listId="{data.list.id}"
-                currentEntries="{data.entries}"/>
-        {/if}
+        <AddEntryModal
+            listId="{data.list.id}"
+            currentEntries="{data.entries}"/>
     </div>
 </main>
