@@ -61,13 +61,11 @@ func (handler *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if foundUser == nil {
-			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		if ok := handler.hasher.Validate([]byte(request.Password), foundUser.Password); !ok {
-			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
