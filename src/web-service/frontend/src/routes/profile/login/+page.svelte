@@ -7,8 +7,8 @@
     import { writable } from 'svelte/store';
     import Close from "../../../assets/svg/Close.svelte";
 
-    let userMail: string = 'info-aldi@gmail.com';
-    let userPassword: string = '12345';
+    let userMail: string;
+    let userPassword: string;
     let errorMessage = writable('');
 
     async function login(event: Event): Promise<void> {
