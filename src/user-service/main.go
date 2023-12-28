@@ -27,7 +27,7 @@ func main() {
 
 func setupLoginHandler(userRepository user.Repository) *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
-		auth.JwtConfig{SignKey: "../../auth/test-token"})
+		auth.JwtConfig{SignKey: "./auth/test-token"})
 
 	return handler.NewLoginHandler(setupMockRepository(userRepository),
 		crypto.NewBcryptHasher(), jwtToken)
@@ -49,7 +49,7 @@ func setupMockRepository(userRepository user.Repository) user.Repository {
 
 func setupDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
-	hashedPassword, _ := bcryptHasher.Hash([]byte("123456"))
+	hashedPassword, _ := bcryptHasher.Hash([]byte("12345"))
 
 	return []*model.User{
 		{

@@ -1,9 +1,15 @@
 proxy:
   listenAddress: 0.0.0.0:8080
   proxyRoutes:
-    - name: User Service
+    - name: User Service (User Info)
       context: /api/v1/user
       target: http://localhost:3001/api/v1/user
+    - name: User Service (Login)
+      context: /api/v1/authentication/login
+      target: http://localhost:3001/api/v1/authentication/login
+    - name: User Service (Registration)
+      context: /api/v1/authentication/register
+      target: http://localhost:3001/api/v1/authentication/register
     - name: Shoppinglist Service (Lists)
       context: /api/v1/shoppinglist
       target: http://localhost:3002/api/v1/shoppinglist

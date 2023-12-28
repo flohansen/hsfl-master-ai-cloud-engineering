@@ -1,6 +1,7 @@
 package router
 
 import (
+	"bytes"
 	"github.com/stretchr/testify/assert"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/handler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
@@ -33,32 +34,29 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
 
-	t.Run("/api/v1/user/login", func(t *testing.T) {
+	t.Run("/api/v1/authentication/login/", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
 			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "GET", "DELETE", "PUT"}
 
 			for _, test := range tests {
 				// given
 				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/user/login", nil)
+				r := httptest.NewRequest(test, "/api/v1/authentication/login/", nil)
 
 				// when
 				router.ServeHTTP(w, r)
 
 				// then
-				if test == "GET" || test == "PUT" || test == "DELETE" {
-					assert.Equal(t, http.StatusBadRequest, w.Code)
-				} else {
-					assert.Equal(t, http.StatusNotFound, w.Code)
-				}
+				assert.Equal(t, http.StatusNotFound, w.Code)
 			}
 		})
 
 		t.Run("should call POST handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			jsonRequest := `{"email": "ada.lovelace@gmail.com", "password": "123456"}`
-			r := httptest.NewRequest("POST", "/api/v1/user/login", strings.NewReader(jsonRequest))
+			jsonRequest := `{"email": "ada.lovelace@gmail.com", "password": "12345"}`
+			r := httptest.NewRequest("POST", "/api/v1/authentication/login/", bytes.NewBufferString(jsonRequest))
+			r.Header.Set("Content-Type", "application/json")
 
 			// when
 			router.ServeHTTP(w, r)
@@ -68,31 +66,29 @@ func TestRouter(t *testing.T) {
 		})
 	})
 
-	t.Run("/api/v1/user/register", func(t *testing.T) {
+	t.Run("/api/v1/authentication/register/", func(t *testing.T) {
 		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
 			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "GET", "DELETE", "PUT"}
 
 			for _, test := range tests {
 				// given
 				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/user/register", nil)
+				r := httptest.NewRequest(test, "/api/v1/authentication/register/", nil)
 
 				// when
 				router.ServeHTTP(w, r)
 
 				// then
-				if test == "GET" || test == "PUT" || test == "DELETE" {
-					assert.Equal(t, http.StatusBadRequest, w.Code)
-				} else {
-					assert.Equal(t, http.StatusNotFound, w.Code)
-				}
+				assert.Equal(t, http.StatusNotFound, w.Code)
 			}
 		})
 
 		t.Run("should call POST handler", func(t *testing.T) {
 			// given
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest("POST", "/api/v1/user/register", strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0}`))
+			jsonRequest := `{"email": "grace.hopper@gmail.com", "password": "12345", "name": "Grace Hopper", "role": 0}`
+			r := httptest.NewRequest("POST", "/api/v1/authentication/register/", strings.NewReader(jsonRequest))
+			r.Header.Set("Content-Type", "application/json")
 
 			// when
 			router.ServeHTTP(w, r)
@@ -114,8 +110,9 @@ func TestRouter(t *testing.T) {
 				// when
 				router.ServeHTTP(w, r)
 
+				print(test)
 				// then
-				if test == "POST" || test == "PUT" || test == "DELETE" {
+				if test == "DELETE" || test == "PUT" {
 					assert.Equal(t, http.StatusBadRequest, w.Code)
 				} else {
 					assert.Equal(t, http.StatusNotFound, w.Code)
@@ -147,7 +144,7 @@ func TestRouter(t *testing.T) {
 
 				// when
 				router.ServeHTTP(w, r)
-
+				print(test)
 				// then
 				assert.Equal(t, http.StatusNotFound, w.Code)
 			}
@@ -192,7 +189,11 @@ func TestRouter(t *testing.T) {
 				router.ServeHTTP(w, r)
 
 				// then
-				assert.Equal(t, http.StatusNotFound, w.Code)
+				if test == "GET" || test == "DELETE" || test == "PUT" {
+					assert.Equal(t, http.StatusOK, w.Code)
+				} else {
+					assert.Equal(t, http.StatusNotFound, w.Code)
+				}
 			}
 		})
 
@@ -273,7 +274,7 @@ func setupUserRepository() user.Repository {
 
 func setupDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
-	hashedPassword, _ := bcryptHasher.Hash([]byte("123456"))
+	hashedPassword, _ := bcryptHasher.Hash([]byte("12345"))
 
 	return []*model.User{
 		{
