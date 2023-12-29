@@ -3,6 +3,7 @@ package userShoppingList
 import (
 	"errors"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
+	"sort"
 )
 
 type DemoRepository struct {
@@ -66,6 +67,10 @@ func (repo *DemoRepository) FindAllById(userId uint64) ([]*model.UserShoppingLis
 	if len(lists) == 0 {
 		return nil, errors.New(ErrorListNotFound)
 	}
+
+	sort.Slice(lists, func(i, j int) bool {
+		return lists[i].Description < lists[j].Description
+	})
 
 	return lists, nil
 }

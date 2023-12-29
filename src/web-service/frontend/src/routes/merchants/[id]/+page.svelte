@@ -3,9 +3,20 @@
     import ProductListItem from "$lib/merchant/ProductListItem.svelte";
     import UpdateOrCreateModal from "$lib/merchant/UpdateOrCreateModal.svelte";
 
+    interface Price {
+        userId: number,
+        productId: number,
+        price: number
+    }
+
     interface Data {
-        merchant: { name: string },
-        prices: { productId: number, price: number }[],
+        merchant: { name: string, },
+        prices: Price[],
+        products: { id: number, description: string, ean: number }[],
+    }
+
+    function findPriceByProductId(productId: number): Price | undefined {
+        return data.prices.find(price => price.productId === productId);
     }
 
     export let data: Data;
@@ -32,9 +43,11 @@
     </div>
 
     <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-        {#if data.prices}
-            {#each data.prices as price}
-                <ProductListItem price={price} />
+        {#if data.products}
+            {#each data.products as product}
+                <ProductListItem
+                    product={product}
+                    price={findPriceByProductId(product.id)} />
             {/each}
         {:else}
             <p>Es konnten keine Daten geladen werden.</p>
