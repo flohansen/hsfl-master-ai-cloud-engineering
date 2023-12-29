@@ -76,6 +76,19 @@ func (handler *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 			"exp":   time.Now().Add(expiration).Unix(),
 		})
 
+		// Set the access token as a cookie
+		cookie := &http.Cookie{
+			Name:     "access_token",
+			Value:    accessToken,
+			Path:     "/",
+			MaxAge:   int(expiration.Seconds()),
+			Secure:   false, // Set to true if served over HTTPS
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+		}
+
+		http.SetCookie(w, cookie)
+
 		json.NewEncoder(w).Encode(loginResponse{
 			AccessToken: accessToken,
 			TokenType:   "Bearer",
