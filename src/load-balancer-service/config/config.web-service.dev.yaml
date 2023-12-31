@@ -1,0 +1,3 @@
+image: onyxmoon/pw-web-service:latest
+network: dev-network
+replicas: 5
