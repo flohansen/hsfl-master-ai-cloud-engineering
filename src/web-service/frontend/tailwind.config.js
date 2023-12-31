@@ -34,8 +34,8 @@ export default {
       '5xl': ['3rem', '1.25'], // 48px
     },
     extend: {
-      dropShadow: {
-        'navBar': 'drop-shadow(0px -4px 100px rgba(38, 38, 38, 1))',
+      boxShadow: {
+        'navBar': '0 35px 60px -15px rgba(0, 0, 0, 0.8)',
       }
     },
   },

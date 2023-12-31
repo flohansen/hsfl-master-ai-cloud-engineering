@@ -6,7 +6,7 @@
     import Badge from "$lib/general/Badge.svelte";
     import CloseButton from "$lib/general/CloseButton.svelte";
     import BackLink from "$lib/general/BackLink.svelte";
-    import InputText from "$lib/forms/InputText.svelte";
+    import Input from "$lib/forms/Input.svelte";
 
     let listHeadline: string = '';
     let formSubmitted: boolean = false;
@@ -48,8 +48,9 @@
                 <figure class="bg-green-light/25 rounded-full w-14 h-14 flex items-center justify-center lg:w-16 lg:h-16">
                     <Placeholder classes="w-6 h-6 text-green-dark"/>
                 </figure>
-                <InputText
+                <Input
                     fieldName="listName"
+                    type="text"
                     label="Name der Einkaufsliste"
                     bind:value={listHeadline} />
             </section>

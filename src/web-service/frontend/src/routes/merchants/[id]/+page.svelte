@@ -5,7 +5,7 @@
 
     interface Data {
         merchant: { name: string },
-        prices: { productId: number, price: number }[],
+        prices: { userId: number, productId: number, price: number }[],
     }
 
     export let data: Data;
