@@ -1,8 +1,5 @@
 FROM golang:1.21-alpine
 
-ARG PROXY_DOCKER_MODE
-ENV PROXY_DOCKER_MODE $PROXY_DOCKER_MODE
-
 WORKDIR /app
 COPY ./lib ./lib
 COPY ./src/http-proxy-service ./src/http-proxy-service
