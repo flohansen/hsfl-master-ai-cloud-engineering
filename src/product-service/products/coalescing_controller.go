@@ -20,7 +20,7 @@ func NewCoalescingController(productRepository Repository) *coalescingController
 	}
 }
 
-func (controller coalescingController) GetProducts(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) GetProducts(writer http.ResponseWriter, request *http.Request) {
 	msg, err, _ := controller.group.Do("get-all", func() (interface{}, error) {
 		return controller.productRepository.FindAll()
 	})
@@ -37,7 +37,7 @@ func (controller coalescingController) GetProducts(writer http.ResponseWriter, r
 	}
 }
 
-func (controller coalescingController) PostProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) PostProduct(writer http.ResponseWriter, request *http.Request) {
 	var requestData JsonFormatCreateProductRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -62,7 +62,7 @@ func (controller coalescingController) PostProduct(writer http.ResponseWriter, r
 	}
 }
 
-func (controller coalescingController) GetProductById(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) GetProductById(writer http.ResponseWriter, request *http.Request) {
 	productIdAttribute := request.Context().Value("productId").(string)
 
 	msg, err, _ := controller.group.Do("get_id_"+productIdAttribute, func() (interface{}, error) {
@@ -91,7 +91,7 @@ func (controller coalescingController) GetProductById(writer http.ResponseWriter
 	}
 }
 
-func (controller coalescingController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
 	productEanAttribute := request.Context().Value("productEan").(string)
 
 	msg, err, _ := controller.group.Do("get_ean_"+productEanAttribute, func() (interface{}, error) {
@@ -120,7 +120,7 @@ func (controller coalescingController) GetProductByEan(writer http.ResponseWrite
 	}
 }
 
-func (controller coalescingController) PutProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) PutProduct(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -143,7 +143,7 @@ func (controller coalescingController) PutProduct(writer http.ResponseWriter, re
 	}
 }
 
-func (controller coalescingController) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)

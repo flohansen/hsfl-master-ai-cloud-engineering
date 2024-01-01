@@ -15,7 +15,7 @@ func NewDefaultController(productRepository Repository) *defaultController {
 	return &defaultController{productRepository}
 }
 
-func (controller defaultController) GetProducts(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) GetProducts(writer http.ResponseWriter, request *http.Request) {
 	values, err := controller.productRepository.FindAll()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -29,7 +29,7 @@ func (controller defaultController) GetProducts(writer http.ResponseWriter, requ
 	}
 }
 
-func (controller defaultController) PostProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) PostProduct(writer http.ResponseWriter, request *http.Request) {
 	var requestData JsonFormatCreateProductRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -54,7 +54,7 @@ func (controller defaultController) PostProduct(writer http.ResponseWriter, requ
 	}
 }
 
-func (controller defaultController) GetProductById(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) GetProductById(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -77,7 +77,7 @@ func (controller defaultController) GetProductById(writer http.ResponseWriter, r
 	}
 }
 
-func (controller defaultController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
 	productEan, err := strconv.ParseUint(request.Context().Value("productEan").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -101,7 +101,7 @@ func (controller defaultController) GetProductByEan(writer http.ResponseWriter, 
 	}
 }
 
-func (controller defaultController) PutProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) PutProduct(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -124,7 +124,7 @@ func (controller defaultController) PutProduct(writer http.ResponseWriter, reque
 	}
 }
 
-func (controller defaultController) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
+func (controller *defaultController) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)

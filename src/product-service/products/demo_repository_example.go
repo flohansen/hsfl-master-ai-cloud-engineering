@@ -2,9 +2,9 @@ package products
 
 import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 
-func generateExampleDemoRepository() Repository {
+func GenerateExampleDemoRepository() Repository {
 	repository := NewDemoRepository()
-	productSlice := generateExampleProductSlice()
+	productSlice := GenerateExampleProductSlice()
 	for _, product := range productSlice {
 		repository.Create(product)
 	}
@@ -12,7 +12,7 @@ func generateExampleDemoRepository() Repository {
 	return repository
 }
 
-func generateExampleProductSlice() []*model.Product {
+func GenerateExampleProductSlice() []*model.Product {
 	return []*model.Product{
 		{
 			Id:          1,
