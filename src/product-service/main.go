@@ -27,7 +27,7 @@ func main() {
 	createContentForProducts(productRepository)
 
 	var priceRepository prices.Repository = prices.NewDemoRepository()
-	var pricesController prices.Controller = prices.NewDefaultController(priceRepository)
+	var pricesController prices.Controller = prices.NewCoalescingController(priceRepository)
 	createContentForPrices(priceRepository)
 
 	var wg sync.WaitGroup
