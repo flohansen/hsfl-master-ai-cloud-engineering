@@ -84,7 +84,9 @@ func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, productRepository 
 	}
 
 	grpcServer := grpc.NewServer()
-	proto.RegisterProductServiceServer(grpcServer, rpc.NewProductServer(productRepository, priceRepository))
+	productServiceServer := rpc.NewProductServiceServer(productRepository, priceRepository)
+	proto.RegisterProductServiceServer(grpcServer, productServiceServer)
+	proto.RegisterPriceServiceServer(grpcServer, productServiceServer)
 
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
