@@ -2,8 +2,8 @@ package tester
 
 import (
 	"http-stress-test/config"
+	"http-stress-test/metrics"
 	"http-stress-test/network"
-	"http-stress-test/tester/metrics"
 	"math/rand"
 	"sync"
 	"time"
@@ -24,11 +24,7 @@ func NewTester(config *config.Configuration, metrics *metrics.Metrics) *tester {
 func (t *tester) Run() {
 	var wg sync.WaitGroup
 
-	if t.metrics != nil {
-		go t.metrics.DisplayMetrics()
-	}
-
-	rampUpInterval := time.Duration(t.config.RampUp/t.config.Users) * time.Second
+	rampUpInterval := time.Duration((int64(t.config.RampUp) * time.Second.Nanoseconds()) / int64(t.config.Users))
 
 	for i := 0; i < t.config.Users; i++ {
 		wg.Add(1)
@@ -40,7 +36,6 @@ func (t *tester) Run() {
 	}
 
 	wg.Wait()
-
 	time.Sleep(time.Second)
 }
 

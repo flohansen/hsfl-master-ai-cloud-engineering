@@ -3,40 +3,26 @@ package prices
 import (
 	"context"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/singleflight"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/utils"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestNewDefaultController(t *testing.T) {
-	type args struct {
-		priceRepository Repository
-	}
-	tests := []struct {
-		name string
-		args args
-		want *defaultController
-	}{
-		{
-			name: "Test construction with DemoRepository",
-			args: args{priceRepository: NewDemoRepository()},
-			want: &defaultController{priceRepository: NewDemoRepository()},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewDefaultController(tt.args.priceRepository); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewDefaultController() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func TestNewCoalescingController(t *testing.T) {
+	demoRepo := NewDemoRepository()
+	controller := NewCoalescingController(demoRepo)
+
+	assert.NotNil(t, controller)
+	assert.Equal(t, demoRepo, controller.priceRepository)
+	assert.IsType(t, &singleflight.Group{}, controller.group)
 }
 
-func TestDefaultController_DeletePrice(t *testing.T) {
+func TestCoalescingController_DeletePrice(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
 	}
@@ -92,9 +78,7 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				priceRepository: tt.fields.priceRepository,
-			}
+			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.DeletePrice(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
@@ -103,11 +87,9 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 	}
 }
 
-func TestDefaultController_GetPrices(t *testing.T) {
+func TestCoalescingController_GetPrices(t *testing.T) {
 	t.Run("should return all prices", func(t *testing.T) {
-		controller := defaultController{
-			priceRepository: GenerateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/price", nil)
@@ -141,7 +123,7 @@ func TestDefaultController_GetPrices(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetPricesByUser(t *testing.T) {
+func TestCoalescingController_GetPricesByUser(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
 	}
@@ -173,9 +155,7 @@ func TestDefaultController_GetPricesByUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				priceRepository: tt.fields.priceRepository,
-			}
+			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.GetPricesByUser(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
@@ -188,9 +168,7 @@ func TestDefaultController_GetPricesByUser(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/price/user/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := defaultController{
-			priceRepository: GenerateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
 		// when
 		controller.GetPricesByUser(writer, request)
@@ -225,7 +203,7 @@ func TestDefaultController_GetPricesByUser(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetPrice(t *testing.T) {
+func TestCoalescingController_GetPrice(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
 	}
@@ -264,9 +242,7 @@ func TestDefaultController_GetPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				priceRepository: tt.fields.priceRepository,
-			}
+			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.GetPrice(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
@@ -280,9 +256,7 @@ func TestDefaultController_GetPrice(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := defaultController{
-			priceRepository: GenerateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
 		// when
 		controller.GetPrice(writer, request)
@@ -319,7 +293,7 @@ func TestDefaultController_GetPrice(t *testing.T) {
 	})
 }
 
-func TestDefaultController_PostPrice(t *testing.T) {
+func TestCoalescingController_PostPrice(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
 	}
@@ -398,9 +372,7 @@ func TestDefaultController_PostPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				priceRepository: tt.fields.priceRepository,
-			}
+			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.PostPrice(tt.args.writer, tt.args.request)
 
 			// You can then assert the response status and content, and check against your expectations.
@@ -418,7 +390,7 @@ func TestDefaultController_PostPrice(t *testing.T) {
 	}
 }
 
-func TestDefaultController_PutPrice(t *testing.T) {
+func TestCoalescingController_PutPrice(t *testing.T) {
 	type fields struct {
 		priceRepository Repository
 	}
@@ -518,9 +490,7 @@ func TestDefaultController_PutPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				priceRepository: tt.fields.priceRepository,
-			}
+			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.PutPrice(tt.args.writer, tt.args.request)
 
 			// You can then assert the response status and content, and check against your expectations.

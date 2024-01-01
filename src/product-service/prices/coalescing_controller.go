@@ -2,54 +2,72 @@ package prices
 
 import (
 	"encoding/json"
+	"fmt"
+	"golang.org/x/sync/singleflight"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"net/http"
 	"strconv"
 )
 
-type defaultController struct {
+type coalescingController struct {
 	priceRepository Repository
+	group           *singleflight.Group
 }
 
-func NewDefaultController(priceRepository Repository) *defaultController {
-	return &defaultController{priceRepository}
+func NewCoalescingController(priceRepository Repository) *coalescingController {
+	return &coalescingController{
+		priceRepository,
+		&singleflight.Group{}}
 }
 
-func (controller *defaultController) GetPrices(writer http.ResponseWriter, request *http.Request) {
-	values, err := controller.priceRepository.FindAll()
+func (controller *coalescingController) GetPrices(writer http.ResponseWriter, request *http.Request) {
+	msg, err, _ := controller.group.Do("get-all", func() (interface{}, error) {
+		return controller.priceRepository.FindAll()
+	})
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 
 	writer.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(writer).Encode(values)
+	err = json.NewEncoder(writer).Encode(msg)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (controller *defaultController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
+func (controller *coalescingController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
+	userIdAttribute := request.Context().Value("userId").(string)
 
-	if err != nil {
-		http.Error(writer, "Invalid userId", http.StatusBadRequest)
-		return
-	}
-	values, err := controller.priceRepository.FindAllByUser(userId)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-	}
+	msg, err, _ := controller.group.Do("get_id_"+userIdAttribute, func() (interface{}, error) {
+		userId, err := strconv.ParseUint(userIdAttribute, 10, 64)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return nil, err
+		}
+
+		value, err := controller.priceRepository.FindAllByUser(userId)
+		if err != nil {
+			if err.Error() == ErrorPriceNotFound {
+				http.Error(writer, err.Error(), http.StatusNotFound)
+				return nil, err
+			}
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+		}
+
+		return value, nil
+	})
 
 	writer.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(writer).Encode(values)
+	err = json.NewEncoder(writer).Encode(msg)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (controller *defaultController) PostPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) PostPrice(writer http.ResponseWriter, request *http.Request) {
 	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	userId, userIdErr := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 
@@ -73,32 +91,38 @@ func (controller *defaultController) PostPrice(writer http.ResponseWriter, reque
 	}
 }
 
-func (controller *defaultController) GetPrice(writer http.ResponseWriter, request *http.Request) {
-	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
-	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+func (controller *coalescingController) GetPrice(writer http.ResponseWriter, request *http.Request) {
+	userIdAttribute := request.Context().Value("userId").(string)
+	productIdAttribute := request.Context().Value("productId").(string)
 
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	value, err := controller.priceRepository.FindByIds(productId, userId)
-	if err != nil {
-		if err.Error() == ErrorPriceNotFound {
-			http.Error(writer, err.Error(), http.StatusNotFound)
-			return
+	msg, err, _ := controller.group.Do(fmt.Sprintf("get_id_%s_%s", userIdAttribute, productIdAttribute), func() (interface{}, error) {
+		userId, err := strconv.ParseUint(userIdAttribute, 10, 64)
+		productId, err := strconv.ParseUint(productIdAttribute, 10, 64)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return nil, err
 		}
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-	}
+
+		value, err := controller.priceRepository.FindByIds(productId, userId)
+		if err != nil {
+			if err.Error() == ErrorPriceNotFound {
+				http.Error(writer, err.Error(), http.StatusNotFound)
+				return nil, err
+			}
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+		}
+
+		return value, nil
+	})
 
 	writer.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(writer).Encode(value)
+	err = json.NewEncoder(writer).Encode(msg)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (controller *defaultController) PutPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) PutPrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
@@ -123,7 +147,7 @@ func (controller *defaultController) PutPrice(writer http.ResponseWriter, reques
 	}
 }
 
-func (controller *defaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *coalescingController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
