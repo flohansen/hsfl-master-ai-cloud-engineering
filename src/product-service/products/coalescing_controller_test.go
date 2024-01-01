@@ -3,40 +3,27 @@ package products
 import (
 	"context"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/singleflight"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
 )
 
-func TestNewDefaultController(t *testing.T) {
-	type args struct {
-		productRepository Repository
-	}
-	tests := []struct {
-		name string
-		args args
-		want *defaultController
-	}{
-		{
-			name: "Test construction with DemoRepository",
-			args: args{productRepository: NewDemoRepository()},
-			want: &defaultController{productRepository: NewDemoRepository()},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewDefaultController(tt.args.productRepository); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewDefaultController() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func TestNewCoalescingController(t *testing.T) {
+	demoRepo := NewDemoRepository()
+
+	controller := NewCoalescingController(demoRepo)
+
+	assert.NotNil(t, controller)
+	assert.Equal(t, demoRepo, controller.productRepository)
+	assert.IsType(t, &singleflight.Group{}, controller.group)
 }
 
-func TestDefaultController_DeleteProduct(t *testing.T) {
+func TestCoalescingController_DeleteProduct(t *testing.T) {
 	type fields struct {
 		productRepository Repository
 	}
@@ -98,7 +85,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := coalescingController{
 				productRepository: tt.fields.productRepository,
 			}
 			controller.DeleteProduct(tt.args.writer, tt.args.request)
@@ -109,7 +96,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 	}
 }
 
-func TestDefaultController_GetProductById(t *testing.T) {
+func TestCoalescingController_GetProductById(t *testing.T) {
 	type fields struct {
 		productRepository Repository
 	}
@@ -156,9 +143,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				productRepository: tt.fields.productRepository,
-			}
+			controller := NewCoalescingController(tt.fields.productRepository)
 			controller.GetProductById(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
@@ -171,9 +156,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/product/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 
-		controller := defaultController{
-			productRepository: generateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		// when
 		controller.GetProductById(writer, request)
@@ -210,11 +193,9 @@ func TestDefaultController_GetProductById(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetProductByEan(t *testing.T) {
+func TestCoalescingController_GetProductByEan(t *testing.T) {
 	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			productRepository: generateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=abc", nil)
@@ -229,9 +210,7 @@ func TestDefaultController_GetProductByEan(t *testing.T) {
 	})
 
 	t.Run("Unknown product (expect 404)", func(t *testing.T) {
-		controller := defaultController{
-			productRepository: generateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=123", nil)
@@ -246,9 +225,7 @@ func TestDefaultController_GetProductByEan(t *testing.T) {
 	})
 
 	t.Run("Should return products by EAN", func(t *testing.T) {
-		controller := defaultController{
-			productRepository: generateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=4014819040771", nil)
@@ -276,11 +253,9 @@ func TestDefaultController_GetProductByEan(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetProducts(t *testing.T) {
+func TestCoalescingController_GetProducts(t *testing.T) {
 	t.Run("should return all products", func(t *testing.T) {
-		controller := defaultController{
-			productRepository: generateExampleDemoRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/product", nil)
@@ -333,7 +308,7 @@ func TestDefaultController_GetProducts(t *testing.T) {
 	})
 }
 
-func TestDefaultController_PostProduct(t *testing.T) {
+func TestCoalescingController_PostProduct(t *testing.T) {
 	type fields struct {
 		productRepository Repository
 	}
@@ -416,7 +391,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := coalescingController{
 				productRepository: tt.fields.productRepository,
 			}
 			controller.PostProduct(tt.args.writer, tt.args.request)
@@ -436,7 +411,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 	}
 }
 
-func TestDefaultController_PutProduct(t *testing.T) {
+func TestCoalescingController_PutProduct(t *testing.T) {
 	type fields struct {
 		productRepository Repository
 	}
@@ -532,7 +507,7 @@ func TestDefaultController_PutProduct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := coalescingController{
 				productRepository: tt.fields.productRepository,
 			}
 			controller.PutProduct(tt.args.writer, tt.args.request)

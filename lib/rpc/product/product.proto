@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./internal/proto";
+
+message Product {
+  uint64 id = 1;
+  string description = 2;
+  uint64 ean = 3;
+}
+
+service ProductService {
+  // create method for adding a new product
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+
+  // read method for getting a product by id
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+
+  // read method for getting all products
+  rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
+
+  // update method for updating a product
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+
+  // delete method to get rid of a product
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+}
+
+// Request- and Response-Messages for CreateProduct
+message CreateProductRequest {
+  Product product = 1;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for GetProduct
+message GetProductRequest {
+  uint64 id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for ListProducts
+message GetAllProductsRequest {
+}
+
+message GetAllProductsResponse {
+  repeated Product products = 1;
+}
+
+// Request- and Response-Messages for UpdateProduct
+message UpdateProductRequest {
+  Product product = 1;
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for DeleteProduct
+message DeleteProductRequest {
+  uint64 id = 1;
+}
+
+message DeleteProductResponse {
+}

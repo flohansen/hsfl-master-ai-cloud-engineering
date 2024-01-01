@@ -1,29 +1,100 @@
+//go:generate protoc --proto_path=../../lib/rpc --go_out=internal/proto --go_opt=paths=source_relative --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative ../../lib/rpc/product/product.proto
 package main
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/router"
+	"context"
+	"errors"
+	"google.golang.org/grpc"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/http/router"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/rpc"
+	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
 	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"log"
+	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 )
 
 func main() {
-	productRepository := products.NewDemoRepository()
-	productsController := products.NewDefaultController(productRepository)
+	var productRepository products.Repository = products.NewDemoRepository()
+	var productsController products.Controller = products.NewCoalescingController(productRepository)
 	createContentForProducts(productRepository)
 
-	priceRepository := prices.NewDemoRepository()
-	pricesController := prices.NewDefaultController(priceRepository)
+	var priceRepository prices.Repository = prices.NewDemoRepository()
+	var pricesController prices.Controller = prices.NewDefaultController(priceRepository)
 	createContentForPrices(priceRepository)
 
-	handler := router.New(productsController, pricesController)
+	var wg sync.WaitGroup
 
-	if err := http.ListenAndServe(":3003", handler); err != nil {
-		log.Fatalf("error while listen and serve: %s", err.Error())
+	// create Context for Graceful Shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// start HTTP-Server
+	wg.Add(1)
+	go startHTTPServer(ctx, &wg, &productsController, &pricesController)
+
+	// start gRPC-Server
+	wg.Add(1)
+	go startGRPCServer(ctx, &wg, &productRepository, &priceRepository)
+
+	// waiting for interrupt signals
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// waiting for signal for graceful shutdown
+	<-stopChan
+	cancel() // end context to trigger graceful shutdown
+
+	// waiting to end all goroutines
+	wg.Wait()
+}
+
+func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, productsController *products.Controller, pricesController *prices.Controller) {
+	defer wg.Done()
+
+	handler := router.New(productsController, pricesController)
+	server := &http.Server{Addr: ":3003", Handler: handler}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Failed to start HTTP server: %v", err)
+		}
+	}()
+
+	// waiting for signal for graceful shutdown
+	<-ctx.Done()
+
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatalf("HTTP Server Shutdown Failed:%v", err)
 	}
+}
+
+func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, productRepository *products.Repository, priceRepository *prices.Repository) {
+	defer wg.Done()
+
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	proto.RegisterProductServiceServer(grpcServer, rpc.NewProductServer(productRepository, priceRepository))
+
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to start gRPC server: %v", err)
+		}
+	}()
+
+	// waiting for signal for graceful shutdown
+	<-ctx.Done()
+	grpcServer.GracefulStop()
 }
 
 func createContentForPrices(priceRepository prices.Repository) {

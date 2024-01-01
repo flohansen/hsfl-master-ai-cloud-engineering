@@ -28,6 +28,7 @@ services:
       dockerfile: ./src/product-service/Dockerfile
     ports:
       - 3003:3003
+      - 50051:50051
 
   users:
     build:

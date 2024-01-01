@@ -8,4 +8,5 @@ use (
 	src/user-service
 	src/web-service
 	src/http-proxy-service
+	utils/http-stress-test
 )
