@@ -6,6 +6,7 @@ replace hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib => ./../../lib/route
 
 require (
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/sync v0.4.0
 	google.golang.org/grpc v1.60.0
 	google.golang.org/protobuf v1.31.0
 	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib v0.0.0-00010101000000-000000000000

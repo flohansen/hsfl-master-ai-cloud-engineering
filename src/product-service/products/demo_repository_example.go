@@ -1,1 +1,28 @@
 package products
+
+import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
+
+func generateExampleDemoRepository() Repository {
+	repository := NewDemoRepository()
+	productSlice := generateExampleProductSlice()
+	for _, product := range productSlice {
+		repository.Create(product)
+	}
+
+	return repository
+}
+
+func generateExampleProductSlice() []*model.Product {
+	return []*model.Product{
+		{
+			Id:          1,
+			Description: "Strauchtomaten",
+			Ean:         4014819040771,
+		},
+		{
+			Id:          2,
+			Description: "Lauchzwiebeln",
+			Ean:         5001819040871,
+		},
+	}
+}

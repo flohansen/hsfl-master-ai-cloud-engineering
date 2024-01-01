@@ -22,9 +22,7 @@ func NewCoalescingController(productRepository Repository) *coalescingController
 
 func (controller coalescingController) GetProducts(writer http.ResponseWriter, request *http.Request) {
 	msg, err, _ := controller.group.Do("get-all", func() (interface{}, error) {
-		values, err := controller.productRepository.FindAll()
-		return values, err
-
+		return controller.productRepository.FindAll()
 	})
 
 	if err != nil {

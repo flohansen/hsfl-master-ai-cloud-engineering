@@ -3,37 +3,24 @@ package products
 import (
 	"context"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/singleflight"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
 )
 
 func TestNewCoalescingController(t *testing.T) {
-	type args struct {
-		productRepository Repository
-	}
-	tests := []struct {
-		name string
-		args args
-		want *coalescingController
-	}{
-		{
-			name: "Test construction with DemoRepository",
-			args: args{productRepository: NewDemoRepository()},
-			want: &coalescingController{productRepository: NewDemoRepository()},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewCoalescingController(tt.args.productRepository); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewCoalescingController() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	demoRepo := NewDemoRepository()
+
+	controller := NewCoalescingController(demoRepo)
+
+	assert.NotNil(t, controller)
+	assert.Equal(t, demoRepo, controller.productRepository)
+	assert.IsType(t, &singleflight.Group{}, controller.group)
 }
 
 func TestCoalescingController_DeleteProduct(t *testing.T) {
@@ -53,7 +40,7 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 		{
 			name: "Successfully delete existing product (expect 200)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -68,7 +55,7 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 		{
 			name: "Bad non-numeric request (expect 400)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -83,7 +70,7 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 		{
 			name: "Unknown product to delete (expect 500)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -126,7 +113,7 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 		{
 			name: "Bad non-numeric request (expect 400)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -141,7 +128,7 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 		{
 			name: "Unknown product (expect 404)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -156,9 +143,7 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := coalescingController{
-				productRepository: tt.fields.productRepository,
-			}
+			controller := NewCoalescingController(tt.fields.productRepository)
 			controller.GetProductById(tt.args.writer, tt.args.request)
 			if tt.args.writer.Code != tt.wantStatus {
 				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
@@ -171,9 +156,7 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/product/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 
-		controller := coalescingController{
-			productRepository: setupMockRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		// when
 		controller.GetProductById(writer, request)
@@ -212,9 +195,7 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 
 func TestCoalescingController_GetProductByEan(t *testing.T) {
 	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
-		controller := coalescingController{
-			productRepository: setupMockRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=abc", nil)
@@ -229,9 +210,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 	})
 
 	t.Run("Unknown product (expect 404)", func(t *testing.T) {
-		controller := coalescingController{
-			productRepository: setupMockRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=123", nil)
@@ -246,9 +225,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 	})
 
 	t.Run("Should return products by EAN", func(t *testing.T) {
-		controller := coalescingController{
-			productRepository: setupMockRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=4014819040771", nil)
@@ -278,9 +255,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 
 func TestCoalescingController_GetProducts(t *testing.T) {
 	t.Run("should return all products", func(t *testing.T) {
-		controller := coalescingController{
-			productRepository: setupMockRepository(),
-		}
+		controller := NewCoalescingController(generateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/product", nil)
@@ -305,7 +280,7 @@ func TestCoalescingController_GetProducts(t *testing.T) {
 				"application/json", writer.Header().Get("Content-Type"))
 		}
 
-		products := setupDemoProductSlice()
+		products := generateExampleProductSlice()
 
 		sort.Slice(response, func(i, j int) bool {
 			return response[i].Id < response[j].Id
@@ -351,7 +326,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 		{
 			name: "Valid Product",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -367,7 +342,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 		{
 			name: "Valid Product (Partly Fields)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -383,7 +358,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 		{
 			name: "Malformed JSON",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -399,7 +374,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 		{
 			name: "Invalid product, incorrect Type for EAN (Non-numeric)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -455,7 +430,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 		{
 			name: "Valid Update",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -474,7 +449,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 		{
 			name: "Valid Update (Partly Fields)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -493,7 +468,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 		{
 			name: "Malformed JSON",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: generateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
