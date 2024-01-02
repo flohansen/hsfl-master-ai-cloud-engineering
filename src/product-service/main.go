@@ -32,26 +32,20 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	// create Context for Graceful Shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// start HTTP-Server
 	wg.Add(1)
 	go startHTTPServer(ctx, &wg, &productsController, &pricesController)
 
-	// start gRPC-Server
 	wg.Add(1)
 	go startGRPCServer(ctx, &wg, &productRepository, &priceRepository)
 
-	// waiting for interrupt signals
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// waiting for signal for graceful shutdown
 	<-stopChan
-	cancel() // end context to trigger graceful shutdown
+	cancel()
 
-	// waiting to end all goroutines
 	wg.Wait()
 }
 
@@ -67,7 +61,6 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, productsController
 		}
 	}()
 
-	// waiting for signal for graceful shutdown
 	<-ctx.Done()
 
 	if err := server.Shutdown(context.Background()); err != nil {
@@ -94,7 +87,6 @@ func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, productRepository 
 		}
 	}()
 
-	// waiting for signal for graceful shutdown
 	<-ctx.Done()
 	grpcServer.GracefulStop()
 }
