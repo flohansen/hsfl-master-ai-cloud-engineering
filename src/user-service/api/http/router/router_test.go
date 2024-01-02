@@ -3,7 +3,7 @@ package router
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/handler"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"

@@ -1,8 +1,10 @@
+//go:generate protoc --proto_path=../../lib/rpc --go_out=internal/proto --go_opt=paths=source_relative --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative ../../lib/rpc/user/user.proto
+
 package main
 
 import (
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/handler"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/router"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
