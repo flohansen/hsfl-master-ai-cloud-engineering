@@ -238,7 +238,7 @@ func TestRouter(t *testing.T) {
 
 func setupLoginHandler() *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
-		auth.JwtConfig{SignKey: "../../auth/test-token"})
+		auth.JwtConfig{PrivateKey: "../../auth/test-token"})
 
 	return handler.NewLoginHandler(setupMockRepository(),
 		crypto.NewBcryptHasher(), jwtToken)

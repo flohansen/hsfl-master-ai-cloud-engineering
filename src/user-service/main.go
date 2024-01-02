@@ -29,7 +29,7 @@ func main() {
 
 func setupLoginHandler(userRepository user.Repository) *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
-		auth.JwtConfig{SignKey: "./auth/test-token"})
+		auth.JwtConfig{PrivateKey: "./auth/test-token"})
 
 	return handler.NewLoginHandler(setupMockRepository(userRepository),
 		crypto.NewBcryptHasher(), jwtToken)
