@@ -1,6 +1,6 @@
 <script lang="ts">
     import Add from "../../assets/svg/Add.svelte";
-    import Select from "$lib/forms/Select.svelte";
+    import Select from "$lib/forms/SelectProducts.svelte";
     import Count from "$lib/forms/Count.svelte";
     import {handleErrors} from "../../assets/helper/handleErrors";
     import Modal from "$lib/general/Modal.svelte";
