@@ -6,51 +6,29 @@
 
     type ViewState = "detailed" | "compressed";
 
-    interface Product {
-        id: number,
-        description: string,
-        count: number,
-    }
-
-    interface ShoppingListEntry {
-        productId: number,
-        count: number,
-        checked?: boolean
-    }
-
-    interface Price {
-        price: number,
-    }
-
     export let listId: number;
-    export let entry: ShoppingListEntry;
+    export let entry: { productId: number, count: number, checked?: boolean };
+    export let product: { id: number, description: string, ean: number };
     export let view: ViewState = "detailed";
 
-    let productData: Product = { id: 0, description: '', count: 0 };
-    let priceData: Price = { price: 0 };
+    let price: { price: number } = { price: 0 };
     let merchant: string = 'Aldi';
 
-    const apiUrlProduct = `/api/v1/product/${entry.productId}`;
-    const apiUrlPrice = `/api/v1/price/${entry.productId}/2`;
+    const apiUrlPrice = `/api/v1/price/${product.id}/2`;
 
     const dispatch = createEventDispatcher();
 
     onMount(async () => {
-        fetch(apiUrlProduct)
-            .then(handleErrors)
-            .then(data => productData = data)
-            .catch(error => console.error("Failed to fetch data:", error.message));
-
         fetch(apiUrlPrice)
             .then(handleErrors)
-            .then(data => priceData = data)
+            .then(data => price = data)
             .catch(error => console.error("Failed to fetch data:", error.message));
     });
 
     function updateShoppingListEntry(): void {
-        if (! listId || ! productData.id ) return;
+        if (! listId || ! product.id ) return;
 
-        const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${productData.id}`;
+        const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${product.id}`;
         const requestOptions = {
             method: "PUT",
             headers: { 'Content-Type': 'application/json' },
@@ -64,9 +42,9 @@
     }
 
     function deleteShoppingListEntry(): void {
-        if (! listId || ! productData.id) return;
+        if (! listId || ! product.id) return;
 
-        const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${productData.id}`;
+        const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${product.id}`;
         const requestOptions = {
             method: "DELETE",
             headers: { 'Content-Type': 'application/json' },
@@ -83,8 +61,8 @@
     <div class="flex gap-x-2 items-center justify-between">
         <div class="flex gap-x-2 items-center">
             <Checkbox
-                label={productData.description}
-                id={productData.id}
+                label={product.description}
+                id={product.id}
                 count={entry.count}
                 bind:checked={entry.checked}
                 on:updateShoppingListEntry={updateShoppingListEntry} />
@@ -96,11 +74,11 @@
             <Trash classes="w-4 h-4 md:w-5 md:h-5" />
         </button>
     </div>
-    {#if view === 'detailed' && priceData}
+    {#if view === 'detailed' && price.price}
         <p class="text-gray-dark mt-1 ml-[2.1rem] text-sm flex flex-wrap items-center gap-2 lg:text-sm { entry.checked ? 'opacity-50' : '' }">
             Am günstigsten bei
             <strong class="text-green-dark font-semibold">{merchant}</strong>für
-            <strong class="text-green-dark font-semibold">{priceData.price} €</strong>
+            <strong class="text-green-dark font-semibold">{price.price} €</strong>
         </p>
     {/if}
 </li>
