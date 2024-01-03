@@ -7,15 +7,25 @@ import (
 )
 
 type JwtConfig struct {
-	SignKey string `yaml:"signKey"`
+	PrivateKey string `yaml:"privateKey"`
 }
 
 func (config JwtConfig) ReadPrivateKey() (any, error) {
-	bytes, err := os.ReadFile(config.SignKey)
-	if err != nil {
-		return nil, err
+	var block *pem.Block
+
+	if _, err := os.Stat(config.PrivateKey); err == nil {
+		bytes, err := os.ReadFile(config.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		block, _ = pem.Decode(bytes)
+	} else {
+		block, _ = pem.Decode([]byte(config.PrivateKey))
+		if block == nil {
+			return nil, err
+		}
 	}
 
-	block, _ := pem.Decode(bytes)
 	return x509.ParseECPrivateKey(block.Bytes)
+
 }
