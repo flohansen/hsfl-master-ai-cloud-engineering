@@ -2,11 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
-	"crypto/x509"
-	"encoding/pem"
 	"errors"
 	"google.golang.org/grpc"
 	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user"
@@ -15,6 +10,7 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/rpc"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
@@ -28,24 +24,8 @@ import (
 )
 
 func main() {
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		panic("Error generating private key for testing.")
-	}
-
-	derFormatKey, err := x509.MarshalECPrivateKey(privateKey)
-	if err != nil {
-		panic("Error converting ECDSA key to DER format")
-	}
-
-	pemKey := pem.EncodeToMemory(&pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: derFormatKey,
-	})
-
-	pemPrivateKey := string(pemKey)
-
-	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: pemPrivateKey})
+	privateKey := utils.GenerateRandomECDSAPrivateKeyAsPEM()
+	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: privateKey})
 
 	var usersRepository user.Repository = user.NewDemoRepository()
 

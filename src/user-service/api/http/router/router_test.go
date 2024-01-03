@@ -9,7 +9,9 @@ import (
 	"encoding/pem"
 	"github.com/stretchr/testify/assert"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/middleware"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
@@ -25,7 +27,10 @@ func TestRouter(t *testing.T) {
 
 	userRepo := setupUserRepository()
 	var userController user.Controller = user.NewDefaultController(userRepo)
-	router := New(loginHandler, registerHandler, &userController)
+	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: utils.GenerateRandomECDSAPrivateKeyAsPEM()})
+
+	authMiddleware := middleware.CreateLocalAuthMiddleware(&userRepo, tokenGenerator)
+	router := New(loginHandler, registerHandler, &userController, authMiddleware)
 
 	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
 		// given
@@ -134,50 +139,7 @@ func TestRouter(t *testing.T) {
 			router.ServeHTTP(w, r)
 
 			// then
-			assert.Equal(t, http.StatusOK, w.Code)
-		})
-	})
-
-	t.Run("/api/v1/user", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
-			tests := []string{"DELETE", "PUT", "HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH"}
-
-			for _, test := range tests {
-				// given
-				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/products", nil)
-
-				// when
-				router.ServeHTTP(w, r)
-				print(test)
-				// then
-				assert.Equal(t, http.StatusNotFound, w.Code)
-			}
-		})
-
-		t.Run("should call GET handler", func(t *testing.T) {
-			// given
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", "/api/v1/user/", nil)
-
-			// when
-			router.ServeHTTP(w, r)
-
-			// then
-			assert.Equal(t, http.StatusOK, w.Code)
-		})
-
-		t.Run("should call POST handler", func(t *testing.T) {
-			// given
-			w := httptest.NewRecorder()
-			jsonRequest := `{"id": 3, "email": "example@googlemail.com", "password": "password", "name": "Example name"}`
-			r := httptest.NewRequest("POST", "/api/v1/user/", strings.NewReader(jsonRequest))
-
-			// when
-			router.ServeHTTP(w, r)
-
-			// then
-			assert.Equal(t, http.StatusCreated, w.Code)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
 		})
 	})
 
@@ -211,7 +173,7 @@ func TestRouter(t *testing.T) {
 			router.ServeHTTP(w, r)
 
 			// then
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
 		})
 
 		t.Run("should call PUT handler", func(t *testing.T) {
@@ -224,7 +186,7 @@ func TestRouter(t *testing.T) {
 			router.ServeHTTP(w, r)
 
 			// then
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
 		})
 
 		t.Run("should call DELETE handler", func(t *testing.T) {
@@ -236,7 +198,7 @@ func TestRouter(t *testing.T) {
 			router.ServeHTTP(w, r)
 
 			// then
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
 		})
 	})
 }
