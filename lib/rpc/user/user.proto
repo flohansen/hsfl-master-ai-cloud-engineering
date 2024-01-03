@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package product;
 
-option go_package = "./internal/proto";
+option go_package = "./rpc/user";
 
 message User {
   uint64 id = 1;

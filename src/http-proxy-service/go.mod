@@ -26,5 +26,5 @@ require (
 )
 
 replace (
-"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib" => ./../../lib/router
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router" => ./../../lib/router
 )

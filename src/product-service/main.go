@@ -1,13 +1,12 @@
-//go:generate protoc --proto_path=../../lib/rpc --go_out=internal/proto --go_opt=paths=source_relative --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative ../../lib/rpc/product/product.proto
 package main
 
 import (
 	"context"
 	"errors"
 	"google.golang.org/grpc"
+	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/http/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/api/rpc"
-	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"

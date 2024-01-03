@@ -3,7 +3,7 @@ package rpc
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
+	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
 	"testing"

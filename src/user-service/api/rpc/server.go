@@ -4,9 +4,9 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
-	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/internal/proto/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"log"
 	"strconv"
@@ -14,16 +14,23 @@ import (
 
 type UserServiceServer struct {
 	proto.UnimplementedUserServiceServer
-	userRepository user.Repository
+	userRepository *user.Repository
 	hasher         crypto.Hasher
 	tokenGenerator auth.TokenGenerator
 }
 
-func (u UserServiceServer) ValidateUserToken(_ context.Context, request *proto.ValidateUserTokenRequest) (*proto.ValidateUserTokenResponse, error) {
+func NewUserServiceServer(userRepository *user.Repository, tokenGenerator auth.TokenGenerator) *UserServiceServer {
+	return &UserServiceServer{
+		userRepository: userRepository,
+		tokenGenerator: tokenGenerator,
+	}
+}
+
+func (u *UserServiceServer) ValidateUserToken(_ context.Context, request *proto.ValidateUserTokenRequest) (*proto.ValidateUserTokenResponse, error) {
 	claims, err := u.tokenGenerator.VerifyToken(request.Token)
 	if err != nil {
 		log.Println("Verification failed: ", err.Error())
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	id, err := strconv.ParseUint(claims["id"].(string), 10, 64)
@@ -32,7 +39,7 @@ func (u UserServiceServer) ValidateUserToken(_ context.Context, request *proto.V
 		return nil, status.Error(codes.DataLoss, "Can't find user id in claim.")
 	}
 
-	user, err := u.userRepository.FindById(id)
+	user, err := (*u.userRepository).FindById(id)
 	if err != nil {
 		log.Println("Verification failed: ", err.Error())
 		return nil, status.Error(codes.NotFound, err.Error())
