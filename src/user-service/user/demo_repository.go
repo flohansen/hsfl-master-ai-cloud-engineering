@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"sort"
 
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
 )
@@ -47,6 +48,10 @@ func (repo *DemoRepository) FindAll() ([]*model.User, error) {
 		for _, v := range repo.users {
 			r = append(r, v)
 		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Name < r[j].Name
+		})
 		return r, nil
 	}
 
@@ -61,6 +66,10 @@ func (repo *DemoRepository) FindAllByRole(role *model.Role) ([]*model.User, erro
 				r = append(r, user)
 			}
 		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Name < r[j].Name
+		})
 		return r, nil
 	}
 

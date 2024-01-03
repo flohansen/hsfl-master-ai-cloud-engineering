@@ -3,6 +3,7 @@ package products
 import (
 	"errors"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
+	"sort"
 )
 
 type DemoRepository struct {
@@ -47,6 +48,10 @@ func (repo *DemoRepository) FindAll() ([]*model.Product, error) {
 		for _, v := range repo.products {
 			r = append(r, v)
 		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Description < r[j].Description
+		})
 		return r, nil
 	}
 
