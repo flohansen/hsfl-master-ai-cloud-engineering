@@ -1,5 +1,7 @@
-export let isAuthenticated: boolean = false;
+import {type Writable, writable} from 'svelte/store';
 
-export function setAuthenticationStatus(status: boolean) {
-    isAuthenticated = status;
+export const isAuthenticated: Writable<boolean> = writable<boolean>(false);
+
+export function setAuthenticationStatus(status: boolean): void {
+    isAuthenticated.set(status);
 }

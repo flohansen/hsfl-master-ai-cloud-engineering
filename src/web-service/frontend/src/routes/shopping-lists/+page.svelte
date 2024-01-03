@@ -17,7 +17,7 @@
     export let data: Data;
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <header>
         <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
             {data.headline}

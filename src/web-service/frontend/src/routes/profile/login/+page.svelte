@@ -1,11 +1,12 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { writable } from 'svelte/store';
+    import { decodeToken } from "../../../assets/helper/decodeToken";
+    import { setAuthenticationStatus } from "../../../store";
+    import Close from "../../../assets/svg/Close.svelte";
     import Profile from "../../../assets/svg/Profile.svelte";
     import Input from "$lib/forms/Input.svelte";
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
-    import { jwtDecode } from "jwt-decode";
-    import { writable } from 'svelte/store';
-    import Close from "../../../assets/svg/Close.svelte";
 
     let userMail: string;
     let userPassword: string;
@@ -27,10 +28,12 @@
             .then(response => response.json())
             .then(data => {
                 const { access_token } = data;
-                const decoded = jwtDecode(access_token);
-                if (decoded) {
+                const decodedToken: string = decodeToken(access_token);
+                if (decodedToken) {
                     sessionStorage.setItem("access_token", access_token);
-                    sessionStorage.setItem('user_id', decoded.id)
+                    sessionStorage.setItem('user_id', decodedToken.id);
+                    setAuthenticationStatus(true);
+                    window.location.href = '/';
                 }
             })
             .catch(error => {

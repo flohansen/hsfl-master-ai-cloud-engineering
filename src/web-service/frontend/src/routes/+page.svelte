@@ -2,7 +2,7 @@
     import Header from "$lib/general/Header.svelte";
     import Euro from "../assets/svg/Euro.svelte";
     import ShoppingList from "$lib/shopping-list/ShoppingList.svelte";
-    import {isAuthenticated} from "../store";
+    import { isAuthenticated } from "../store";
 
     interface Data {
         lists: { id: number, description: string }[],
@@ -12,7 +12,7 @@
     export let data: Data;
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <Header headline="{data.headline}"/>
 
     <main>

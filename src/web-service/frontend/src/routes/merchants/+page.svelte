@@ -19,7 +19,7 @@
     export let data: Data;
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <Header headline="{$page.data.headline}"/>
 
     <main>

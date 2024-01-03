@@ -24,7 +24,7 @@
     let isOpen: boolean = false;
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <header>
         <BackLink
             url="/merchants"

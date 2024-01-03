@@ -54,7 +54,7 @@
     }
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <header>
         {#if ! formSubmitted}
             <h1 class="font-bold text-xl w-[90%] md:text-2xl xl:text-3xl">

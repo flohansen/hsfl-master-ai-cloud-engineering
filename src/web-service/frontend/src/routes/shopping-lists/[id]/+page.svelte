@@ -76,7 +76,7 @@
     }
 </script>
 
-{#if isAuthenticated}
+{#if $isAuthenticated}
     <header>
         <BackLink
             url="/shopping-lists"
