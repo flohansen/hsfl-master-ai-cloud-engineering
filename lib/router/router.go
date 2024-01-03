@@ -7,6 +7,8 @@ import (
 	"regexp"
 )
 
+type Middleware = func(w http.ResponseWriter, r *http.Request) *http.Request
+
 type route struct {
 	method  string
 	pattern *regexp.Regexp
@@ -15,7 +17,8 @@ type route struct {
 }
 
 type Router struct {
-	routes []route
+	routes      []route
+	middlewares []Middleware
 }
 
 func New() *Router {
@@ -32,6 +35,9 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if len(matches) > 0 {
 			r = createRequestContext(r, route.params, matches[1:])
+			for _, middleware := range router.middlewares {
+				r = middleware(w, r)
+			}
 			route.handler(w, r)
 			return
 		}
@@ -53,7 +59,7 @@ func createRequestContext(r *http.Request, paramKeys []string, paramValues []str
 	return r.WithContext(ctx)
 }
 
-func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc) {
+func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
 	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)|\\*")
 	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
 
@@ -83,55 +89,64 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 	router.routes = append(router.routes, route{
 		method:  method,
 		pattern: regexp.MustCompile("^" + pattern + "$"),
-		handler: handler,
-		params:  params,
+		handler: func(w http.ResponseWriter, r *http.Request) {
+			for _, middleware := range middlewares {
+				r = middleware(w, r)
+			}
+			handler(w, r)
+		},
+		params: params,
 	})
 }
 
-func (router *Router) GET(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodGet, pattern, handler)
+func (router *Router) GET(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodGet, pattern, handler, middlewares...)
 }
 
-func (router *Router) POST(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPost, pattern, handler)
+func (router *Router) POST(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodPost, pattern, handler, middlewares...)
 }
 
-func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPut, pattern, handler)
+func (router *Router) PUT(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodPut, pattern, handler, middlewares...)
 }
 
-func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodDelete, pattern, handler)
+func (router *Router) DELETE(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodDelete, pattern, handler, middlewares...)
 }
 
-func (router *Router) PATCH(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPatch, pattern, handler)
+func (router *Router) PATCH(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodPatch, pattern, handler, middlewares...)
 }
 
-func (router *Router) CONNECT(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodConnect, pattern, handler)
+func (router *Router) CONNECT(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodConnect, pattern, handler, middlewares...)
 }
 
-func (router *Router) HEAD(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodHead, pattern, handler)
+func (router *Router) HEAD(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodHead, pattern, handler, middlewares...)
 }
 
-func (router *Router) OPTIONS(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodOptions, pattern, handler)
+func (router *Router) OPTIONS(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodOptions, pattern, handler, middlewares...)
 }
 
-func (router *Router) TRACE(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodTrace, pattern, handler)
+func (router *Router) TRACE(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.addRoute(http.MethodTrace, pattern, handler, middlewares...)
 }
 
-func (router *Router) ALL(pattern string, handler http.HandlerFunc) {
-	router.GET(pattern, handler)
-	router.POST(pattern, handler)
-	router.PUT(pattern, handler)
-	router.DELETE(pattern, handler)
-	router.PATCH(pattern, handler)
-	router.CONNECT(pattern, handler)
-	router.HEAD(pattern, handler)
-	router.OPTIONS(pattern, handler)
-	router.TRACE(pattern, handler)
+func (router *Router) ALL(pattern string, handler http.HandlerFunc, middlewares ...Middleware) {
+	router.GET(pattern, handler, middlewares...)
+	router.POST(pattern, handler, middlewares...)
+	router.PUT(pattern, handler, middlewares...)
+	router.DELETE(pattern, handler, middlewares...)
+	router.PATCH(pattern, handler, middlewares...)
+	router.CONNECT(pattern, handler, middlewares...)
+	router.HEAD(pattern, handler, middlewares...)
+	router.OPTIONS(pattern, handler, middlewares...)
+	router.TRACE(pattern, handler, middlewares...)
+}
+
+func (router *Router) RegisterMiddleware(middleware Middleware) {
+	router.middlewares = append(router.middlewares, middleware)
 }

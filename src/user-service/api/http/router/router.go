@@ -2,6 +2,7 @@ package router
 
 import (
 	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/middleware"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"net/http"
@@ -21,12 +22,14 @@ func New(
 	r.POST("/api/v1/authentication/login/", loginHandler.Login)
 	r.POST("/api/v1/authentication/register/", registerHandler.Register)
 
-	r.GET("/api/v1/user/", userHandler.GetUsers)
-	r.GET("/api/v1/user/role/:userRole", userHandler.GetUsersByRole)
-	r.GET("/api/v1/user/:userId", userHandler.GetUser)
-	r.PUT("/api/v1/user/:userId", userHandler.PutUser)
-	r.POST("/api/v1/user/", userHandler.PostUser)
-	r.DELETE("/api/v1/user/:userId", userHandler.DeleteUser)
+	authMiddleware := middleware.CreateAuthMiddleware()
+
+	r.GET("/api/v1/user/", userHandler.GetUsers, authMiddleware)
+	r.GET("/api/v1/user/role/:userRole", userHandler.GetUsersByRole, authMiddleware)
+	r.GET("/api/v1/user/:userId", userHandler.GetUser, authMiddleware)
+	r.PUT("/api/v1/user/:userId", userHandler.PutUser, authMiddleware)
+	r.POST("/api/v1/user/", userHandler.PostUser, authMiddleware)
+	r.DELETE("/api/v1/user/:userId", userHandler.DeleteUser, authMiddleware)
 
 	return &Router{r}
 }
