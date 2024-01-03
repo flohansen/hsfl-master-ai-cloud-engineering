@@ -47,7 +47,7 @@
 
 <header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
-        {$page.data.metaTitle}
+        {$page.data.headline}
     </h1>
 </header>
 

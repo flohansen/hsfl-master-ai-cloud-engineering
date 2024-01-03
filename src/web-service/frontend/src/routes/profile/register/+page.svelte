@@ -42,15 +42,15 @@
     }
 
     function handleError(): void {
-        errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
-        console.error("Failed to fetch data.");
+        errorMessage.set("Leider ist etwas schief gelaufen. Bitte versuche es erneut.");
+        console.error("Failed to register.");
     }
 </script>
 
 
 <header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
-        {$page.data.metaTitle}
+        {$page.data.headline}
     </h1>
 </header>
 
