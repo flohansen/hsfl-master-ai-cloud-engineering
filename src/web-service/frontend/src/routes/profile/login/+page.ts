@@ -1,6 +1,6 @@
 export function load(): object {
     return {
         metaTitle: 'Login',
-        headline: 'Login',
+        headline: 'Logge dich ein',
     };
 }

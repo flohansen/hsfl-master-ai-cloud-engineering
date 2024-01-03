@@ -8,6 +8,7 @@
     let listOpen: boolean = false;
     const itemId = 'id';
     const label = 'description';
+    const id = 'product';
     let items: { id: number, description: string }[] = [];
 
     export let justValue: number;
@@ -23,11 +24,12 @@
 </script>
 
 <div class="relative my-5 lg:my-8">
-    <p class="text-gray-dark text-sm font-medium mb-2 lg:mb-3 lg:text-base">
-        Anzahl auswählen:
-    </p>
+    <label for="{id}" class="text-sm text-gray-dark font-medium block mb-2">
+        {label}: *
+    </label>
 
     <Select
+        {id}
         {itemId}
         {label}
         {items}
@@ -37,12 +39,14 @@
         clearable={false}
         listOffset={0}
         showChevron
-        --border="1px solid rgba(49, 112, 80, 0.5)"
+        required
+        --border="1px solid rgba(49, 112, 80, 0.75)"
         --border-radius="0.5rem"
         --border-focused="1px solid rgba(49, 112, 80, 1)"
         --placeholder-color="rgba(49, 112, 80, 0.75)"
         --input-color="rgba(49, 112, 80, 1)"
         --selected-item-color="rgba(49, 112, 80, 1)"
+        --padding="0.85rem 1rem 0.85rem 1rem"
         --font-size="0.875rem"
         --list-border-radius="0 0 0.5rem 0.5rem"
         --item-hover-bg="rgba(143, 143, 143, 0.25)"
@@ -50,6 +54,6 @@
         --list-background="#F4F4F9"
         --chevron-width="1.75rem"
         --chevron-height="1rem">
-        <Chevron slot="chevron-icon" classes="w-4 h-4 text-green-dark/75 mr-3 transition-all ease-in-out duration-300 { listOpen ? 'rotate-180' : '' }"/>
+        <Chevron slot="chevron-icon" classes="w-4 h-4 text-green-dark/75 transition-all ease-in-out duration-300 { listOpen ? 'rotate-180' : '' }"/>
     </Select>
 </div>
