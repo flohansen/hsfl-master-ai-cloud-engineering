@@ -6,9 +6,16 @@
     import {handleErrors} from "../../../assets/helper/handleErrors";
     import BackLink from "$lib/general/BackLink.svelte";
 
+    interface Entry {
+        productId: number,
+        count: number,
+        checked?: boolean,
+    }
+
     interface Data {
         list: { id: number, description: string, completed?: boolean },
-        entries: { productId: number, count: number, checked?: boolean }[],
+        entries: Entry[],
+        products: { id: number, description: string, ean: number }[],
     }
 
     type ViewState = "detailed" | "compressed";
@@ -60,6 +67,10 @@
             .then(handleErrors)
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
+
+    function findEntryByProductId(productId: number): Entry | undefined {
+        return data.entries.find(entry => entry.productId === productId);
+    }
 </script>
 
 <header>
@@ -88,16 +99,19 @@
 
         <p class="text-gray-dark text-sm">Deine Einkaufsliste</p>
         <ul class="mt-4">
-            {#if data.entries.length === 0}
+            {#if data.products.length === 0}
                 <p>Keine Einträge vorhanden.</p>
             {/if}
 
-            {#each data.entries as entry}
-                <ShoppingListEntry
-                    listId={data.list.id}
-                    view={view}
-                    entry={entry}
-                    on:updateCheckedEntriesCount={updateCheckedEntriesCount}/>
+            {#each data.products as product}
+                {#if findEntryByProductId(product.id)}
+                    <ShoppingListEntry
+                        listId={data.list.id}
+                        view={view}
+                        entry={findEntryByProductId(product.id)}
+                        product={product}
+                        on:updateCheckedEntriesCount={updateCheckedEntriesCount} />
+                {/if}
             {/each}
         </ul>
 
