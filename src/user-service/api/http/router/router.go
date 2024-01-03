@@ -1,8 +1,7 @@
 package router
 
 import (
-	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/middleware"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"net/http"
