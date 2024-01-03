@@ -5,8 +5,7 @@ services:
       dockerfile: ./src/http-proxy-service/Dockerfile
     image: onyxmoon/pw-http-proxy-service:latest
     environment:
-      - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.yaml
+      - PROXY_CONFIG_PATH=./config/proxyConfig.docker.yaml
     ports:
       - 8080:8080
     depends_on:
@@ -21,9 +20,7 @@ services:
       dockerfile: ./src/load-balancer-service/Dockerfile
     image: onyxmoon/pw-load-balancer-service:latest
     environment:
-      - IMAGE=onyxmoon/pw-web-service:latest
-      - REPLICAS=5
-      - NETWORK_NAME=bridge
+      - LOAD_BALANCER_CONFIG_PATH=./config/config.web-service.yaml
     ports:
       - 3000:3000
     volumes:

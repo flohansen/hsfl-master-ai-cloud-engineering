@@ -83,7 +83,7 @@ func (hc *HealthCheck) stopHealthCheck() {
 var DefaultHealthCheck = func(addr *url.URL) bool {
 	conn, err := net.DialTimeout("tcp", addr.Host, 2*time.Second)
 	if err != nil {
-		log.Printf("Failed healtcheck: " + addr.Host)
+		log.Printf("Health check is missing heartbeat: " + addr.Host)
 		return false
 	}
 	_ = conn.Close()

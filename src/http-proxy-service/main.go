@@ -8,26 +8,20 @@ import (
 	"os"
 )
 
-var proxyConfigPath = "./config"
-var proxyConfigFilename = "proxyConfig.yaml"
+var proxyConfigPath = "./config/proxyConfig.yaml"
 
 func main() {
 	log.Printf("Prepare service: http-proxy-service")
 
 	var proxyConfig *proxy.Config
 
-	envPath, isEnvPathSet := os.LookupEnv("PROXY_DOCKER_CONFIG_PATH")
-	envFilename, isEnvFilenameSet := os.LookupEnv("PROXY_DOCKER_CONFIG_FILENAME")
+	envPath, isEnvPathSet := os.LookupEnv("PROXY_CONFIG_PATH")
 
 	if isEnvPathSet {
 		proxyConfigPath = envPath
 	}
 
-	if isEnvFilenameSet {
-		proxyConfigFilename = envFilename
-	}
-
-	proxyConfig = proxyutils.DefaultProxyManagerConfigurationReader(proxyConfigPath, proxyConfigFilename)
+	proxyConfig = proxyutils.DefaultProxyManagerConfigurationReader(proxyConfigPath)
 
 	log.Printf("Configuration loaded successfully with %d mappings", len(proxyConfig.ProxyRoutes))
 	proxyManager := proxy.NewDefaultManager(proxyConfig)
