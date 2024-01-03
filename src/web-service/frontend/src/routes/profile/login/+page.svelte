@@ -3,7 +3,7 @@
     import Profile from "../../../assets/svg/Profile.svelte";
     import Input from "$lib/forms/Input.svelte";
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
-    import { handleErrors } from "../../../assets/helper/handleErrors";
+    import { jwtDecode } from "jwt-decode";
     import { writable } from 'svelte/store';
     import Close from "../../../assets/svg/Close.svelte";
 
@@ -23,27 +23,22 @@
             body: JSON.stringify({ email: userMail, password: userPassword }),
         };
 
-        try {
-            const response = await fetch(apiUrl, requestOptions);
-
-            if (response.ok) {
-                window.location.href = '/';
-            } else {
-                await handleErrors(response);
-                handleError()
-
-            }
-        } catch (error) {
-            handleError();
-        }
-    }
-
-    function handleError(): void {
-        errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
-        console.error("Failed to fetch data.");
+        fetch(apiUrl, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                const { access_token } = data;
+                const decoded = jwtDecode(access_token);
+                if (decoded) {
+                    sessionStorage.setItem("access_token", access_token);
+                    sessionStorage.setItem('user_id', decoded.id)
+                }
+            })
+            .catch(error => {
+                errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
+                console.error("Failed to fetch data:", error.message);
+            });
     }
 </script>
-
 
 <header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">

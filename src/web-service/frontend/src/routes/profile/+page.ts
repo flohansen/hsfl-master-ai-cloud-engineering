@@ -1,6 +1,11 @@
-import {handleErrors} from "../../assets/helper/handleErrors";
+import { handleErrors } from "../../assets/helper/handleErrors";
+import { isAuthenticated } from "../../store";
 
-export const load = async (): Promise<object> => {
+export const load = async (): Promise<Promise<object> | undefined> => {
+    if (! isAuthenticated) {
+        return;
+    }
+
     const userId: number = 2; // TODO: add real current user id
     const apiUrl: string = `/api/v1/user/${userId}`;
 

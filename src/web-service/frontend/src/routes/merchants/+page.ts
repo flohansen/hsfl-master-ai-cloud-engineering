@@ -1,4 +1,5 @@
 import { handleErrors } from "../../assets/helper/handleErrors";
+import { isAuthenticated } from "../../store";
 
 interface Merchant {
     id: number;
@@ -7,7 +8,11 @@ interface Merchant {
     productsCount?: number;
 }
 
-export const load = async (): Promise<object> => {
+export const load = async (): Promise<Promise<object> | undefined> => {
+    if (! isAuthenticated) {
+        return;
+    }
+
     const apiUrlMerchants: string = "/api/v1/user/role/1";
 
     try {

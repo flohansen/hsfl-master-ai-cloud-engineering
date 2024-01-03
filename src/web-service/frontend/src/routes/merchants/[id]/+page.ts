@@ -1,4 +1,5 @@
 import { handleErrors } from '../../../assets/helper/handleErrors';
+import {isAuthenticated} from "../../../store";
 
 interface Merchant {
     id: number;
@@ -19,7 +20,11 @@ interface Product {
     ean: number,
 }
 
-export const load = async (context: { params: { id: string } }): Promise<object> => {
+export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
+    if (! isAuthenticated) {
+        return;
+    }
+
     const { id } = context.params;
     const apiUrlMerchant: string = `/api/v1/user/${id}`;
     const apiUrlPrices: string = `/api/v1/price/user/${id}`;
