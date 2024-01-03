@@ -6,10 +6,8 @@ import (
 	"log"
 )
 
-func DefaultProxyManagerConfigurationReader(path string, filename string) *proxy.Config {
-	viper.AddConfigPath(path)
-	viper.SetConfigType("yaml")
-	viper.SetConfigName(filename)
+func DefaultProxyManagerConfigurationReader(path string) *proxy.Config {
+	viper.SetConfigFile(path)
 
 	err := viper.ReadInConfig()
 	if err != nil {

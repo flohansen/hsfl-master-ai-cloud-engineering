@@ -5,8 +5,7 @@ services:
       dockerfile: ./src/http-proxy-service/Dockerfile
     image: onyxmoon/pw-http-proxy-service:latest
     environment:
-      - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.native.yaml
+      - PROXY_CONFIG_PATH=./config/proxyConfig.docker.native.yaml
     ports:
       - 80:8080
       - 443:8443
