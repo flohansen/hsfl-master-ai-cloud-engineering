@@ -4,6 +4,7 @@
     import Add from "../../assets/svg/Add.svelte";
     import DataList from "$lib/profle/DataList.svelte";
     import DeleteAccountModal from "$lib/profle/DeleteAccountModal.svelte";
+    import BackLink from "$lib/general/BackLink.svelte";
 
     interface Data {
         user: { id: number, email: string, name: string, role: number },
@@ -32,6 +33,12 @@
         <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
             {$page.data.metaTitle}
         </h1>
+
+        {@html '<!--TOOD: Add logout logic-->'}
+        <BackLink
+            url="/logout"
+            label="Ausloggen"
+            reverse />
     {:else}
         <a href="/" class="flex gap-x-2 items-center text-gray-dark transition-all duration-300 ease-in-out hover:text-green-dark lg:gap-x-4">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">

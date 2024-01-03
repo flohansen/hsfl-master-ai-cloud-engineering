@@ -18,8 +18,8 @@ func New(
 ) *Router {
 	r := router.New()
 
-	r.POST("/api/v1/user/login", loginHandler.Login)
-	r.POST("/api/v1/user/register", registerHandler.Register)
+	r.POST("/api/v1/authentication/login/", loginHandler.Login)
+	r.POST("/api/v1/authentication/register/", registerHandler.Register)
 
 	r.GET("/api/v1/user/", userHandler.GetUsers)
 	r.GET("/api/v1/user/role/:userRole", userHandler.GetUsersByRole)

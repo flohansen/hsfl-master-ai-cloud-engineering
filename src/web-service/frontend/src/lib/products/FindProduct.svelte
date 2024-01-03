@@ -1,5 +1,5 @@
 <script lang="ts">
-    import InputText from "$lib/forms/InputText.svelte";
+    import Input from "$lib/forms/Input.svelte";
     import FetchFeedback from "$lib/products/FetchFeedback.svelte";
     import {handleErrors} from "../../assets/helper/handleErrors";
     import {validateEan} from "../../assets/helper/validateEan";
@@ -73,7 +73,7 @@
 
 <section class="mb-6 lg:mb-8">
     {#if ! productData}
-        <InputText
+        <Input
             fieldName="productEan"
             label="EAN des Produktes"
             type="number"

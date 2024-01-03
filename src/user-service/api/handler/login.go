@@ -61,13 +61,11 @@ func (handler *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if foundUser == nil {
-			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		if ok := handler.hasher.Validate([]byte(request.Password), foundUser.Password); !ok {
-			w.Header().Add("WWW-Authenticate", "Basic realm=Restricted")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -77,6 +75,19 @@ func (handler *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 			"email": request.Email,
 			"exp":   time.Now().Add(expiration).Unix(),
 		})
+
+		// Set the access token as a cookie
+		cookie := &http.Cookie{
+			Name:     "access_token",
+			Value:    accessToken,
+			Path:     "/",
+			MaxAge:   int(expiration.Seconds()),
+			Secure:   false, // Set to true if served over HTTPS
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+		}
+
+		http.SetCookie(w, cookie)
 
 		json.NewEncoder(w).Encode(loginResponse{
 			AccessToken: accessToken,

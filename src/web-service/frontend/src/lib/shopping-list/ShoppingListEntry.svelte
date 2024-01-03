@@ -2,6 +2,7 @@
     import {createEventDispatcher, onMount} from 'svelte';
     import Checkbox from "$lib/forms/Checkbox.svelte";
     import {handleErrors} from "../../assets/helper/handleErrors";
+    import Trash from "../../assets/svg/Trash.svelte";
 
     type ViewState = "detailed" | "compressed";
 
@@ -47,7 +48,7 @@
     });
 
     function updateShoppingListEntry(): void {
-        if (! listId || !productData.id) return;
+        if (! listId || ! productData.id ) return;
 
         const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${productData.id}`;
         const requestOptions = {
@@ -61,18 +62,39 @@
             .then(()=> dispatch('updateCheckedEntriesCount', { state: entry.checked }))
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
+
+    function deleteShoppingListEntry(): void {
+        if (! listId || ! productData.id) return;
+
+        const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${productData.id}`;
+        const requestOptions = {
+            method: "DELETE",
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        fetch(apiUrl, requestOptions)
+            .then(handleErrors)
+            .then(()=> { location.reload(); dispatch('updateCheckedEntriesCount', { state: true }) })
+            .catch(error => console.error("Failed to fetch data:", error.message));
+    }
 </script>
 
 <li class="border-t-2 border-t-gray-light py-3 lg:py-6">
-    <div class="flex gap-x-4 items-start justify-between">
-        <Checkbox
-            label="{productData.description}"
-            id="{productData.id}"
-            bind:checked={entry.checked}
-            on:updateShoppingListEntry={updateShoppingListEntry} />
-        <span class="mt-0.5 block text-gray-dark text-sm whitespace-nowrap lg:text-base { entry.checked ? 'opacity-50' : '' }">
-            {entry.count} Stk.
-        </span>
+    <div class="flex gap-x-2 items-center justify-between">
+        <div class="flex gap-x-2 items-center">
+            <Checkbox
+                label={productData.description}
+                id={productData.id}
+                count={entry.count}
+                bind:checked={entry.checked}
+                on:updateShoppingListEntry={updateShoppingListEntry} />
+        </div>
+        <button
+            aria-label="Eintrag löschen"
+            on:click={deleteShoppingListEntry}
+            class="bg-gray-light rounded-full p-2 text-gray-dark transition-all ease-in-out duration-300 hover:bg-gray-dark/25">
+            <Trash classes="w-4 h-4 md:w-5 md:h-5" />
+        </button>
     </div>
     {#if view === 'detailed' && priceData}
         <p class="text-gray-dark mt-1 ml-[2.1rem] text-sm flex flex-wrap items-center gap-2 lg:text-sm { entry.checked ? 'opacity-50' : '' }">

@@ -5,8 +5,8 @@
     import BackLink from "$lib/general/BackLink.svelte";
     import FindProduct from "$lib/products/FindProduct.svelte";
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
-    import InputText from "$lib/forms/InputText.svelte";
     import {handleErrors} from "../../../assets/helper/handleErrors";
+    import Input from "$lib/forms/Input.svelte";
 
     interface Product {
         id: number,
@@ -78,8 +78,9 @@
 
             {#if eanSubmitted}
                 <section>
-                    <InputText
+                    <Input
                         fieldName="productName"
+                        type="text"
                         label="Name des Produktes"
                         bind:value={productDescription} />
 
