@@ -24,8 +24,8 @@ func TestRouter(t *testing.T) {
 	registerHandler := setUpRegisterHandler()
 
 	userRepo := setupUserRepository()
-	userController := user.NewDefaultController(userRepo)
-	router := New(loginHandler, registerHandler, userController)
+	var userController user.Controller = user.NewDefaultController(userRepo)
+	router := New(loginHandler, registerHandler, &userController)
 
 	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
 		// given
