@@ -1,14 +1,10 @@
 services:
   proxy:
-    build:
-      context: ./
-      dockerfile: ./src/http-proxy-service/Dockerfile
     image: onyxmoon/pw-http-proxy-service:latest
     environment:
-      - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.native.yaml
+      - PROXY_CONFIG_PATH=./config/proxyConfig.docker.native.yaml
     ports:
-      - 80:8080
+      - 8080:8080
       - 443:8443
     depends_on:
       - web
@@ -17,9 +13,6 @@ services:
       - internal
 
   web:
-    build:
-      context: ./
-      dockerfile: ./src/web-service/Dockerfile
     image: onyxmoon/pw-web-service:latest
     ports:
       - 3000:3000
@@ -31,9 +24,6 @@ services:
       - internal
 
   products:
-    build:
-      context: ./
-      dockerfile: ./src/product-service/Dockerfile
     image: onyxmoon/pw-product-service:latest
     ports:
       - 3003:3003
@@ -41,9 +31,6 @@ services:
       - internal
 
   users:
-    build:
-      context: ./
-      dockerfile: ./src/user-service/Dockerfile
     image: onyxmoon/pw-user-service:latest
     ports:
       - 3001:3001
@@ -51,9 +38,6 @@ services:
       - internal
 
   shoppinglists:
-    build:
-      context: ./
-      dockerfile: ./src/shoppinglist-service/Dockerfile
     image: onyxmoon/pw-shoppinglist-service:latest
     ports:
       - 3002:3002

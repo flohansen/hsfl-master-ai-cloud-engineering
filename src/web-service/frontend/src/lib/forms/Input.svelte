@@ -24,5 +24,5 @@
         readonly="{readonly}"
         placeholder="{label}"
         bind:value={value}
-        class="text-sm rounded-lg border px-3 py-2 w-full text-left text-green-dark/75 flex items-center justify-between transition-all duration-300 ease-in-out hover:bg-blue-light/25 lg:px-4 lg:py-3 read-only:bg-gray-light"/>
+        class="text-sm rounded-lg border px-4 py-3 w-full text-left text-green-dark/75 flex items-center justify-between hover:bg-blue-light/25 read-only:bg-gray-light"/>
 </div>

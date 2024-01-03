@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./internal/proto";
+
+message User {
+  uint64 id = 1;
+  string email = 2;
+  string name = 3;
+  int64 role = 4;
+}
+
+service UserService {
+  // validate a token and return a user
+  rpc ValidateUserToken(ValidateUserTokenRequest) returns (ValidateUserTokenResponse);
+}
+
+message ValidateUserTokenRequest {
+  string token = 1;
+}
+
+message ValidateUserTokenResponse {
+  User user = 1;
+}
+

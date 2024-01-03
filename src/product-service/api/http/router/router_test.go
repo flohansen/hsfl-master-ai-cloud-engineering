@@ -14,11 +14,11 @@ import (
 )
 
 func TestRouter(t *testing.T) {
-	pricesRepo := setupMockPriceRepository()
-	productsRepo := setupMockProductRepository()
-	pricesController := prices.NewDefaultController(pricesRepo)
-	productsController := products.NewDefaultController(productsRepo)
-	router := New(productsController, pricesController)
+	var pricesRepo = setupMockPriceRepository()
+	var productsRepo = setupMockProductRepository()
+	var productsController products.Controller = products.NewDefaultController(productsRepo)
+	var pricesController prices.Controller = prices.NewDefaultController(pricesRepo)
+	router := New(&productsController, &pricesController)
 
 	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
 		// given

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/ecdsa"
+	"fmt"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -32,4 +33,22 @@ func (gen *JwtTokenGenerator) CreateToken(claims map[string]interface{}) (string
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwtClaims)
 	return token.SignedString(gen.privateKey)
+}
+
+func (gen *JwtTokenGenerator) VerifyToken(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("signing algorithm unknown: %v", token.Header["alg"])
+		}
+		return &gen.privateKey.PublicKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, err
 }

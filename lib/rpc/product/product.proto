@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./internal/proto";
+
+message Product {
+  uint64 id = 1;
+  string description = 2;
+  uint64 ean = 3;
+}
+
+message Price {
+  uint64 userId = 1;
+  uint64 productId = 2;
+  float price = 3;
+}
+
+service ProductService {
+  // create method for adding a new product
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+
+  // read method for getting a product by id
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+
+  // read method for getting all products
+  rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
+
+  // update method for updating a product
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+
+  // delete method to get rid of a product
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+}
+
+service PriceService {
+  // create method for adding a new price
+  rpc CreatePrice(CreatePriceRequest) returns (CreatePriceResponse);
+
+  // read method for finding a price by ids
+  rpc FindPrice(FindPriceRequest) returns (FindPriceResponse);
+
+  // read method for finding all products
+  rpc FindAllPrices(FindAllPricesRequest) returns (FindAllPricesResponse);
+
+  // read method for finding all products from a specific user/vendor
+  rpc FindAllPricesFromUser(FindAllPricesFromUserRequest) returns (FindAllPricesFromUserResponse);
+
+  // update method for updating a price
+  rpc UpdatePrice(UpdatePriceRequest) returns (UpdatePriceResponse);
+
+  // delete method to get rid of a price
+  rpc DeletePrice(DeletePriceRequest) returns (DeletePriceResponse);
+}
+
+// Request- and Response-Messages for CreateProduct
+message CreateProductRequest {
+  Product product = 1;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for GetProduct
+message GetProductRequest {
+  uint64 id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for ListProducts
+message GetAllProductsRequest {
+}
+
+message GetAllProductsResponse {
+  repeated Product products = 1;
+}
+
+// Request- and Response-Messages for UpdateProduct
+message UpdateProductRequest {
+  Product product = 1;
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+// Request- and Response-Messages for DeleteProduct
+message DeleteProductRequest {
+  uint64 id = 1;
+}
+
+message DeleteProductResponse {
+}
+
+// Request- and Response-Messages for CreatePrice
+message CreatePriceRequest {
+  Price price = 1;
+}
+
+message CreatePriceResponse {
+  Price price = 1;
+}
+
+// Request- and Response-Messages for FindPrice
+message FindPriceRequest {
+  uint64 userId = 1;
+  uint64 productId = 2;
+}
+
+message FindPriceResponse {
+  Price price = 1;
+}
+
+// Request- and Response-Messages for FindAllPrices
+message FindAllPricesRequest {
+}
+
+message FindAllPricesResponse {
+  repeated Price price = 1;
+}
+
+// Request- and Response-Messages for FindAllPricesFromUser
+message FindAllPricesFromUserRequest {
+  uint64 userId = 1;
+}
+
+message FindAllPricesFromUserResponse {
+  repeated Price price = 1;
+}
+
+// Request- and Response-Messages for UpdateProduct
+message UpdatePriceRequest {
+  Price price = 1;
+}
+
+message UpdatePriceResponse {
+  Price price = 1;
+}
+
+// Request- and Response-Messages for DeleteProduct
+message DeletePriceRequest {
+  uint64 userId = 1;
+  uint64 productId = 2;
+}
+
+message DeletePriceResponse {
+}
