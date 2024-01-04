@@ -1,7 +1,7 @@
 package router
 
 import (
-	router "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry"
 	"net/http"

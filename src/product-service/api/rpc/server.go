@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/internal/proto/product"
+	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/product"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices"
 	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"

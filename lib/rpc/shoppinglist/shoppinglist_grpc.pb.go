@@ -4,7 +4,7 @@
 // - protoc             v4.25.1
 // source: shoppinglist/shoppinglist.proto
 
-package proto
+package shoppinglist
 
 import (
 	context "context"
