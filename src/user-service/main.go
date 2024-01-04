@@ -28,9 +28,6 @@ func main() {
 	var usersRepository user.Repository = user.NewDemoRepository()
 	var usersController user.Controller = user.NewDefaultController(usersRepository)
 
-	var loginHandler = createLoginHandler(usersRepository)
-	var registerHandler = createRegisterHandler(usersRepository)
-
 	var tokenGenerator = createTokenGenerator()
 
 	var wg sync.WaitGroup
@@ -38,7 +35,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	wg.Add(1)
-	go startHTTPServer(ctx, &wg, loginHandler, registerHandler, &usersController, &usersRepository, tokenGenerator)
+	go startHTTPServer(ctx, &wg, &usersController, &usersRepository, tokenGenerator)
 
 	wg.Add(1)
 	go startGRPCServer(ctx, &wg, &usersRepository, tokenGenerator)
@@ -52,8 +49,11 @@ func main() {
 	wg.Wait()
 }
 
-func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, loginHandler *handler.LoginHandler, registerHandler *handler.RegisterHandler, usersController *user.Controller, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
+func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, usersController *user.Controller, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
 	defer wg.Done()
+
+	var loginHandler = createLoginHandler(*usersRepository, tokenGenerator)
+	var registerHandler = createRegisterHandler(*usersRepository)
 
 	authMiddleware := middleware.CreateLocalAuthMiddleware(usersRepository, tokenGenerator)
 	handler := router.New(loginHandler, registerHandler, usersController, authMiddleware)
@@ -103,12 +103,9 @@ func createTokenGenerator() auth.TokenGenerator {
 	return tokenGenerator
 }
 
-func createLoginHandler(userRepository user.Repository) *handler.LoginHandler {
-	var jwtToken, _ = auth.NewJwtTokenGenerator(
-		auth.JwtConfig{PrivateKey: "./auth/test-token"})
-
+func createLoginHandler(userRepository user.Repository, tokenGenerator auth.TokenGenerator) *handler.LoginHandler {
 	return handler.NewLoginHandler(createMockRepository(userRepository),
-		crypto.NewBcryptHasher(), jwtToken)
+		crypto.NewBcryptHasher(), tokenGenerator)
 }
 
 func createRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
