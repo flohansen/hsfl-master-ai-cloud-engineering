@@ -27,7 +27,7 @@ services:
       dockerfile: ./src/product-service/Dockerfile
     ports:
       - 3003:3003
-      - 50051:50051
+      - 50053:50053
 
   users:
     build:
@@ -35,6 +35,7 @@ services:
       dockerfile: ./src/user-service/Dockerfile
     ports:
       - 3001:3001
+      - 50051:50051
 
   shoppinglists:
     build:
