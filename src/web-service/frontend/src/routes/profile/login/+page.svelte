@@ -28,14 +28,15 @@
             .then(response => response.json())
             .then(data => {
                 const { access_token } = data;
-                const decodedToken: string = decodeToken(access_token);
-                if (decodedToken) {
-                    sessionStorage.setItem("access_token", access_token);
-                    sessionStorage.setItem('user_id', decodedToken.id);
-                    setAuthenticationStatus(true);
-                    window.location.href = '/';
-                }
-            })
+                if (! access_token) return;
+                const decodedToken: any = decodeToken(access_token);
+
+                if (! decodedToken) return;
+                sessionStorage.setItem("access_token", access_token);
+                sessionStorage.setItem('user_id', decodedToken.id);
+                setAuthenticationStatus(true);
+                window.location.href = '/';
+        })
             .catch(error => {
                 errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
                 console.error("Failed to fetch data:", error.message);
@@ -84,6 +85,12 @@
                     type="submit"
                     label="Anmelden" />
             </form>
+            <p class="text-center text-sm text-gray-dark mt-6">
+                Bist du noch nicht registiert?<br>
+                <a href="/profile/register" class="font-semibold text-green-dark transition-all ease-in-out duration-300 hover:text-green-light">
+                    Dann kannst du dich jetzt registrieren.
+                </a>
+            </p>
         </section>
     </div>
 </main>

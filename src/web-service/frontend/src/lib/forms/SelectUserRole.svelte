@@ -17,8 +17,8 @@
     export let justValue: number;
 
     let items: UserRole[] = [
-        { value: 1, label: 'Kund:in' },
-        { value: 2, label: 'Händler:in' }
+        { value: 0, label: 'Kund:in' },
+        { value: 1, label: 'Händler:in' }
     ]
 </script>
 
