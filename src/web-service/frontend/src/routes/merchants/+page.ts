@@ -9,9 +9,7 @@ interface Merchant {
 }
 
 export const load = async (): Promise<Promise<object> | undefined> => {
-    if (!isAuthenticated) {
-        return;
-    }
+    if (! isAuthenticated) return;
 
     const token: string | null = sessionStorage.getItem('access_token');
     const apiUrlMerchants: string = "/api/v1/user/role/1";

@@ -2,14 +2,21 @@ import { handleErrors } from "../assets/helper/handleErrors";
 import { isAuthenticated } from "../store";
 
 export const load = (): Promise<object> | undefined => {
-    if (! isAuthenticated) {
-        return;
-    }
+    const userId: string | null = sessionStorage.getItem('user_id');
+    const token: string | null = sessionStorage.getItem('access_token');
 
-    const id: number = 2; // TODO: dynamic user id of the current logged-in user
-    const apiUrl: string = `/api/v1/shoppinglist/${id}`;
+    if (! token || ! userId || ! isAuthenticated) return;
 
-    return fetch(apiUrl)
+    const requestOptions: object = {
+        method: "GET",
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+    };
+
+    const apiUrl: string = `/api/v1/shoppinglist/${userId}`;
+
+    return fetch(apiUrl, requestOptions)
         .then(handleErrors)
         .then(lists => {
             return {

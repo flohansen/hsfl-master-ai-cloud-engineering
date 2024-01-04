@@ -55,14 +55,18 @@
     }
 
     function updateShoppingList(): void {
-        const userId = 2; // TODO: add real user id
+        const token: string | null = sessionStorage.getItem('access_token');
+        const userId: string | null  = sessionStorage.getItem('user_id');
 
-        if (! data.list.id || ! userId || ! isAuthenticated) return;
+        if (! data.list.id || ! userId || ! isAuthenticated || ! token) return;
 
         const apiUrl = `/api/v1/shoppinglist/${data.list.id}/${userId}`;
         const requestOptions = {
             method: "PUT",
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
             body: `{ "description": "${data.list.description}", "checked": ${data.list.completed} }`,
         };
 

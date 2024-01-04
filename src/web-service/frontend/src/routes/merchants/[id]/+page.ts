@@ -25,7 +25,6 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
     if (! isAuthenticated) return;
 
     const { id } = context.params;
-
     const token: string | null = sessionStorage.getItem('access_token');
     const apiUrlMerchant: string = `/api/v1/user/${id}`;
     const apiUrlPrices: string = `/api/v1/price/user/${id}`;

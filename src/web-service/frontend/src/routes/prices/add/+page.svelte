@@ -36,12 +36,18 @@
     }
 
     function fetchContent(method: string): void {
-        const userId: number = 2; // TODO: add current user id
+        const userId: string | null = sessionStorage.getItem('user_id');
+        const token: string | null = sessionStorage.getItem('access_token');
+
+        if (! token || ! userId) return;
         const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`
 
         const requestOptions = {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
             body: `{"price": ${productPrice}}`,
         };
 
