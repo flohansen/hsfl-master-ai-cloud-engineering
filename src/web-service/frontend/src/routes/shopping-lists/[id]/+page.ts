@@ -1,6 +1,6 @@
 import { handleErrors } from '../../../assets/helper/handleErrors';
+import { sortProducts } from "../../../assets/helper/sortProducts";
 import { isAuthenticated } from "../../../store";
-import {sortProducts} from "../../../assets/helper/sortProducts";
 
 interface List {
     id: number,

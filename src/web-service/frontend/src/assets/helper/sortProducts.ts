@@ -7,9 +7,7 @@ interface Product {
 }
 
 export async function sortProducts(items: any): Promise<Product[]> {
-    if (!items) {
-        return [];
-    }
+    if (! items) return [];
 
     const uniqueProductIds: number[] = Array.from(new Set(items.map((item: { productId: number }) => item.productId)));
     const productsPromises: Promise<Product>[] = uniqueProductIds.map(productId =>
