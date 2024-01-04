@@ -12,6 +12,6 @@ type RQLiteConfig struct {
 }
 
 func (r *RQLiteConfig) GetConnectionString() string {
-	return fmt.Sprintf("http://%s:%s@%s:%s/",
+	return fmt.Sprintf("http://%s:%s@%s:%d/",
 		r.Host, r.Username, r.Password, r.Port)
 }
