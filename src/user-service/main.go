@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"google.golang.org/grpc"
 	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
@@ -24,15 +25,13 @@ import (
 )
 
 func main() {
-	privateKey := utils.GenerateRandomECDSAPrivateKeyAsPEM()
-	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: privateKey})
-
 	var usersRepository user.Repository = user.NewDemoRepository()
-
-	var loginHandler = setupLoginHandler(usersRepository)
-	var registerHandler = setUpRegisterHandler(usersRepository)
-
 	var usersController user.Controller = user.NewDefaultController(usersRepository)
+
+	var loginHandler = createLoginHandler(usersRepository)
+	var registerHandler = createRegisterHandler(usersRepository)
+
+	var tokenGenerator = createTokenGenerator()
 
 	var wg sync.WaitGroup
 
@@ -95,21 +94,30 @@ func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, usersRepository *u
 	grpcServer.GracefulStop()
 }
 
-func setupLoginHandler(userRepository user.Repository) *handler.LoginHandler {
+func createTokenGenerator() auth.TokenGenerator {
+	privateKey := utils.GenerateRandomECDSAPrivateKeyAsPEM()
+	tokenGenerator, err := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: privateKey})
+	if err != nil {
+		panic(fmt.Sprintf("Can't generate token generator: %v", err))
+	}
+	return tokenGenerator
+}
+
+func createLoginHandler(userRepository user.Repository) *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
 		auth.JwtConfig{PrivateKey: "./auth/test-token"})
 
-	return handler.NewLoginHandler(setupMockRepository(userRepository),
+	return handler.NewLoginHandler(createMockRepository(userRepository),
 		crypto.NewBcryptHasher(), jwtToken)
 }
 
-func setUpRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
-	return handler.NewRegisterHandler(setupMockRepository(userRepository),
+func createRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
+	return handler.NewRegisterHandler(createMockRepository(userRepository),
 		crypto.NewBcryptHasher())
 }
 
-func setupMockRepository(userRepository user.Repository) user.Repository {
-	userSlice := setupDemoUserSlice()
+func createMockRepository(userRepository user.Repository) user.Repository {
+	userSlice := createDemoUserSlice()
 	for _, newUser := range userSlice {
 		_, _ = userRepository.Create(newUser)
 	}
@@ -117,7 +125,7 @@ func setupMockRepository(userRepository user.Repository) user.Repository {
 	return userRepository
 }
 
-func setupDemoUserSlice() []*model.User {
+func createDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
 	hashedPassword, _ := bcryptHasher.Hash([]byte("12345"))
 
