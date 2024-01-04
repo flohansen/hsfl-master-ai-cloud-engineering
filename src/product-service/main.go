@@ -70,7 +70,7 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, productsController
 func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, productRepository *products.Repository, priceRepository *prices.Repository) {
 	defer wg.Done()
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":50053")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
