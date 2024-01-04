@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"sort"
 
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
 )
@@ -18,14 +19,19 @@ func (repo *DemoRepository) Create(user *model.User) (*model.User, error) {
 	var userId uint64
 	if user.Id == 0 {
 		userId = repo.findNextAvailableID()
+		user.Id = userId
 	} else {
 		userId = user.Id
 	}
 
 	_, found := repo.users[userId]
-	if found {
-		return nil, errors.New("user already exists")
+	foundUser, err := repo.FindByEmail(user.Email)
+	if found || foundUser != nil {
+		return nil, errors.New(ErrorUserAlreadyExists)
+	} else if err != nil && err.Error() != ErrorUserNotFound {
+		return nil, err
 	}
+
 	repo.users[userId] = user
 
 	return user, nil
@@ -38,7 +44,41 @@ func (repo *DemoRepository) Delete(user *model.User) error {
 		return nil
 	}
 
-	return errors.New("user could not be deleted")
+	return errors.New(ErrorUserDeletion)
+}
+
+func (repo *DemoRepository) FindAll() ([]*model.User, error) {
+	if repo.users != nil {
+		r := make([]*model.User, 0, len(repo.users))
+		for _, v := range repo.users {
+			r = append(r, v)
+		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Name < r[j].Name
+		})
+		return r, nil
+	}
+
+	return nil, errors.New(ErrorUserList)
+}
+
+func (repo *DemoRepository) FindAllByRole(role *model.Role) ([]*model.User, error) {
+	if repo.users != nil {
+		r := make([]*model.User, 0, len(repo.users))
+		for _, user := range repo.users {
+			if user.Role == *role {
+				r = append(r, user)
+			}
+		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Name < r[j].Name
+		})
+		return r, nil
+	}
+
+	return nil, errors.New(ErrorUserList)
 }
 
 func (repo *DemoRepository) FindByEmail(email string) (*model.User, error) {
@@ -48,7 +88,7 @@ func (repo *DemoRepository) FindByEmail(email string) (*model.User, error) {
 		}
 	}
 
-	return nil, errors.New("user could not be found")
+	return nil, errors.New(ErrorUserNotFound)
 }
 
 func (repo *DemoRepository) FindById(id uint64) (*model.User, error) {
@@ -57,14 +97,14 @@ func (repo *DemoRepository) FindById(id uint64) (*model.User, error) {
 		return user, nil
 	}
 
-	return nil, errors.New("user could not be found")
+	return nil, errors.New(ErrorUserNotFound)
 }
 
 func (repo *DemoRepository) Update(user *model.User) (*model.User, error) {
 	existingUser, foundError := repo.FindById(user.Id)
 
 	if foundError != nil {
-		return nil, errors.New("user can not be updated")
+		return nil, errors.New(ErrorUserUpdate)
 	}
 
 	existingUser.Name = user.Name

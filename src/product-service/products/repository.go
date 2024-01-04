@@ -9,7 +9,7 @@ type Repository interface {
 	Delete(*model.Product) error
 	FindAll() ([]*model.Product, error)
 	FindById(id uint64) (*model.Product, error)
-	FindByEan(id uint64) ([]*model.Product, error)
+	FindByEan(id uint64) (*model.Product, error)
 	Update(*model.Product) (*model.Product, error)
 }
 
@@ -19,4 +19,5 @@ const (
 	ErrorProductUpdate        = "product can not be updated"
 	ErrorProductDeletion      = "product could not be deleted"
 	ErrorProductAlreadyExists = "product already exists"
+	ErrorEanAlreadyExists     = "product ean already exists"
 )

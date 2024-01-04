@@ -1,39 +1,47 @@
 <script lang="ts">
-    import {page} from "$app/stores";
-    import ShoppingList from "$lib/shopplig-list/ShoppingList.svelte";
+    import ShoppingListSection from "$lib/shopping-list/ShoppingListSection.svelte";
+    import { isAuthenticated } from "../../store";
+
+    interface List {
+        id: number,
+        description: string,
+        complete?: boolean,
+    }
 
     interface Data {
-        lists: { id: number, description: string }[]
+        completedLists: List[],
+        incompleteLists: List[],
         headline: string;
     }
 
     export let data: Data;
 </script>
 
-<header>
-    <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
-        {$page.data.headline}
-    </h1>
+{#if $isAuthenticated}
+    <header>
+        <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
+            {data.headline}
+        </h1>
 
-    <a
-        href="/shopping-lists/add"
-        aria-label="Neue Einkaufsliste erstellen"
-        class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
-        <span class="text-white font-semibold text-xl">+</span>
-    </a>
-</header>
+        <a
+            href="/shopping-lists/add"
+            aria-label="Neue Einkaufsliste erstellen"
+            class="rounded-full bg-green-light w-8 h-8 flex items-center justify-center transition-all ease-in-out duration-300 cursor-pointer hover:bg-green-light/75">
+            <span class="text-white font-semibold text-xl">+</span>
+        </a>
+    </header>
 
-<main>
-    <h2 class="px-5 text-gray-dark text-sm font-medium mt-6 lg:mt-10 lg:text-base">
-        Offene Einkaufslisten
-    </h2>
-    <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-        {#if data.lists}
-            {#each data.lists as list}
-                <ShoppingList description={list.description} id="{list.id}"/>
-            {/each}
-        {:else}
+    <main>
+        {#if data.completedLists.length === 0 && data.incompleteLists.length === 0}
             <p>Es konnten keine Daten geladen werden.</p>
+        {:else}
+            <ShoppingListSection
+                label="Offene Einkaufslisten"
+                lists={data.incompleteLists} />
+
+            <ShoppingListSection
+                label="Abgeschlossene Einkaufslisten"
+                lists={data.completedLists} />
         {/if}
-    </ul>
-</main>
+    </main>
+{/if}

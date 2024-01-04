@@ -1,4 +1,4 @@
-module hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib
+module hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router
 
 go 1.21
 

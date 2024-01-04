@@ -4,8 +4,7 @@ services:
       context: ./
       dockerfile: ./src/http-proxy-service/Dockerfile
     environment:
-      - PROXY_DOCKER_CONFIG_PATH=./config
-      - PROXY_DOCKER_CONFIG_FILENAME=proxyConfig.docker.native.yaml
+      - PROXY_CONFIG_PATH=./config/proxyConfig.docker.native.yaml
     ports:
       - 8080:8080
     depends_on:
@@ -28,6 +27,7 @@ services:
       dockerfile: ./src/product-service/Dockerfile
     ports:
       - 3003:3003
+      - 50051:50051
 
   users:
     build:

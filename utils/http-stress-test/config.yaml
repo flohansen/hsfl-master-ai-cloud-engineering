@@ -1,0 +1,7 @@
+users: 100
+requests: 5000
+duration: 0
+rampUp: 10
+rateLimit: 0
+targets:
+  - url: http://localhost:3003/api/v1/product/

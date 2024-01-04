@@ -14,24 +14,23 @@ import (
 )
 
 func main() {
-	// Parse command line arguments
-	image := flag.String("image", "nginxdemos/hello", "")
-	replicas := flag.Int("replicas", 5, "")
-	networkName := flag.String("network", "bridge", "")
+	// Configuration
+	configPath := flag.String("config", "", "Path to config file")
 	flag.Parse()
+	configuration := utils.GetConfig(*configPath)
 
 	// Log configuration
-	log.Printf("Image is: %s", *image)
-	log.Printf("No. of Replicas is: %d", *replicas)
-	log.Printf("Network is: %s", *networkName)
+	log.Printf("Image is: %s", configuration.Image)
+	log.Printf("No. of Replicas is: %d", configuration.Replicas)
+	log.Printf("Network is: %s", configuration.Network)
 
 	// Initialize orchestrator and start containers
 	var defaultOrchestrator orchestrator.Orchestrator = orchestrator.NewDefaultOrchestrator()
-	containers := defaultOrchestrator.StartContainers(*image, *replicas, *networkName)
+	containers := defaultOrchestrator.StartContainers(configuration.Image, configuration.Replicas, configuration.Network)
 
 	// Initialize load balancer
 	loadBalancer := balancer.NewBalancer(
-		defaultOrchestrator.GetContainerEndpoints(containers, *networkName),
+		defaultOrchestrator.GetContainerEndpoints(containers, configuration.Network),
 		scheduler.NewRoundRobin)
 	loadBalancer.SetHealthCheckFunction(health.DefaultHealthCheck, 5*time.Second)
 

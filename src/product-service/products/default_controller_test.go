@@ -53,7 +53,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 		{
 			name: "Successfully delete existing product (expect 200)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -68,7 +68,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 		{
 			name: "Bad non-numeric request (expect 400)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -83,7 +83,7 @@ func TestDefaultController_DeleteProduct(t *testing.T) {
 		{
 			name: "Unknown product to delete (expect 500)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -126,7 +126,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 		{
 			name: "Bad non-numeric request (expect 400)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -141,7 +141,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 		{
 			name: "Unknown product (expect 404)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -172,7 +172,7 @@ func TestDefaultController_GetProductById(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 
 		controller := defaultController{
-			productRepository: setupMockRepository(),
+			productRepository: GenerateExampleDemoRepository(),
 		}
 
 		// when
@@ -210,10 +210,10 @@ func TestDefaultController_GetProductById(t *testing.T) {
 	})
 }
 
-func TestDefaultController_GetProductsByEan(t *testing.T) {
+func TestDefaultController_GetProductByEan(t *testing.T) {
 	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
 		controller := defaultController{
-			productRepository: setupMockRepository(),
+			productRepository: GenerateExampleDemoRepository(),
 		}
 
 		writer := httptest.NewRecorder()
@@ -221,7 +221,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "abc"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusBadRequest {
 			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
@@ -230,7 +230,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 
 	t.Run("Unknown product (expect 404)", func(t *testing.T) {
 		controller := defaultController{
-			productRepository: setupMockRepository(),
+			productRepository: GenerateExampleDemoRepository(),
 		}
 
 		writer := httptest.NewRecorder()
@@ -238,7 +238,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "123"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusNotFound {
 			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
@@ -247,7 +247,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 
 	t.Run("Should return products by EAN", func(t *testing.T) {
 		controller := defaultController{
-			productRepository: setupMockRepository(),
+			productRepository: GenerateExampleDemoRepository(),
 		}
 
 		writer := httptest.NewRecorder()
@@ -255,14 +255,14 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "4014819040771"))
 
 		// Test request
-		controller.GetProductsByEan(writer, request)
+		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 		}
 
 		res := writer.Result()
-		var response []model.Product
+		var response model.Product
 		err := json.NewDecoder(res.Body).Decode(&response)
 
 		if err != nil {
@@ -279,7 +279,7 @@ func TestDefaultController_GetProductsByEan(t *testing.T) {
 func TestDefaultController_GetProducts(t *testing.T) {
 	t.Run("should return all products", func(t *testing.T) {
 		controller := defaultController{
-			productRepository: setupMockRepository(),
+			productRepository: GenerateExampleDemoRepository(),
 		}
 
 		writer := httptest.NewRecorder()
@@ -305,7 +305,7 @@ func TestDefaultController_GetProducts(t *testing.T) {
 				"application/json", writer.Header().Get("Content-Type"))
 		}
 
-		products := setupDemoProductSlice()
+		products := GenerateExampleProductSlice()
 
 		sort.Slice(response, func(i, j int) bool {
 			return response[i].Id < response[j].Id
@@ -351,7 +351,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 		{
 			name: "Valid Product",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -361,13 +361,13 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
 			name: "Valid Product (Partly Fields)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -377,13 +377,13 @@ func TestDefaultController_PostProduct(t *testing.T) {
 					strings.NewReader(`{"description": "Incomplete Product"}`),
 				),
 			},
-			expectedStatus:   http.StatusCreated,
+			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
 			name: "Malformed JSON",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -399,7 +399,7 @@ func TestDefaultController_PostProduct(t *testing.T) {
 		{
 			name: "Invalid product, incorrect Type for EAN (Non-numeric)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -455,7 +455,7 @@ func TestDefaultController_PutProduct(t *testing.T) {
 		{
 			name: "Valid Update",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -474,7 +474,7 @@ func TestDefaultController_PutProduct(t *testing.T) {
 		{
 			name: "Valid Update (Partly Fields)",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -493,7 +493,7 @@ func TestDefaultController_PutProduct(t *testing.T) {
 		{
 			name: "Malformed JSON",
 			fields: fields{
-				productRepository: setupMockRepository(),
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -549,30 +549,5 @@ func TestDefaultController_PutProduct(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func setupMockRepository() Repository {
-	repository := NewDemoRepository()
-	productSlice := setupDemoProductSlice()
-	for _, product := range productSlice {
-		repository.Create(product)
-	}
-
-	return repository
-}
-
-func setupDemoProductSlice() []*model.Product {
-	return []*model.Product{
-		{
-			Id:          1,
-			Description: "Strauchtomaten",
-			Ean:         4014819040771,
-		},
-		{
-			Id:          2,
-			Description: "Lauchzwiebeln",
-			Ean:         5001819040871,
-		},
 	}
 }

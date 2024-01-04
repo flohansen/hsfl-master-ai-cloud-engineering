@@ -6,53 +6,83 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"time"
 )
 
-func TestJwtAuthorizer(t *testing.T) {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	tokenGenerator := JwtTokenGenerator{privateKey}
-
+func TestNewJwtTokenGenerator(t *testing.T) {
 	t.Run("Create new JWT Token Generator", func(t *testing.T) {
-		t.Run("Invaid Config expect error", func(t *testing.T) {
-			var jwtToken, err = NewJwtTokenGenerator(JwtConfig{SignKey: "./auth/test-token-nonexistent"})
+		t.Run("Invalid Config expect error", func(t *testing.T) {
+			var jwtToken, err = NewJwtTokenGenerator(JwtConfig{PrivateKey: "./auth/nonexistent.pem"})
 			assert.Nil(t, jwtToken)
 			assert.Error(t, err)
 		})
 		t.Run("Valid Config expect non-nill Token Generator", func(t *testing.T) {
-			var jwtToken, err = NewJwtTokenGenerator(JwtConfig{SignKey: "./test-token"})
+			privateKey := utils.GenerateRandomECDSAPrivateKeyAsPEM()
+			tokenGenerator, err := NewJwtTokenGenerator(JwtConfig{PrivateKey: privateKey})
 			assert.NoError(t, err)
-			assert.NotNil(t, jwtToken)
+			assert.NotNil(t, tokenGenerator)
 		})
 	})
+}
 
-	t.Run("CreateToken", func(t *testing.T) {
-		t.Run("should generate valid JWT token", func(t *testing.T) {
-			// given
-			// when
-			token, err := tokenGenerator.CreateToken(map[string]interface{}{
-				"exp":  12345,
-				"user": "test",
-			})
+func TestJwtTokenGenerator_CreateToken(t *testing.T) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	tokenGenerator := JwtTokenGenerator{privateKey}
 
-			// then
-			assert.NoError(t, err)
-			tokenParts := strings.Split(token, ".")
-			assert.Len(t, tokenParts, 3)
+	token, err := tokenGenerator.CreateToken(map[string]interface{}{
+		"exp":  12345,
+		"user": "test",
+	})
 
-			b, _ := base64.
-				StdEncoding.
-				WithPadding(base64.NoPadding).
-				DecodeString(tokenParts[1])
+	assert.NoError(t, err)
+	tokenParts := strings.Split(token, ".")
+	assert.Len(t, tokenParts, 3)
 
-			var claims map[string]interface{}
-			json.Unmarshal(b, &claims)
+	b, _ := base64.
+		StdEncoding.
+		WithPadding(base64.NoPadding).
+		DecodeString(tokenParts[1])
 
-			assert.Equal(t, float64(12345), claims["exp"])
-			assert.Equal(t, "test", claims["user"])
+	var claims map[string]interface{}
+	json.Unmarshal(b, &claims)
+
+	assert.Equal(t, float64(12345), claims["exp"])
+	assert.Equal(t, "test", claims["user"])
+}
+
+func TestJwtTokenGenerator_VerifyToken(t *testing.T) {
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	tokenGenerator := JwtTokenGenerator{privateKey}
+
+	t.Run("should successfully verify JWT token", func(t *testing.T) {
+		expiration := time.Now().Add(12345).Unix()
+		token, err := tokenGenerator.CreateToken(map[string]interface{}{
+			"exp":  float64(expiration),
+			"user": "test",
 		})
+
+		claims, err := tokenGenerator.VerifyToken(token)
+
+		assert.NoError(t, err)
+		assert.Len(t, claims, 2)
+
+		assert.Equal(t, float64(expiration), claims["exp"])
+		assert.Equal(t, "test", claims["user"])
+	})
+
+	t.Run("should not verify JWT token", func(t *testing.T) {
+		token, err := tokenGenerator.CreateToken(map[string]interface{}{
+			"exp":  12345,
+			"user": "test",
+		})
+
+		assert.NoError(t, err)
+
+		_, err = tokenGenerator.VerifyToken(token)
+		assert.Error(t, err)
 	})
 }

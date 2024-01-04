@@ -2,10 +2,12 @@ go 1.21.2
 
 use (
 	lib/router
+	lib/rpc
 	src/product-service
 	src/load-balancer-service
 	src/shoppinglist-service
 	src/user-service
 	src/web-service
 	src/http-proxy-service
+	utils/http-stress-test
 )

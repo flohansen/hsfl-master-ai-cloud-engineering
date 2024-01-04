@@ -1,0 +1,3 @@
+image: nginxdemos/hello
+network: bridge
+replicas: 5

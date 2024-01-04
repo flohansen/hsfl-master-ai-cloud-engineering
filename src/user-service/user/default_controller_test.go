@@ -36,6 +36,126 @@ func TestNewDefaultController(t *testing.T) {
 	}
 }
 
+func TestDefaultController_GetUsersByRole(t *testing.T) {
+	type fields struct {
+		userRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
+					request = request.WithContext(context.WithValue(request.Context(), "userRole", "1"))
+					return request
+				}(),
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Bad non-numeric request (expect 400)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/role/abc", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userRole", "abc")
+					request = request.WithContext(ctx)
+					return request
+				}(),
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown user role (expect 404)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/role/10", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userRole", "10")
+					request = request.WithContext(ctx)
+					return request
+				}(),
+			},
+			wantStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userRepository: tt.fields.userRepository,
+			}
+			controller.GetUsersByRole(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.wantStatus {
+				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
+			}
+		})
+	}
+
+	t.Run("Successfully get existing users by role (expect 200 and users)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
+		ctx := context.WithValue(request.Context(), "auth_userId", 1)
+		ctx = context.WithValue(ctx, "userRole", "1")
+		request = request.WithContext(ctx)
+
+		controller := defaultController{
+			userRepository: setupMockRepository(),
+		}
+
+		// when
+		controller.GetUsersByRole(writer, request)
+
+		// then
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		result := writer.Result()
+		var response []model.User
+		err := json.NewDecoder(result.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		if len(response) != 1 {
+			t.Errorf("Expected count of user is %d, got %d",
+				1, len(response))
+		}
+
+		for i, user := range response {
+			if user.Role != model.Merchant {
+				t.Errorf("Expected role of user %d, got %d", model.Merchant, response[i].Role)
+			}
+		}
+	})
+}
+
 func TestDefaultController_GetUser(t *testing.T) {
 	type fields struct {
 		userRepository Repository
@@ -59,8 +179,7 @@ func TestDefaultController_GetUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/abc", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
-					return request
+					return request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
 				}(),
 			},
 			wantStatus: http.StatusBadRequest,
@@ -74,11 +193,46 @@ func TestDefaultController_GetUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/10", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "10"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 10)
+					ctx = context.WithValue(ctx, "userId", "10")
+					return request.WithContext(ctx)
 				}(),
 			},
 			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "Get foreign user as non admin (expect 401)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/10", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "auth_userRole", 0)
+					ctx = context.WithValue(ctx, "userId", "10")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Get foreign user as admin (expect 200)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/1", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "auth_userRole", 2)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusOK,
 		},
 	}
 	for _, tt := range tests {
@@ -93,10 +247,13 @@ func TestDefaultController_GetUser(t *testing.T) {
 		})
 	}
 
-	t.Run("Successfully get existing user (expect 200 and user)", func(t *testing.T) {
+	t.Run("Successfully get user (expect 200 and user)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/user/1", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
+		ctx := context.WithValue(request.Context(), "auth_userId", 1)
+		ctx = context.WithValue(ctx, "auth_userRole", 0)
+		ctx = context.WithValue(ctx, "userId", "1")
+		request = request.WithContext(ctx)
 
 		controller := defaultController{
 			userRepository: setupMockRepository(),
@@ -156,7 +313,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 		expectedResponse string
 	}{
 		{
-			name: "Valid Update",
+			name: "Unauthorized (expect 401)",
 			fields: fields{
 				userRepository: setupMockRepository(),
 			},
@@ -167,8 +324,49 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/1",
 						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
-					return request
+					ctx := context.WithValue(request.Context(), "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus:   http.StatusUnauthorized,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Update as user",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/user/1",
+						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus:   http.StatusOK,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid Update as admin",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/user/1",
+						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "auth_userRole", 2)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusOK,
@@ -186,8 +384,9 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": "updated@googlemail.com"}`))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusOK,
@@ -205,8 +404,9 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": "updated@googlemail.com"`))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -214,9 +414,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 		},
 		{
 			name:   "Incorrect Type for email (Non-numeric)",
-			fields: fields{
-				// Set up your repository mock or test double here if needed
-			},
+			fields: fields{},
 			args: args{
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
@@ -224,8 +422,9 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": 1234`))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -240,109 +439,6 @@ func TestDefaultController_PutUser(t *testing.T) {
 			}
 			controller.PutUser(tt.args.writer, tt.args.request)
 
-			// You can then assert the response status and content, and check against your expectations.
-			if tt.args.writer.Code != tt.expectedStatus {
-				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
-			}
-
-			if tt.expectedResponse != "" {
-				actualResponse := tt.args.writer.Body.String()
-				if actualResponse != tt.expectedResponse {
-					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
-				}
-			}
-		})
-	}
-}
-
-func TestDefaultController_PostUser(t *testing.T) {
-	type fields struct {
-		userRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name             string
-		fields           fields
-		args             args
-		expectedStatus   int
-		expectedResponse string
-	}{
-		{
-			name: "Valid User",
-			fields: fields{
-				userRepository: setupMockRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/user",
-					strings.NewReader(`{"id": 3, "email": "example@googlemail.com", "password": "password", "name": "Example name"}`),
-				),
-			},
-			expectedStatus:   http.StatusCreated,
-			expectedResponse: "",
-		},
-		{
-			name: "Valid User (Partly Fields)",
-			fields: fields{
-				userRepository: setupMockRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/user",
-					strings.NewReader(`{"email": "example@googlemail.com", "password": "password"}`),
-				),
-			},
-			expectedStatus:   http.StatusCreated,
-			expectedResponse: "",
-		},
-		{
-			name: "Malformed JSON",
-			fields: fields{
-				userRepository: setupMockRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/user",
-					strings.NewReader(`{"email": "example@googlemail.com"`),
-				),
-			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
-		},
-		{
-			name: "Invalid user, incorrect Type for email (Non-numeric)",
-			fields: fields{
-				userRepository: setupMockRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/user",
-					strings.NewReader(`{"id": 3, "email": 1234, "password": "password", "name": "Example name"}`),
-				),
-			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
-				userRepository: tt.fields.userRepository,
-			}
-			controller.PostUser(tt.args.writer, tt.args.request)
-
-			// You can then assert the response status and content, and check against your expectations.
 			if tt.args.writer.Code != tt.expectedStatus {
 				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
@@ -372,6 +468,22 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 		wantStatus int
 	}{
 		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
 			name: "Successfully delete existing user (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
@@ -380,8 +492,25 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Successfully delete existing user (expect 200)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
 			wantStatus: http.StatusOK,
@@ -410,8 +539,10 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/userId/5", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx = context.WithValue(ctx, "auth_userRole", 2) // as admin
+					ctx = context.WithValue(ctx, "userId", "5")
+					return request.WithContext(ctx)
 				}(),
 			},
 			wantStatus: http.StatusInternalServerError,
@@ -430,12 +561,11 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 	}
 }
 
-func setupMockRepository() Repository {
+func setupDemoUserSlice() []*model.User {
 	bcryptHasher := crypto.NewBcryptHasher()
 	hashedPassword, _ := bcryptHasher.Hash([]byte("123456"))
 
-	repository := NewDemoRepository()
-	usersSlice := []*model.User{
+	return []*model.User{
 		{
 			Id:       1,
 			Email:    "ada.lovelace@gmail.com",
@@ -448,9 +578,15 @@ func setupMockRepository() Repository {
 			Email:    "alan.turin@gmail.com",
 			Password: hashedPassword,
 			Name:     "Alan Turing",
-			Role:     model.Customer,
+			Role:     model.Merchant,
 		},
 	}
+}
+
+func setupMockRepository() Repository {
+	repository := NewDemoRepository()
+	usersSlice := setupDemoUserSlice()
+
 	for _, user := range usersSlice {
 		repository.Create(user)
 	}

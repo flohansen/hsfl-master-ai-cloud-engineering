@@ -17,13 +17,11 @@ func GracefulShutdown(ctx context.Context, timeout time.Duration, ops map[string
 	go func() {
 		s := make(chan os.Signal, 1)
 
-		// add any other syscalls that you want to be notified with
 		signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 		<-s
 
 		log.Println("shutting down")
 
-		// set timeout for the ops to be done to prevent system hang
 		timeoutFunc := time.AfterFunc(timeout, func() {
 			log.Printf("timeout %d ms has been elapsed, force exit", timeout.Milliseconds())
 			os.Exit(0)
@@ -33,7 +31,6 @@ func GracefulShutdown(ctx context.Context, timeout time.Duration, ops map[string
 
 		var wg sync.WaitGroup
 
-		// Do the operations asynchronously to save time
 		for key, op := range ops {
 			wg.Add(1)
 			innerOp := op

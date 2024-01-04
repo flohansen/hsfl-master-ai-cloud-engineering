@@ -3,6 +3,7 @@ package products
 import (
 	"errors"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
+	"sort"
 )
 
 type DemoRepository struct {
@@ -14,18 +15,19 @@ func NewDemoRepository() *DemoRepository {
 }
 
 func (repo *DemoRepository) Create(product *model.Product) (*model.Product, error) {
-	var productId uint64
 	if product.Id == 0 {
-		productId = repo.findNextAvailableID()
-	} else {
-		productId = product.Id
+		product.Id = repo.findNextAvailableID()
 	}
 
-	_, found := repo.products[productId]
-	if found {
+	if foundProductWithEan, _ := repo.FindByEan(product.Ean); foundProductWithEan != nil {
+		return nil, errors.New(ErrorEanAlreadyExists)
+	}
+
+	if _, found := repo.products[product.Id]; found {
 		return nil, errors.New(ErrorProductAlreadyExists)
 	}
-	repo.products[productId] = product
+
+	repo.products[product.Id] = product
 
 	return product, nil
 }
@@ -46,6 +48,10 @@ func (repo *DemoRepository) FindAll() ([]*model.Product, error) {
 		for _, v := range repo.products {
 			r = append(r, v)
 		}
+
+		sort.Slice(r, func(i, j int) bool {
+			return r[i].Description < r[j].Description
+		})
 		return r, nil
 	}
 
@@ -61,17 +67,14 @@ func (repo *DemoRepository) FindById(id uint64) (*model.Product, error) {
 	return nil, errors.New(ErrorProductNotFound)
 }
 
-func (repo *DemoRepository) FindByEan(ean uint64) ([]*model.Product, error) {
-	var entries []*model.Product
+func (repo *DemoRepository) FindByEan(ean uint64) (*model.Product, error) {
 	for _, entry := range repo.products {
 		if entry.Ean == ean {
-			entries = append(entries, entry)
+			return entry, nil
 		}
 	}
-	if len(entries) == 0 {
-		return nil, errors.New(ErrorProductNotFound)
-	}
-	return entries, nil
+
+	return nil, errors.New(ErrorProductNotFound)
 }
 
 func (repo *DemoRepository) Update(product *model.Product) (*model.Product, error) {

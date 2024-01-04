@@ -59,4 +59,52 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, "route", ctx.Value("route"))
 		assert.Equal(t, "params", ctx.Value("params"))
 	})
+
+	t.Run("should handle simple handler response", func(t *testing.T) {
+		// given
+		router := New()
+		handlerResponse := "Test response"
+		router.GET("/test/handler", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(handlerResponse))
+		})
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/test/handler", nil)
+
+		// when
+		router.ServeHTTP(w, r)
+
+		// then
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, handlerResponse, w.Body.String())
+	})
+
+	t.Run("should handle handler response with middleware", func(t *testing.T) {
+		// given
+		router := New()
+		handlerResponse := "Test response"
+		contextKey := "testKey"
+		expectedValue := "testValue"
+		var ctx context.Context
+		router.GET("/test/context",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte(handlerResponse))
+				w.WriteHeader(http.StatusOK)
+				ctx = r.Context()
+			},
+			func(w http.ResponseWriter, r *http.Request) *http.Request {
+				return r.WithContext(context.WithValue(r.Context(), contextKey, expectedValue))
+			})
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/test/context", nil)
+
+		// when
+		router.ServeHTTP(w, r)
+
+		// then
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.Equal(t, expectedValue, ctx.Value(contextKey).(string))
+		assert.Equal(t, handlerResponse, w.Body.String())
+	})
 }
