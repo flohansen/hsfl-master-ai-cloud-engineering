@@ -67,7 +67,7 @@
                             bind:value={userName} />
                         <Input
                             fieldName="userMail"
-                            type="text"
+                            type="email"
                             label="Deine E-Mail Adresse "
                             bind:value={userMail} />
                         <Input
