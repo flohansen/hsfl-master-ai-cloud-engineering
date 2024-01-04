@@ -1,4 +1,5 @@
 import { handleErrors } from '../../assets/helper/handleErrors';
+import { isAuthenticated } from "../../store";
 
 interface List {
     id: number;
@@ -8,7 +9,11 @@ interface List {
 }
 
 // Loads all shopping lists of the current user.
-export const load = (): Promise<object> => {
+export const load = (): Promise<object> | undefined => {
+    if (! isAuthenticated) {
+        return;
+    }
+
     const id: number = 2; // TODO: dynamic user id of the current logged-in user
     const apiUrl: string = `/api/v1/shoppinglist/${id}`;
 

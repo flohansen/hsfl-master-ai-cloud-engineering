@@ -1,11 +1,12 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { writable } from 'svelte/store';
+    import { decodeToken } from "../../../assets/helper/decodeToken";
+    import { setAuthenticationStatus } from "../../../store";
+    import Close from "../../../assets/svg/Close.svelte";
     import Profile from "../../../assets/svg/Profile.svelte";
     import Input from "$lib/forms/Input.svelte";
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
-    import { handleErrors } from "../../../assets/helper/handleErrors";
-    import { writable } from 'svelte/store';
-    import Close from "../../../assets/svg/Close.svelte";
 
     let userMail: string;
     let userPassword: string;
@@ -23,27 +24,25 @@
             body: JSON.stringify({ email: userMail, password: userPassword }),
         };
 
-        try {
-            const response = await fetch(apiUrl, requestOptions);
+        fetch(apiUrl, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                const { access_token } = data;
+                if (! access_token) return;
+                const decodedToken: any = decodeToken(access_token);
 
-            if (response.ok) {
+                if (! decodedToken) return;
+                sessionStorage.setItem("access_token", access_token);
+                sessionStorage.setItem('user_id', decodedToken.id);
+                setAuthenticationStatus(true);
                 window.location.href = '/';
-            } else {
-                await handleErrors(response);
-                handleError()
-
-            }
-        } catch (error) {
-            handleError();
-        }
-    }
-
-    function handleError(): void {
-        errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
-        console.error("Failed to fetch data.");
+        })
+            .catch(error => {
+                errorMessage.set("Ungültige E-Mail oder ungültiges Passwort. Bitte versuche es erneut.");
+                console.error("Failed to fetch data:", error.message);
+            });
     }
 </script>
-
 
 <header>
     <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
@@ -86,6 +85,12 @@
                     type="submit"
                     label="Anmelden" />
             </form>
+            <p class="text-center text-sm text-gray-dark mt-6">
+                Bist du noch nicht registiert?<br>
+                <a href="/profile/register" class="font-semibold text-green-dark transition-all ease-in-out duration-300 hover:text-green-light">
+                    Dann kannst du dich jetzt registrieren.
+                </a>
+            </p>
         </section>
     </div>
 </main>

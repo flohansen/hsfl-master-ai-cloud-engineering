@@ -1,4 +1,5 @@
 import { handleErrors } from '../../../assets/helper/handleErrors';
+import { isAuthenticated } from "../../../store";
 
 interface List {
     id: number,
@@ -18,7 +19,11 @@ interface Product {
     ean: number,
 }
 
-export const load = async (context: { params: { id: string } }): Promise<object> => {
+export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
+    if (! isAuthenticated) {
+        return;
+    }
+
     const { id } = context.params;
     const apiUrlList: string = `/api/v1/shoppinglist/${id}/2`;
     const apiUrlEntries: string = `/api/v1/shoppinglistentries/${id}`;

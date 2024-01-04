@@ -52,8 +52,13 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
+		if model.Role(request.Role) == model.Administrator {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
 		foundUser, err := handler.userRepository.FindByEmail(request.Email)
-		if err != nil && err.Error() != "user could not be found" {
+		if err != nil && err.Error() != user.ErrorUserNotFound {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -72,7 +77,7 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			Email:    request.Email,
 			Password: hashedPassword,
 			Name:     request.Name,
-			Role:     model.Customer,
+			Role:     model.Role(request.Role),
 		})
 
 		if err != nil {
@@ -93,6 +98,7 @@ func (handler *RegisterHandler) Register(w http.ResponseWriter, r *http.Request)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
+		break
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}

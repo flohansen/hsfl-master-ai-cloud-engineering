@@ -72,6 +72,22 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
+			name: "User should not be able to register as admin",
+			fields: fields{
+				registerHandler: setUpRegisterHandler(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: httptest.NewRequest(
+					"POST",
+					"/api/v1/user/register",
+					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 2}`),
+				),
+			},
+			expectedStatus:   http.StatusForbidden,
+			expectedResponse: "",
+		},
+		{
 			name: "Malformed JSON",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
