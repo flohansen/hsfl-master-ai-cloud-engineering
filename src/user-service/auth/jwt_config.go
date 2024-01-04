@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"os"
 )
 
@@ -19,13 +20,21 @@ func (config JwtConfig) ReadPrivateKey() (any, error) {
 			return nil, err
 		}
 		block, _ = pem.Decode(bytes)
+		if block == nil {
+			return nil, errors.New("block empty")
+		}
 	} else {
 		block, _ = pem.Decode([]byte(config.PrivateKey))
 		if block == nil {
-			return nil, err
+			return nil, errors.New("block empty")
 		}
 	}
 
-	return x509.ParseECPrivateKey(block.Bytes)
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return key, nil
 
 }
