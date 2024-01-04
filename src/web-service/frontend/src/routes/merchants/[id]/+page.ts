@@ -1,5 +1,5 @@
 import { handleErrors } from '../../../assets/helper/handleErrors';
-import {isAuthenticated} from "../../../store";
+import { isAuthenticated } from "../../../store";
 
 interface Merchant {
     id: number;
@@ -35,22 +35,22 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
             fetch(apiUrlPrices).then(handleErrors) as Promise<Price[]>,
         ]);
 
-        const uniqueProductIds: number[] = Array.from(new Set(prices.map(price => price.productId)));
+        let sortedProducts: Product[] = [];
 
-        // Fetch products for each unique product ID
-        const productsPromises: Promise<Product>[] = uniqueProductIds.map(productId =>
-            fetch(`/api/v1/product/${productId}`).then(handleErrors) as Promise<Product>
-        );
+        if (prices) {
+            const uniqueProductIds: number[] = Array.from(new Set(prices.map(price => price.productId)));
+            const productsPromises: Promise<Product>[] = uniqueProductIds.map(productId =>
+                fetch(`/api/v1/product/${productId}`).then(handleErrors) as Promise<Product>
+            );
 
-        const products: Product[] = await Promise.all(productsPromises);
-
-        // Sort products by description
-        const sortedProducts :Product[] = products.sort(
-            (a: Product, b: Product) => a.description.localeCompare(b.description));
+            const products: Product[] = await Promise.all(productsPromises);
+            sortedProducts = products.sort(
+                (a: Product, b: Product) => a.description.localeCompare(b.description));
+        }
 
         return {
             merchant: merchant,
-            prices: prices,
+            prices: prices ?? [],
             products: sortedProducts,
             metaTitle: merchant?.name
         };
@@ -63,3 +63,4 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
         };
     }
 };
+

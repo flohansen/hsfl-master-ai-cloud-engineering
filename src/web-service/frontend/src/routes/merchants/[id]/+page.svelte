@@ -45,14 +45,14 @@
         </div>
 
         <ul class="px-5 mt-4 grid grid-cols-1 gap-y-4 lg:gap-y-6 lg:mt-6">
-            {#if data.products}
+            {#if data.products.length > 0}
                 {#each data.products as product}
                     <ProductListItem
                         product={product}
                         price={findPriceByProductId(product.id)} />
                 {/each}
             {:else}
-                <p>Es konnten keine Daten geladen werden.</p>
+                <p>Es sind noch keine Produkte vorhanden.</p>
             {/if}
         </ul>
 
