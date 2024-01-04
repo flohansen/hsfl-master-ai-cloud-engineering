@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	proto "hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
@@ -12,6 +14,7 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/rpc"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/config"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
@@ -25,6 +28,8 @@ import (
 )
 
 func main() {
+	var configuration = loadConfiguration()
+
 	var usersRepository user.Repository = user.NewDemoRepository()
 	var usersController user.Controller = user.NewDefaultController(usersRepository)
 
@@ -35,10 +40,10 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	wg.Add(1)
-	go startHTTPServer(ctx, &wg, &usersController, &usersRepository, tokenGenerator)
+	go startHTTPServer(ctx, &wg, configuration, &usersController, &usersRepository, tokenGenerator)
 
 	wg.Add(1)
-	go startGRPCServer(ctx, &wg, &usersRepository, tokenGenerator)
+	go startGRPCServer(ctx, &wg, configuration, &usersRepository, tokenGenerator)
 
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
@@ -49,7 +54,18 @@ func main() {
 	wg.Wait()
 }
 
-func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, usersController *user.Controller, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
+func loadConfiguration() *config.ServiceConfiguration {
+	godotenv.Load()
+
+	serviceConfiguration := &config.ServiceConfiguration{}
+	if err := env.Parse(serviceConfiguration); err != nil {
+		log.Fatalf("couldn't parse configuration from environment: %s", err.Error())
+	}
+
+	return serviceConfiguration
+}
+
+func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, configuration *config.ServiceConfiguration, usersController *user.Controller, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
 	defer wg.Done()
 
 	var loginHandler = createLoginHandler(*usersRepository, tokenGenerator)
@@ -57,9 +73,10 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, usersController *u
 
 	authMiddleware := middleware.CreateLocalAuthMiddleware(usersRepository, tokenGenerator)
 	handler := router.New(loginHandler, registerHandler, usersController, authMiddleware)
-	server := &http.Server{Addr: ":3001", Handler: handler}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", configuration.HttpPort), Handler: handler}
 
 	go func() {
+		log.Println("Starting HTTP server: ", server.Addr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
@@ -72,10 +89,10 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup, usersController *u
 	}
 }
 
-func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
+func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, configuration *config.ServiceConfiguration, usersRepository *user.Repository, tokenGenerator auth.TokenGenerator) {
 	defer wg.Done()
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", configuration.GrpcPort))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -85,6 +102,7 @@ func startGRPCServer(ctx context.Context, wg *sync.WaitGroup, usersRepository *u
 	proto.RegisterUserServiceServer(grpcServer, userServiceServer)
 
 	go func() {
+		log.Println("Starting gRPC server: ", lis.Addr().String())
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("Failed to start gRPC server: %v", err)
 		}
