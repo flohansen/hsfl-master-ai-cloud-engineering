@@ -12,7 +12,6 @@ func TestDemoRepository_CreateUser(t *testing.T) {
 	demoRepository := NewDemoRepository()
 
 	user := model.User{
-		Id:       1,
 		Email:    "ada.lovelace@gmail.com",
 		Password: []byte("123456"),
 		Name:     "Ada Lovelace",
@@ -27,7 +26,7 @@ func TestDemoRepository_CreateUser(t *testing.T) {
 
 	// Check for doublet
 	_, err = demoRepository.Create(&user)
-	if err.Error() != "user already exists" {
+	if err.Error() != ErrorUserAlreadyExists {
 		t.Error(err)
 	}
 }

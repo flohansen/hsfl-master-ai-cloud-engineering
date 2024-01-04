@@ -19,14 +19,19 @@ func (repo *DemoRepository) Create(user *model.User) (*model.User, error) {
 	var userId uint64
 	if user.Id == 0 {
 		userId = repo.findNextAvailableID()
+		user.Id = userId
 	} else {
 		userId = user.Id
 	}
 
 	_, found := repo.users[userId]
-	if found {
+	foundUser, err := repo.FindByEmail(user.Email)
+	if found || foundUser != nil {
 		return nil, errors.New(ErrorUserAlreadyExists)
+	} else if err != nil && err.Error() != ErrorUserNotFound {
+		return nil, err
 	}
+
 	repo.users[userId] = user
 
 	return user, nil
