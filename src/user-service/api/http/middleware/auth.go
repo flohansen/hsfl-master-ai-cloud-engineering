@@ -8,7 +8,6 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -24,13 +23,13 @@ func CreateLocalAuthMiddleware(userRepository *user.Repository, generator auth.T
 				return r
 			}
 
-			id, err := strconv.ParseUint(claims["id"].(string), 10, 64)
-			if err != nil {
+			id, exists := claims["id"].(float64)
+			if !exists {
 				log.Println("Verification failed: Can't find user id in claim.")
 				return r
 			}
 
-			user, err := (*userRepository).FindById(id)
+			user, err := (*userRepository).FindById(uint64(id))
 			if err != nil {
 				log.Println("Verification failed: ", err.Error())
 				return r

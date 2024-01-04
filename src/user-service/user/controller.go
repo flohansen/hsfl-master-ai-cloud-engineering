@@ -16,6 +16,13 @@ type JsonFormatCreateUserRequest struct {
 	Name     string `json:"name,omitempty"`
 }
 
+type JsonFormatGetUserResponse struct {
+	ID    uint64     `json:"id,omitempty"`
+	Email string     `json:"email,omitempty"`
+	Name  string     `json:"name,omitempty"`
+	Role  model.Role `json:"role,omitempty"`
+}
+
 type JsonFormatGetUserByRoleResponse struct {
 	ID   uint64     `json:"id,omitempty"`
 	Name string     `json:"name,omitempty"`
