@@ -1,4 +1,5 @@
 import { handleErrors } from '../../../assets/helper/handleErrors';
+import { sortProducts } from "../../../assets/helper/sortProducts";
 import { isAuthenticated } from "../../../store";
 
 interface List {
@@ -20,9 +21,7 @@ interface Product {
 }
 
 export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
-    if (! isAuthenticated) {
-        return;
-    }
+    if (! isAuthenticated) return;
 
     const { id } = context.params;
     const apiUrlList: string = `/api/v1/shoppinglist/${id}/2`;
@@ -34,22 +33,11 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
             fetch(apiUrlEntries).then(handleErrors) as Promise<Entry[]>,
         ]);
 
-        const uniqueProductIds: number[] = Array.from(new Set(entries.map(entry => entry.productId)));
-
-        // Fetch products for each unique product ID
-        const productsPromises: Promise<Product>[] = uniqueProductIds.map(productId =>
-            fetch(`/api/v1/product/${productId}`).then(handleErrors) as Promise<Product>
-        );
-
-        const products: Product[] = await Promise.all(productsPromises);
-
-        // Sort products by description
-        const sortedProducts :Product[] = products.sort(
-            (a: Product, b: Product) => a.description.localeCompare(b.description));
+        let sortedProducts: Product[] = await sortProducts(entries);
 
         return {
             list: list,
-            entries: entries,
+            entries: entries ?? [],
             products: sortedProducts,
             metaTitle: 'Liste: ' + list?.description,
         };
