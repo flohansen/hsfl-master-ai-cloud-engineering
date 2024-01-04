@@ -25,13 +25,23 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
     if (! isAuthenticated) return;
 
     const { id } = context.params;
+    const token: string | null = sessionStorage.getItem('access_token');
     const apiUrlMerchant: string = `/api/v1/user/${id}`;
     const apiUrlPrices: string = `/api/v1/price/user/${id}`;
 
+    if (! token || ! id) return;
+
+    const requestOptions: object = {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+    };
+
     try {
         const [merchant, prices] = await Promise.all([
-            fetch(apiUrlMerchant).then(handleErrors) as Promise<Merchant>,
-            fetch(apiUrlPrices).then(handleErrors) as Promise<Price[]>,
+            fetch(apiUrlMerchant, requestOptions).then(handleErrors) as Promise<Merchant>,
+            fetch(apiUrlPrices, requestOptions).then(handleErrors) as Promise<Price[]>,
         ]);
 
         let sortedProducts: Product[] = await sortProducts(prices);

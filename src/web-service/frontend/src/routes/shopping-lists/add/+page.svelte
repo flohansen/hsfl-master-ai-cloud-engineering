@@ -13,13 +13,18 @@
     let formSubmitted: boolean = false;
 
     function submit(): void {
-        if ( listHeadline === '' ||  ! isAuthenticated) return;
+        const userId: string | null = sessionStorage.getItem('user_id');
+        const token: string | null = sessionStorage.getItem('access_token');
 
-        const userId: number = 2; // TODO: dynamic user id of current logged in user
+        if (! userId || ! token || listHeadline === '' ||  ! isAuthenticated) return;
+
         const apiUrl: string = `/api/v1/shoppinglist/${userId}`
         const requestOptions = {
             method: "POST",
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
             body: `{"description": "${listHeadline}"}`,
         };
 

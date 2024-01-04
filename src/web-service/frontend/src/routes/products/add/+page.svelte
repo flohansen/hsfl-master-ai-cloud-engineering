@@ -41,9 +41,15 @@
     }
 
     function fetchContent(apiUrl: string, method: string): void {
+        const token: string | null = sessionStorage.getItem('access_token');
+        if (! token) return;
+
         const requestOptions = {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
             body: `{"description": "${productDescription}", "ean": ${productEan}}`,
         };
 

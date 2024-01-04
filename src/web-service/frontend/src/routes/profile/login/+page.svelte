@@ -60,7 +60,7 @@
                 <div class="grid grid-cols-1 gap-y-6 {$errorMessage ? 'mb-1' : 'mb-10'}">
                     <Input
                         fieldName="userMail"
-                        type="text"
+                        type="email"
                         label="Deine E-Mail Adresse "
                         bind:value={userMail} />
                     <Input
