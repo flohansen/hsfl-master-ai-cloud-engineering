@@ -1,3 +1,4 @@
 ansible_playbooks/join_cluster.sh
 ansible/**/*.pub
+ubuntu/**/*.pub
 .vagrant
