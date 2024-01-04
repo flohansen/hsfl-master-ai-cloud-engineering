@@ -1,6 +1,7 @@
 go 1.21.2
 
 use (
+	lib/config
 	lib/router
 	lib/rpc
 	src/product-service
