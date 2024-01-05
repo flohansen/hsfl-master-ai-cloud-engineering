@@ -1,37 +1,12 @@
-import { handleErrors } from "../../assets/helper/handleErrors";
-import { isAuthenticated } from "../../store";
+import { fetchHelper } from "../../assets/helper/fetchHelper";
 
-export const load = async (): Promise<Promise<object> | undefined> => {
-    if (! isAuthenticated) return;
+export const load = async (): Promise<object> => {
+    const apiUrl: string = `/api/v1/user/${sessionStorage.getItem('user_id')}`;
+    const user: object[] = await fetchHelper(apiUrl);
 
-    const token: string | null = sessionStorage.getItem('access_token');
-    const userId: string | null  = sessionStorage.getItem('user_id');
-
-    if (! token || ! userId) return;
-
-    const apiUrl: string = `/api/v1/user/${userId}`;
-    const requestOptions: object = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
+    return {
+        user: user ?? [],
+        metaTitle: 'Deine Profil-Einstellungen',
+        headline: 'Dein Profil',
     };
-
-    return fetch(apiUrl, requestOptions)
-        .then(handleErrors)
-        .then(user => {
-            return {
-                user: user ?? [],
-                metaTitle: 'Deine Profil-Einstellungen',
-                headline: 'Dein Profil',
-            };
-        })
-        .catch(error => {
-            console.error("Failed to fetch user data:", error.message);
-            return {
-                user: [],
-                metaTitle: 'Deine Profil-Einstellungen',
-                headline: 'Dein Profil',
-            };
-        });
 };

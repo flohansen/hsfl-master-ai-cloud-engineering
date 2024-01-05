@@ -1,35 +1,16 @@
-import { handleErrors } from "../assets/helper/handleErrors";
-import { isAuthenticated } from "../store";
+import type { PageLoad } from './$types';
+import { fetchHelper } from "../assets/helper/fetchHelper";
+import { checkAuthentication } from "../assets/helper/checkAuthentication";
 
-export const load = (): Promise<object> | undefined => {
-    const userId: string | null = sessionStorage.getItem('user_id');
-    const token: string | null = sessionStorage.getItem('access_token');
+export const load: PageLoad = async () : Promise<object> => {
+    await checkAuthentication();
 
-    if (! token || ! userId || ! isAuthenticated) return;
+    const apiUrl: string = `/api/v1/shoppinglist/${sessionStorage.getItem('user_id')}`;
+    const lists: object[] = await fetchHelper(apiUrl);
 
-    const requestOptions: object = {
-        method: "GET",
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
+    return {
+        lists: lists ? lists.slice(0, 3) : [],
+        metaTitle: 'Startseite',
+        headline: 'Price Whisper',
     };
-
-    const apiUrl: string = `/api/v1/shoppinglist/${userId}`;
-
-    return fetch(apiUrl, requestOptions)
-        .then(handleErrors)
-        .then(lists => {
-            return {
-                lists: lists.slice(0, 3),
-                metaTitle: 'Startseite',
-                headline: 'Price Whisper',
-            };
-        })
-        .catch(error => {
-            console.error("Failed to fetch shopping lists data:", error.message);
-            return {
-                metaTitle: 'Error',
-                headline: 'Price Whisper',
-            };
-        });
 };

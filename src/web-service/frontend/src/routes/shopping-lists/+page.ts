@@ -1,5 +1,6 @@
-import { handleErrors } from '../../assets/helper/handleErrors';
-import { isAuthenticated } from "../../store";
+import type { PageLoad } from './$types';
+import { checkAuthentication } from "../../assets/helper/checkAuthentication";
+import { fetchHelper } from "../../assets/helper/fetchHelper";
 
 interface List {
     id: number;
@@ -8,43 +9,30 @@ interface List {
     completed?: boolean;
 }
 
-export const load = (): Promise<object> | undefined => {
-    const userId: string | null = sessionStorage.getItem('user_id');
-    const token: string | null = sessionStorage.getItem('access_token');
+export const load: PageLoad = async () : Promise<object> => {
+    await checkAuthentication();
 
-    if (! token || ! userId || ! isAuthenticated) return;
+    const apiUrl: string = `/api/v1/shoppinglist/${sessionStorage.getItem('user_id')}`;
+    const lists: any = await fetchHelper(apiUrl);
 
-    const apiUrl: string = `/api/v1/shoppinglist/${userId}`;
+    if (! lists) return data;
 
-    const requestOptions: object = {
-        method: "GET",
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-    };
-
-    return fetch(apiUrl, requestOptions)
-        .then(handleErrors)
-        .then(lists => {
-            return {
-                completedLists: filterListsByCompletedState(true, lists),
-                incompleteLists: filterListsByCompletedState(false, lists),
-                metaTitle: 'Auflistung deiner Einkaufslisten',
-                headline: 'Deine Einkaufslisten',
-            };
-        })
-        .catch(error => {
-            console.error("Failed to fetch shopping lists data:", error.message);
-            return {
-                completedLists: [],
-                incompleteLists: [],
-                metaTitle: 'Error',
-                headline: 'Leider ist ein Fehler aufgetreten',
-            };
-        });
+    return data(
+        filterListsByCompletedState(true, lists),
+        filterListsByCompletedState(false, lists)
+    );
 };
 
 function filterListsByCompletedState(completedState: boolean, lists: List[]): List[] {
     return lists.filter((list: List) =>
         (list.completed === completedState) || (list.completed === undefined && !completedState));
 }
+
+const data = (completedLists: object[] = [], incompleteLists: object[] = []): object => {
+    return {
+        completedLists: completedLists,
+        incompleteLists: incompleteLists,
+        metaTitle: 'Deine Einkaufslisten',
+        headline: 'Deine Einkaufslisten',
+    };
+};

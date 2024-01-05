@@ -7,7 +7,7 @@
     import { isAuthenticated } from "../../store";
 
     interface Data {
-        user: { id: number, email: string, name: string, role: number },
+        user: { id: number, email: string, name: string, role?: number },
         metaTitle: string,
         headline: string,
     }
@@ -17,7 +17,7 @@
     let successfulDeleted: boolean = false;
 
     function resolveUserRole(): string {
-        if (! data || ! isAuthenticated) return '';
+        if (! data.user.role || ! isAuthenticated) return '';
 
         switch (data.user.role) {
             case 1:
