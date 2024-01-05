@@ -15,4 +15,11 @@ RQLITE_PASSWORD="<password>"
 HTTP_SERVER_PORT=3001
 
 GRPC_SERVER_PORT=50051
+
+JWT_PRIVATE_KEY="<path [e.g. privateKey.pem] or key>"
+```
+
+To generate a ecdsa private key in pem format you can use the following command:
+```shell
+ssh-keygen -t ecdsa -f privateKey.pem -m pem
 ```
