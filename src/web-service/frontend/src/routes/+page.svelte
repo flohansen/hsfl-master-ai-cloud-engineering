@@ -28,17 +28,19 @@
         </p>
     </section>
 
-    <section class="mx-5 mt-12 lg:mt-16">
-        <h2 class="text-gray-dark text-sm font-medium lg:text-base">
-            Vorschau deiner Einkaufslisten:
-        </h2>
-        <ul class="grid grid-cols-1 gap-y-4 mt-4 lg:gap-y-6 lg:mt-6">
-            {#each data.lists as list }
-                <ShoppingList
-                    description={list.description}
-                    id="{list.id}"
-                    hideDeleteButton />
-            {/each}
-        </ul>
-    </section>
+    {#if data.lists.length > 0}
+        <section class="mx-5 mt-12 lg:mt-16">
+            <h2 class="text-gray-dark text-sm font-medium lg:text-base">
+                Vorschau deiner Einkaufslisten:
+            </h2>
+            <ul class="grid grid-cols-1 gap-y-4 mt-4 lg:gap-y-6 lg:mt-6">
+                {#each data.lists as list }
+                    <ShoppingList
+                        description={list.description}
+                        id="{list.id}"
+                        hideDeleteButton />
+                {/each}
+            </ul>
+        </section>
+    {/if}
 </main>

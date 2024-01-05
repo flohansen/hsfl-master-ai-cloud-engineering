@@ -31,7 +31,9 @@
 
 <main>
     {#if data.completedLists.length === 0 && data.incompleteLists.length === 0}
-        <p>Es konnten keine Daten geladen werden.</p>
+        <p class="px-5 text-sm mt-6 lg:text-base">
+            Es konnten keine Daten geladen werden.
+        </p>
     {:else}
         <ShoppingListSection
             label="Offene Einkaufslisten"

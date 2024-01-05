@@ -15,7 +15,7 @@ export async function fetchHelper(apiUrl: string): Promise<object[]> {
         const response: Response = await fetch(apiUrl, requestOptions);
         return await handleErrors(response);
     } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.log("No data fetched");
     }
 
     return content;
