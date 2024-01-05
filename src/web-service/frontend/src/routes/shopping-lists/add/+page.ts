@@ -1,4 +1,4 @@
-import type { PageLoad } from "../../../../.svelte-kit/types/src/routes/shopping-lists/$types";
+import type { PageLoad } from './$types';
 import { checkAuthentication } from "../../../assets/helper/checkAuthentication";
 
 export const load: PageLoad = async () : Promise<object> => {

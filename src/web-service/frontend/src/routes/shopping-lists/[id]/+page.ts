@@ -20,13 +20,13 @@ interface Product {
     ean: number,
 }
 
-export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
+export const load = async (context: { params: { id: string } }): Promise<Promise<object>> => {
     await checkAuthentication();
 
     const { id } = context.params;
     const token: string | null = sessionStorage.getItem('access_token');
 
-    if (! token || ! id) return;
+    if (! token || ! id) return data;
 
     const apiUrlList: string = `/api/v1/shoppinglist/${id}/2`;
     const apiUrlEntries: string = `/api/v1/shoppinglistentries/${id}`;

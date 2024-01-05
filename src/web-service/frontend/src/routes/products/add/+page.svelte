@@ -45,10 +45,7 @@
 
         const requestOptions = {
             method: method,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}` },
             body: `{"description": "${productDescription}", "ean": ${productEan}}`,
         };
 
