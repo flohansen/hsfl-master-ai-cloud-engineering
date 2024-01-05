@@ -1,4 +1,3 @@
-import { setAuthenticationStatus } from "../../store";
 import { decodeToken } from "./decodeToken";
 import { goto } from '$app/navigation';
 
@@ -6,10 +5,7 @@ export async function checkAuthentication(): Promise<void> {
     const token: string | null = sessionStorage.getItem('access_token');
     const userId: string | null = sessionStorage.getItem('user_id');
 
-    if (userId && token && ! isExpired(token)) {
-        setAuthenticationStatus(true);
-    } else {
-        setAuthenticationStatus(false);
+    if (! userId || ! token || isExpired(token)) {
         await goto('/profile/login');
     }
 }

@@ -2,7 +2,6 @@
     import { page } from "$app/stores";
     import { writable } from 'svelte/store';
     import { decodeToken } from "../../../assets/helper/decodeToken";
-    import { setAuthenticationStatus } from "../../../store";
     import Close from "../../../assets/svg/Close.svelte";
     import Profile from "../../../assets/svg/Profile.svelte";
     import Input from "$lib/forms/Input.svelte";
@@ -34,7 +33,6 @@
                 if (! decodedToken) return;
                 sessionStorage.setItem("access_token", access_token);
                 sessionStorage.setItem('user_id', decodedToken.id);
-                setAuthenticationStatus(true);
                 window.location.href = '/';
         })
             .catch(error => {
