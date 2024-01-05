@@ -20,7 +20,11 @@
 
         fetch(apiUrl, requestOptions)
             .then(handleErrors)
-            .then(()=> successfulDeleted = true)
+            .then(()=> {
+                successfulDeleted = true;
+                sessionStorage.removeItem('access_token');
+                sessionStorage.removeItem('user_id');
+            })
             .catch(error => console.error("Failed to fetch data:", error.message));
     }
 </script>
