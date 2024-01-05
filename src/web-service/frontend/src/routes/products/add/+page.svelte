@@ -1,13 +1,12 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { handleErrors } from "../../../assets/helper/handleErrors";
     import Badge from "$lib/general/Badge.svelte";
     import CloseButton from "$lib/general/CloseButton.svelte";
     import BackLink from "$lib/general/BackLink.svelte";
     import FindProduct from "$lib/products/FindProduct.svelte";
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
-    import { handleErrors } from "../../../assets/helper/handleErrors";
     import Input from "$lib/forms/Input.svelte";
-    import { isAuthenticated } from "../../../store";
 
     interface Product {
         id: number,
@@ -41,9 +40,12 @@
     }
 
     function fetchContent(apiUrl: string, method: string): void {
+        const token: string | null = sessionStorage.getItem('access_token');
+        if (! token) return;
+
         const requestOptions = {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${token}` },
             body: `{"description": "${productDescription}", "ean": ${productEan}}`,
         };
 
@@ -54,53 +56,51 @@
     }
 </script>
 
-{#if $isAuthenticated}
-    <header>
+<header>
+    {#if ! formSubmitted}
+        <h1 class="font-bold text-xl w-[90%] md:text-2xl xl:text-3xl">
+            {$page.data.headline}
+        </h1>
+        <CloseButton
+            url="/merchants"
+            label="Erstellen eines Produktes abbrechen" />
+    {:else}
+        <BackLink
+            url="/"
+            label="Zur Startseite" />
+    {/if}
+</header>
+
+<main>
+    <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
         {#if ! formSubmitted}
-            <h1 class="font-bold text-xl w-[90%] md:text-2xl xl:text-3xl">
-                {$page.data.headline}
-            </h1>
-            <CloseButton
-                url="/merchants"
-                label="Erstellen eines Produktes abbrechen" />
-        {:else}
-            <BackLink
-                url="/"
-                label="Zur Startseite" />
-        {/if}
-    </header>
+            <FindProduct
+                bind:eanSubmitted={eanSubmitted}
+                bind:productData={productData}
+                bind:productEan={productEan} />
 
-    <main>
-        <div class="mx-5 bg-white rounded-xl p-4 lg:p-6">
-            {#if ! formSubmitted}
-                <FindProduct
-                    bind:eanSubmitted={eanSubmitted}
-                    bind:productData={productData}
-                    bind:productEan={productEan} />
+            {#if eanSubmitted}
+                <section>
+                    <Input
+                        fieldName="productName"
+                        type="text"
+                        label="Name des Produktes"
+                        bind:value={productDescription} />
 
-                {#if eanSubmitted}
-                    <section>
-                        <Input
-                            fieldName="productName"
-                            type="text"
-                            label="Name des Produktes"
-                            bind:value={productDescription} />
-
-                        <div class="mt-10">
-                            <SubmitButton on:submit={submit}/>
-                        </div>
-                    </section>
-                {/if}
-            {:else}
-                <Badge />
-                <h2 class="font-semibold mb-6 text-lg lg:text-xl lg:mb-8">
-                    Dein Produkt wurde erfolgreich gespeichert.
-                </h2>
-                <BackLink
-                    url="/prices/add"
-                    label="Preis erstellen"
-                    reverse />
+                    <div class="mt-10">
+                        <SubmitButton on:submit={submit}/>
+                    </div>
+                </section>
             {/if}
-        </div>
-    </main>
-{/if}
+        {:else}
+            <Badge />
+            <h2 class="font-semibold mb-6 text-lg lg:text-xl lg:mb-8">
+                Dein Produkt wurde erfolgreich gespeichert.
+            </h2>
+            <BackLink
+                url="/prices/add"
+                label="Preis erstellen"
+                reverse />
+        {/if}
+    </div>
+</main>

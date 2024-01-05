@@ -8,7 +8,7 @@ import (
 )
 
 type JwtConfig struct {
-	PrivateKey string `yaml:"privateKey"`
+	PrivateKey string `yaml:"privateKey" env:"PRIVATE_KEY"`
 }
 
 func (config JwtConfig) ReadPrivateKey() (any, error) {
@@ -21,12 +21,12 @@ func (config JwtConfig) ReadPrivateKey() (any, error) {
 		}
 		block, _ = pem.Decode(bytes)
 		if block == nil {
-			return nil, errors.New("block empty")
+			return nil, errors.New("token or path invalid or empty")
 		}
 	} else {
 		block, _ = pem.Decode([]byte(config.PrivateKey))
 		if block == nil {
-			return nil, errors.New("block empty")
+			return nil, errors.New("token invalid or empty")
 		}
 	}
 

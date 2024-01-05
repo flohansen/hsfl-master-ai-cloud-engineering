@@ -38,7 +38,6 @@
     }
 </script>
 
-
 <header>
     {#if ! formSubmitted}
         <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">
@@ -67,7 +66,7 @@
                             bind:value={userName} />
                         <Input
                             fieldName="userMail"
-                            type="text"
+                            type="email"
                             label="Deine E-Mail Adresse "
                             bind:value={userMail} />
                         <Input

@@ -39,6 +39,7 @@ services:
     image: onyxmoon/pw-product-service:latest
     ports:
       - 3003:3003
+      - 50053:50053
     networks:
       - internal
 
@@ -49,6 +50,7 @@ services:
     image: onyxmoon/pw-user-service:latest
     ports:
       - 3001:3001
+      - 50051:50051
     networks:
       - internal
 

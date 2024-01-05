@@ -23,77 +23,58 @@ func TestNewCoalescingController(t *testing.T) {
 	assert.IsType(t, &singleflight.Group{}, controller.group)
 }
 
-func TestCoalescingController_DeleteProduct(t *testing.T) {
-	type fields struct {
-		productRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Successfully delete existing product (expect 200)",
-			fields: fields{
-				productRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest("DELETE", "/api/v1/product/1", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
-					return request
-				}(),
-			},
-			wantStatus: http.StatusOK,
-		},
-		{
-			name: "Bad non-numeric request (expect 400)",
-			fields: fields{
-				productRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest("DELETE", "/api/v1/product/abc", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "abc"))
-					return request
-				}(),
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Unknown product to delete (expect 500)",
-			fields: fields{
-				productRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest("DELETE", "/api/v1/product/5", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "5"))
-					return request
-				}(),
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := coalescingController{
-				productRepository: tt.fields.productRepository,
-			}
-			controller.DeleteProduct(tt.args.writer, tt.args.request)
-			if tt.args.writer.Code != tt.wantStatus {
-				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
-			}
+func TestCoalescingController_GetProducts(t *testing.T) {
+	t.Run("should return all products", func(t *testing.T) {
+		controller := NewCoalescingController(GenerateExampleDemoRepository())
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/product", nil)
+
+		controller.GetProducts(writer, request)
+
+		res := writer.Result()
+		var response []model.Product
+		err := json.NewDecoder(res.Body).Decode(&response)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		products := GenerateExampleProductSlice()
+
+		sort.Slice(response, func(i, j int) bool {
+			return response[i].Id < response[j].Id
 		})
-	}
+
+		if len(response) != len(products) {
+			t.Errorf("Expected count of product is %d, got %d",
+				2, len(response))
+		}
+
+		for i, product := range products {
+			if product.Id != response[i].Id {
+				t.Errorf("Expected id of product %d, got %d", product.Id, response[i].Id)
+			}
+
+			if product.Description != response[i].Description {
+				t.Errorf("Expected description of product %s, got %s", product.Description, response[i].Description)
+			}
+
+			if product.Ean != response[i].Ean {
+				t.Errorf("Expected ean of product %d, got %d", product.Ean, response[i].Ean)
+			}
+		}
+
+	})
 }
 
 func TestCoalescingController_GetProductById(t *testing.T) {
@@ -157,11 +138,8 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
-
-		// when
 		controller.GetProductById(writer, request)
 
-		// then
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 		}
@@ -201,7 +179,6 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=abc", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "abc"))
 
-		// Test request
 		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusBadRequest {
@@ -216,7 +193,6 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=123", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "123"))
 
-		// Test request
 		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusNotFound {
@@ -224,14 +200,13 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 		}
 	})
 
-	t.Run("Should return products by EAN", func(t *testing.T) {
+	t.Run("Should return product by EAN (expect 200 and product)", func(t *testing.T) {
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=4014819040771", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "4014819040771"))
 
-		// Test request
 		controller.GetProductByEan(writer, request)
 
 		if writer.Code != http.StatusOK {
@@ -241,70 +216,21 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 		res := writer.Result()
 		var response model.Product
 		err := json.NewDecoder(res.Body).Decode(&response)
-
 		if err != nil {
 			t.Error(err)
 		}
 
-		// Add assertions based on your expected response.
-		// For example, check the length, content, etc.
-		// ...
-
-	})
-}
-
-func TestCoalescingController_GetProducts(t *testing.T) {
-	t.Run("should return all products", func(t *testing.T) {
-		controller := NewCoalescingController(GenerateExampleDemoRepository())
-
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/product", nil)
-
-		// Test request
-		controller.GetProducts(writer, request)
-
-		res := writer.Result()
-		var response []model.Product
-		err := json.NewDecoder(res.Body).Decode(&response)
-
-		if err != nil {
-			t.Error(err)
+		if response.Id != 1 {
+			t.Errorf("Expected id of product %d, got %d", 1, response.Id)
 		}
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		if response.Description != "Strauchtomaten" {
+			t.Errorf("Expected description of product %s, got %s", "Strauchtomaten", response.Description)
 		}
 
-		if writer.Header().Get("Content-Type") != "application/json" {
-			t.Errorf("Expected content type %s, got %s",
-				"application/json", writer.Header().Get("Content-Type"))
+		if response.Ean != 4014819040771 {
+			t.Errorf("Expected ean of product %d, got %d", 4014819040771, response.Ean)
 		}
-
-		products := GenerateExampleProductSlice()
-
-		sort.Slice(response, func(i, j int) bool {
-			return response[i].Id < response[j].Id
-		})
-
-		if len(response) != len(products) {
-			t.Errorf("Expected count of product is %d, got %d",
-				2, len(response))
-		}
-
-		for i, product := range products {
-			if product.Id != response[i].Id {
-				t.Errorf("Expected id of product %d, got %d", product.Id, response[i].Id)
-			}
-
-			if product.Description != response[i].Description {
-				t.Errorf("Expected description of product %s, got %s", product.Description, response[i].Description)
-			}
-
-			if product.Ean != response[i].Ean {
-				t.Errorf("Expected ean of product %d, got %d", product.Ean, response[i].Ean)
-			}
-		}
-
 	})
 }
 
@@ -324,65 +250,95 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 		expectedResponse string
 	}{
 		{
-			name: "Valid Product",
+			name: "Unauthorized (expect 401)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/product",
-					strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/product",
+						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`))
+					return request
+				}(),
+			},
+			expectedStatus:   http.StatusUnauthorized,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid create (expect 200)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/product",
+						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`))
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
 			},
 			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
-			name: "Valid Product (Partly Fields)",
+			name: "Valid create with subfields (expect 200)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/product",
-					strings.NewReader(`{"description": "Incomplete Product"}`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/product",
+						strings.NewReader(`{"description": "Test Product"}`))
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
 			},
 			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
-			name: "Malformed JSON",
+			name: "Malformed JSON (expect 400)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/product",
-					strings.NewReader(`{"description": "Incomplete Product"`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/product",
+						strings.NewReader(`{"description": "Test Product"`))
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid product, incorrect Type for EAN (Non-numeric)",
+			name: "Invalid create, incorrect type for EAN (expect 400)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
-				request: httptest.NewRequest(
-					"POST",
-					"/api/v1/product",
-					strings.NewReader(`{"id": 3, "description": "Invalid EAN", "ean": "abc"}`),
-				),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/product",
+						strings.NewReader(`{"id": 3, "description": "Invalid EAN", "ean": "abc"}`))
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
@@ -396,7 +352,6 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 			}
 			controller.PostProduct(tt.args.writer, tt.args.request)
 
-			// You can then assert the response status and content, and check against your expectations.
 			if tt.args.writer.Code != tt.expectedStatus {
 				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
@@ -425,10 +380,10 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 		fields           fields
 		args             args
 		expectedStatus   int
-		expectedResponse string // If you want to check the response content
+		expectedResponse string
 	}{
 		{
-			name: "Valid Update",
+			name: "Unauthorized (expect 401)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
@@ -439,15 +394,35 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 						"PUT",
 						"/api/v1/product/1",
 						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": 54321}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
-					return request
+					ctx := context.WithValue(request.Context(), "productId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus:   http.StatusUnauthorized,
+			expectedResponse: "",
+		},
+		{
+			name: "Valid update (expect 200)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/product/1",
+						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": 54321}`))
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusOK,
 			expectedResponse: "",
 		},
 		{
-			name: "Valid Update (Partly Fields)",
+			name: "Valid update with subfields (expect 200)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
@@ -458,8 +433,9 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 						"PUT",
 						"/api/v1/product/2",
 						strings.NewReader(`{"description": "Incomplete Update"}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusOK,
@@ -477,17 +453,18 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 						"PUT",
 						"/api/v1/product/2",
 						strings.NewReader(`{"description": "Incomplete Update"`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
 		},
 		{
-			name:   "Incorrect Type for EAN (Non-numeric)",
+			name: "Incorrect type for EAN (Non-numeric)",
 			fields: fields{
-				// Set up your repository mock or test double here if needed
+				productRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -496,8 +473,9 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 						"PUT",
 						"/api/v1/product/2",
 						strings.NewReader(`{"ean": "Wrong Type"`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "2")
+					return request.WithContext(ctx)
 				}(),
 			},
 			expectedStatus:   http.StatusBadRequest,
@@ -512,7 +490,6 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 			}
 			controller.PutProduct(tt.args.writer, tt.args.request)
 
-			// You can then assert the response status and content, and check against your expectations.
 			if tt.args.writer.Code != tt.expectedStatus {
 				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
@@ -522,6 +499,109 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 				if actualResponse != tt.expectedResponse {
 					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
 				}
+			}
+		})
+	}
+}
+
+func TestCoalescingController_DeleteProduct(t *testing.T) {
+	type fields struct {
+		productRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/product/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "productId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid delete (expect 200)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/product/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid delete, non-numeric request (expect 400)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/product/abc",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "abc")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid delete, unknown product (expect 500)",
+			fields: fields{
+				productRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/product/10",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "10")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := coalescingController{
+				productRepository: tt.fields.productRepository,
+			}
+			controller.DeleteProduct(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
 		})
 	}

@@ -1,5 +1,7 @@
+import type { PageLoad } from './$types';
 import { handleErrors } from '../../../assets/helper/handleErrors';
-import { isAuthenticated } from "../../../store";
+import { sortProducts } from "../../../assets/helper/sortProducts";
+import { checkAuthentication } from "../../../assets/helper/checkAuthentication";
 
 interface Merchant {
     id: number;
@@ -20,47 +22,39 @@ interface Product {
     ean: number,
 }
 
-export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
-    if (! isAuthenticated) {
-        return;
-    }
+export const load: PageLoad = async (context: { params: { id: string } }) : Promise<object> => {
+    await checkAuthentication();
 
     const { id } = context.params;
+    const token: string | null = sessionStorage.getItem('access_token');
     const apiUrlMerchant: string = `/api/v1/user/${id}`;
     const apiUrlPrices: string = `/api/v1/price/user/${id}`;
 
+    if (! token || ! id) return data;
+
+    const requestOptions: object = { headers: { 'Authorization': `Bearer ${token}` }};
+
     try {
         const [merchant, prices] = await Promise.all([
-            fetch(apiUrlMerchant).then(handleErrors) as Promise<Merchant>,
-            fetch(apiUrlPrices).then(handleErrors) as Promise<Price[]>,
+            fetch(apiUrlMerchant, requestOptions).then(handleErrors) as Promise<Merchant>,
+            fetch(apiUrlPrices, requestOptions).then(handleErrors) as Promise<Price[]>,
         ]);
 
-        let sortedProducts: Product[] = [];
+        let sortedProducts: Product[] = await sortProducts(prices);
 
-        if (prices) {
-            const uniqueProductIds: number[] = Array.from(new Set(prices.map(price => price.productId)));
-            const productsPromises: Promise<Product>[] = uniqueProductIds.map(productId =>
-                fetch(`/api/v1/product/${productId}`).then(handleErrors) as Promise<Product>
-            );
-
-            const products: Product[] = await Promise.all(productsPromises);
-            sortedProducts = products.sort(
-                (a: Product, b: Product) => a.description.localeCompare(b.description));
-        }
-
-        return {
-            merchant: merchant,
-            prices: prices ?? [],
-            products: sortedProducts,
-            metaTitle: merchant?.name
-        };
+        return data(merchant,
+            prices ?? [],
+            sortedProducts ?? []);
     } catch (error) {
-        return {
-            merchant: null,
-            prices: [],
-            products: [],
-            metaTitle: 'Leider ist ein Fehler aufgetreten.',
-        };
+        return data;
     }
 };
 
+const data = (merchant: any = [], prices: object[] = [], sortedProducts: object[] = []): object => {
+    return {
+        merchant: merchant,
+        prices: prices ?? [],
+        products: sortedProducts,
+        metaTitle: merchant?.name ?? 'Leider ist ein Fehler aufgetreten.',
+    };
+};

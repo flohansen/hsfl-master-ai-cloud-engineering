@@ -6,11 +6,14 @@
     export let product: { id: number, description: string, ean: number };
 
     function deletePrice() : void {
-        if (! price) return;
+        const token: string | null = sessionStorage.getItem('access_token');
+
+        if (! price || ! token) return;
+
         const apiUrl: string = `/api/v1/price/${price.productId}/${price.userId}`
         const requestOptions = {
             method: "DELETE",
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${token}` },
         };
 
         fetch(apiUrl, requestOptions)

@@ -91,7 +91,7 @@ func TestDefaultController_GetUsersByRole(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/role/10", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 					ctx = context.WithValue(ctx, "userRole", "10")
 					request = request.WithContext(ctx)
 					return request
@@ -115,7 +115,7 @@ func TestDefaultController_GetUsersByRole(t *testing.T) {
 	t.Run("Successfully get existing users by role (expect 200 and users)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
-		ctx := context.WithValue(request.Context(), "auth_userId", 1)
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 		ctx = context.WithValue(ctx, "userRole", "1")
 		request = request.WithContext(ctx)
 
@@ -193,7 +193,7 @@ func TestDefaultController_GetUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/10", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 10)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(10))
 					ctx = context.WithValue(ctx, "userId", "10")
 					return request.WithContext(ctx)
 				}(),
@@ -218,6 +218,23 @@ func TestDefaultController_GetUser(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
+			name: "Get foreign merchant user (expect 200)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/2", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", model.Customer)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
 			name: "Get foreign user as admin (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
@@ -226,9 +243,9 @@ func TestDefaultController_GetUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/1", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
-					ctx = context.WithValue(ctx, "auth_userRole", 2)
-					ctx = context.WithValue(ctx, "userId", "2")
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", model.Administrator)
+					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
 			},
@@ -250,8 +267,8 @@ func TestDefaultController_GetUser(t *testing.T) {
 	t.Run("Successfully get user (expect 200 and user)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/user/1", nil)
-		ctx := context.WithValue(request.Context(), "auth_userId", 1)
-		ctx = context.WithValue(ctx, "auth_userRole", 0)
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", model.Customer)
 		ctx = context.WithValue(ctx, "userId", "1")
 		request = request.WithContext(ctx)
 
@@ -343,7 +360,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/1",
 						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
@@ -363,8 +380,8 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/1",
 						strings.NewReader(`{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
-					ctx = context.WithValue(ctx, "auth_userRole", 2)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", model.Administrator)
 					ctx = context.WithValue(ctx, "userId", "2")
 					return request.WithContext(ctx)
 				}(),
@@ -384,7 +401,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": "updated@googlemail.com"}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(2))
 					ctx = context.WithValue(ctx, "userId", "2")
 					return request.WithContext(ctx)
 				}(),
@@ -404,7 +421,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": "updated@googlemail.com"`))
-					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(2))
 					ctx = context.WithValue(ctx, "userId", "2")
 					return request.WithContext(ctx)
 				}(),
@@ -422,7 +439,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 						"PUT",
 						"/api/v1/user/2",
 						strings.NewReader(`{"email": 1234`))
-					ctx := context.WithValue(request.Context(), "auth_userId", 2)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(2))
 					ctx = context.WithValue(ctx, "userId", "2")
 					return request.WithContext(ctx)
 				}(),
@@ -476,7 +493,7 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
@@ -492,7 +509,7 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
@@ -508,7 +525,7 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
 					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
@@ -539,8 +556,8 @@ func TestDefaultController_DeleteUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("DELETE", "/api/v1/userId/5", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", 1)
-					ctx = context.WithValue(ctx, "auth_userRole", 2) // as admin
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", model.Administrator) // as admin
 					ctx = context.WithValue(ctx, "userId", "5")
 					return request.WithContext(ctx)
 				}(),

@@ -1,7 +1,7 @@
 <script lang="ts">
+    import { fetchHelper } from "../../assets/helper/fetchHelper.js";
+    import { onMount } from "svelte";
     import Chevron from "../../assets/svg/Chevron.svelte";
-    import {onMount} from "svelte";
-    import {handleErrors} from "../../assets/helper/handleErrors";
     import Select from 'svelte-select';
 
     let placeholder: string = 'Eintrag auswählen';
@@ -9,17 +9,13 @@
     const itemId = 'id';
     const label = 'description';
     const id = 'product';
-    let items: { id: number, description: string }[] = [];
+    let items: any = [];
 
     export let justValue: number;
 
     onMount(async () => {
-        const apiUrlProducts: string = '/api/v1/product';
-
-        fetch(apiUrlProducts)
-            .then(handleErrors)
-            .then(data => items = data)
-            .catch(error => console.error("Failed to fetch data:", error.message));
+        const apiUrl: string = '/api/v1/product';
+        items = await fetchHelper(apiUrl);
     });
 </script>
 
