@@ -7,12 +7,13 @@
     export let hideDeleteButton: boolean = false;
 
     function deleteList() : void {
-        if (hideDeleteButton) return;
+        const token: string | null = sessionStorage.getItem('access_token');
+        if (hideDeleteButton || ! token) return;
 
         const apiUrl: string = `/api/v1/shoppinglist/${id}`
         const requestOptions = {
             method: "DELETE",
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${token}` },
         };
 
         fetch(apiUrl, requestOptions)

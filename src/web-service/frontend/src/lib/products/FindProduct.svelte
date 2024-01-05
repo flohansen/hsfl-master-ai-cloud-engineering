@@ -1,8 +1,8 @@
 <script lang="ts">
     import Input from "$lib/forms/Input.svelte";
     import FetchFeedback from "$lib/products/FetchFeedback.svelte";
-    import {handleErrors} from "../../assets/helper/handleErrors";
-    import {validateEan} from "../../assets/helper/validateEan";
+    import { handleErrors } from "../../assets/helper/handleErrors";
+    import { validateEan } from "../../assets/helper/validateEan";
 
     interface FeedbackOption {
         type: FeedbackType,
@@ -34,15 +34,18 @@
     }
 
     function findProduct(): void {
-        if (! productEan || ! validateEan(productEan)) {
+        const token: string | null = sessionStorage.getItem('access_token');
+
+        if (! productEan || ! validateEan(productEan) || ! token) {
             currentFeedbackOption = getOptionByType('unsuccessful');
             return;
         }
 
         eanSubmitted = true;
-        const apiUrl: string = `/api/v1/product/ean/${productEan}`
+        const apiUrl: string = `/api/v1/product/ean/${productEan}`;
+        const requestOptions: object = { headers: { 'Authorization': `Bearer ${token}` }};
 
-        fetch(apiUrl)
+        fetch(apiUrl, requestOptions)
             .then(handleErrors)
             .then(data => {
                 productData = data;
@@ -55,12 +58,15 @@
     }
 
     function findPrice() {
-        if (! shouldFindPrice || ! productData) return;
+        const token: string | null = sessionStorage.getItem('access_token');
+        const userId: string | null = sessionStorage.getItem('user_id');
 
-        const userId: number = 2 // TODO: add current user id
-        const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`
+        if (! shouldFindPrice || ! productData || ! token || ! userId) return;
 
-        fetch(apiUrl)
+        const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`;
+        const requestOptions: object = { headers: { 'Authorization': `Bearer ${token}` }};
+
+        fetch(apiUrl, requestOptions)
             .then(handleErrors)
             .then(data => {
                 if (! data) return;

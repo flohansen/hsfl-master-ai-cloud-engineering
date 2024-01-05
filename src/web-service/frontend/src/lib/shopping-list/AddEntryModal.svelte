@@ -28,20 +28,22 @@
     }
 
     function submit(): void {
-        if (! entry.id || ! entry.count) return;
+        const token: string | null = sessionStorage.getItem('access_token');
+
+        if (! entry.id || ! entry.count || ! token) return;
 
         let existingEntry: ShoppingListEntry | undefined = findExistingListEntry();
 
         existingEntry
-            ? fetchContent("PUT", entry.count + existingEntry.count)
-            : fetchContent("POST", entry.count);
+            ? fetchContent("PUT", entry.count + existingEntry.count, token)
+            : fetchContent("POST", entry.count, token);
     }
 
-    function fetchContent(method: string, count: number): void {
+    function fetchContent(method: string, count: number, token: string): void {
         const apiUrl: string = `/api/v1/shoppinglistentries/${listId}/${entry.id}`
         const requestOptions = {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${token}` },
             body: `{"count": ${count}, "note": "", "checked": false}`,
         };
 

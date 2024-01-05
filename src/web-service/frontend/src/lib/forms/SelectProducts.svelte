@@ -14,9 +14,13 @@
     export let justValue: number;
 
     onMount(async () => {
-        const apiUrlProducts: string = '/api/v1/product';
+        const token: string | null = sessionStorage.getItem('access_token');
+        if (! token) return;
 
-        fetch(apiUrlProducts)
+        const apiUrlProducts: string = '/api/v1/product';
+        const requestOptions: object = { headers: { 'Authorization': `Bearer ${token}` }};
+
+        fetch(apiUrlProducts, requestOptions)
             .then(handleErrors)
             .then(data => items = data)
             .catch(error => console.error("Failed to fetch data:", error.message));

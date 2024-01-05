@@ -67,8 +67,7 @@
                         </a>
                     {/if}
                     <DeleteAccountModal
-                        bind:successfulDeleted={successfulDeleted}
-                        user={data.user}/>
+                        bind:successfulDeleted={successfulDeleted} />
                 </section>
             {:else}
                 <Badge />

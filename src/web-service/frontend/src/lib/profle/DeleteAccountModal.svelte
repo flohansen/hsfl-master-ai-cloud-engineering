@@ -1,19 +1,21 @@
 <script lang="ts">
+    import { handleErrors } from "../../assets/helper/handleErrors.js";
     import Trash from "../../assets/svg/Trash.svelte";
     import Modal from "$lib/general/Modal.svelte";
-    import {handleErrors} from "../../assets/helper/handleErrors.js";
 
     let isOpen: boolean = false;
     export let successfulDeleted: boolean = false;
-    export let  user: { id: number, email: string, name: string, role: number };
 
     function deleteAccount() : void {
-        if (! user) return;
+        const token: string | null = sessionStorage.getItem('access_token');
+        const userId: string | null = sessionStorage.getItem('user_id');
 
-        const apiUrl: string = `/api/v1/user/${user.id}`
+        if (! userId || ! token) return;
+
+        const apiUrl: string = `/api/v1/user/${userId}`
         const requestOptions = {
             method: "DELETE",
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `Bearer ${token}` },
         };
 
         fetch(apiUrl, requestOptions)
