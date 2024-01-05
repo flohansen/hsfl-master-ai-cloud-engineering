@@ -3,10 +3,13 @@ module hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service
 go 1.21
 
 require (
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.14.0
 	google.golang.org/grpc v1.60.1
+	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/config v0.0.0-00010101000000-000000000000
 	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router v0.0.0-00010101000000-000000000000
 	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc v0.0.0-00010101000000-000000000000
 )
@@ -24,6 +27,7 @@ require (
 )
 
 replace (
+	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/config => ./../../lib/config
 	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router => ./../../lib/router
 	hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc => ./../../lib/rpc
 )
