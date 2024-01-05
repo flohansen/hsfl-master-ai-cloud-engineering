@@ -1,49 +1,21 @@
+import type { PageLoad } from './$types';
 import { handleErrors } from "../../assets/helper/handleErrors";
-import { isAuthenticated } from "../../store";
+import { fetchHelper } from "../../assets/helper/fetchHelper";
+import { checkAuthentication } from "../../assets/helper/checkAuthentication";
 
-interface Merchant {
-    id: number;
-    name: string;
-    role?: number;
-    productsCount?: number;
-}
+export const load: PageLoad = async () : Promise<object> => {
+    await checkAuthentication();
 
-export const load = async (): Promise<Promise<object> | undefined> => {
-    if (! isAuthenticated) return;
+    const apiUrl: string = "/api/v1/user/role/1";
+    const merchants: any = await fetchHelper(apiUrl);
 
-    const token: string | null = sessionStorage.getItem('access_token');
-    const apiUrlMerchants: string = "/api/v1/user/role/1";
+    if (! merchants) return data;
 
-    if (! token) return;
-
-    const requestOptions: object = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-    };
-
-    try {
-        const merchantsResponse: Response = await fetch(apiUrlMerchants, requestOptions);
-
-        const merchants: Merchant[] = await handleErrors(merchantsResponse);
-
-        for (const merchant of merchants) {
-            merchant.productsCount = await calculateProductsCount(merchant.id);
-        }
-
-        return {
-            merchants,
-            metaTitle: 'Auflistung der Supermärkte',
-            headline: 'Alle verfügbaren Supermärkte',
-        };
-    } catch (error) {
-        return {
-            merchants: [],
-            metaTitle: 'Auflistung der Supermärkte',
-            headline: 'Alle verfügbaren Supermärkte',
-        };
+    for (const merchant of merchants) {
+        merchant.productsCount = await calculateProductsCount(merchant.id);
     }
+
+    return data(merchants);
 };
 
 async function calculateProductsCount(merchantId: number): Promise<number> {
@@ -62,8 +34,17 @@ async function calculateProductsCount(merchantId: number): Promise<number> {
     try {
         const response: Response = await fetch(apiUrl, requestOptions);
         const data: any = await handleErrors(response);
+
         return data !== null && data.length !== 0 ? data.length : 0;
     } catch (error) {
         return 0;
     }
 }
+
+const data = (merchants: object[] = []): object => {
+    return {
+        merchants,
+        metaTitle: 'Auflistung der Supermärkte',
+        headline: 'Alle verfügbaren Supermärkte',
+    };
+};

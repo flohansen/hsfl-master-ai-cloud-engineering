@@ -38,7 +38,6 @@
     }
 </script>
 
-
 <header>
     {#if ! formSubmitted}
         <h1 class="font-bold text-xl md:text-2xl xl:text-3xl">

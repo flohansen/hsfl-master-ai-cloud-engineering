@@ -1,6 +1,7 @@
+import type { PageLoad } from './$types';
 import { handleErrors } from '../../../assets/helper/handleErrors';
 import { sortProducts } from "../../../assets/helper/sortProducts";
-import { isAuthenticated } from "../../../store";
+import { checkAuthentication } from "../../../assets/helper/checkAuthentication";
 
 interface Merchant {
     id: number;
@@ -21,22 +22,17 @@ interface Product {
     ean: number,
 }
 
-export const load = async (context: { params: { id: string } }): Promise<Promise<object> | undefined> => {
-    if (! isAuthenticated) return;
+export const load: PageLoad = async (context: { params: { id: string } }) : Promise<object> => {
+    await checkAuthentication();
 
     const { id } = context.params;
     const token: string | null = sessionStorage.getItem('access_token');
     const apiUrlMerchant: string = `/api/v1/user/${id}`;
     const apiUrlPrices: string = `/api/v1/price/user/${id}`;
 
-    if (! token || ! id) return;
+    if (! token || ! id) return data;
 
-    const requestOptions: object = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-    };
+    const requestOptions: object = { headers: { 'Authorization': `Bearer ${token}` }};
 
     try {
         const [merchant, prices] = await Promise.all([
@@ -46,19 +42,19 @@ export const load = async (context: { params: { id: string } }): Promise<Promise
 
         let sortedProducts: Product[] = await sortProducts(prices);
 
-        return {
-            merchant: merchant,
-            prices: prices ?? [],
-            products: sortedProducts,
-            metaTitle: merchant?.name
-        };
+        return data(merchant,
+            prices ?? [],
+            sortedProducts ?? []);
     } catch (error) {
-        return {
-            merchant: null,
-            prices: [],
-            products: [],
-            metaTitle: 'Leider ist ein Fehler aufgetreten.',
-        };
+        return data;
     }
 };
 
+const data = (merchant: any = [], prices: object[] = [], sortedProducts: object[] = []): object => {
+    return {
+        merchant: merchant,
+        prices: prices ?? [],
+        products: sortedProducts,
+        metaTitle: merchant?.name ?? 'Leider ist ein Fehler aufgetreten.',
+    };
+};
