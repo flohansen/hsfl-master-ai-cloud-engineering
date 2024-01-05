@@ -104,7 +104,6 @@ func (controller *coalescingController) PostProduct(writer http.ResponseWriter, 
 	}
 
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
-	print(authUserRole)
 
 	if authUserRole == auth.Administrator || authUserRole == auth.Merchant {
 		product, err := controller.productRepository.Create(&model.Product{
