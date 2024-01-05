@@ -218,6 +218,23 @@ func TestDefaultController_GetUser(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
+			name: "Get foreign merchant user (expect 200)",
+			fields: fields{
+				userRepository: setupMockRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest("GET", "/api/v1/user/2", nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", model.Customer)
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
 			name: "Get foreign user as admin (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
@@ -226,9 +243,9 @@ func TestDefaultController_GetUser(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: func() *http.Request {
 					var request = httptest.NewRequest("GET", "/api/v1/user/1", nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(2))
 					ctx = context.WithValue(ctx, "auth_userRole", model.Administrator)
-					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "userId", "1")
 					return request.WithContext(ctx)
 				}(),
 			},

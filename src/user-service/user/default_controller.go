@@ -75,15 +75,19 @@ func (controller defaultController) GetUser(writer http.ResponseWriter, request 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
 	authUserRole, _ := request.Context().Value("auth_userRole").(model.Role)
 
+	value, err := controller.userRepository.FindById(userId)
+
 	if (authUserId == userId) ||
-		(authUserRole == model.Administrator) {
-		value, err := controller.userRepository.FindById(userId)
+		(authUserRole == model.Administrator) ||
+		(value != nil && value.Role == model.Merchant) {
+
 		if err != nil {
 			if err.Error() == ErrorUserNotFound {
 				http.Error(writer, err.Error(), http.StatusNotFound)
 				return
 			}
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		responseValue := JsonFormatGetUserResponse{

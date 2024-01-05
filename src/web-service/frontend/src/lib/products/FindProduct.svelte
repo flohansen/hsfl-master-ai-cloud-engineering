@@ -1,8 +1,8 @@
 <script lang="ts">
     import Input from "$lib/forms/Input.svelte";
     import FetchFeedback from "$lib/products/FetchFeedback.svelte";
-    import {handleErrors} from "../../assets/helper/handleErrors";
-    import {validateEan} from "../../assets/helper/validateEan";
+    import { validateEan } from "../../assets/helper/validateEan";
+    import {fetchHelper} from "../../assets/helper/fetchHelper";
 
     interface FeedbackOption {
         type: FeedbackType,
@@ -24,8 +24,8 @@
     export let shouldFindPrice: boolean = false;
     export let priceIsAlreadyCreated: boolean = false;
 
-    export let productData: { id: number, description: string, ean: number };
-    export let priceData: { price: number };
+    export let productData: any;
+    export let priceData: any;
 
     $: showFeedback = !!currentFeedbackOption;
 
@@ -33,41 +33,33 @@
         return feedbackOptions.find(option => option.type === typeToFind) ?? feedbackOptions[0];
     }
 
-    function findProduct(): void {
+    async function findProduct(): Promise<void> {
         if (! productEan || ! validateEan(productEan)) {
             currentFeedbackOption = getOptionByType('unsuccessful');
             return;
         }
 
         eanSubmitted = true;
-        const apiUrl: string = `/api/v1/product/ean/${productEan}`
+        const apiUrl: string = `/api/v1/product/ean/${productEan}`;
+        productData = await fetchHelper(apiUrl);
 
-        fetch(apiUrl)
-            .then(handleErrors)
-            .then(data => {
-                productData = data;
-                findPrice();
-                currentFeedbackOption = productData
-                    ? getOptionByType('successful')
-                    : getOptionByType('notFound');
-            })
-            .catch(error => console.error("Failed to fetch data:", error.message));
+        if (productData) {
+            await findPrice();
+            currentFeedbackOption = productData
+                ? getOptionByType('successful')
+                : getOptionByType('notFound');
+        }
     }
 
-    function findPrice() {
-        if (! shouldFindPrice || ! productData) return;
+    async function findPrice(): Promise<void> {
+        if (! shouldFindPrice || ! productData.id) return;
 
-        const userId: number = 2 // TODO: add current user id
-        const apiUrl: string = `/api/v1/price/${productData.id}/${userId}`
+        const apiUrl: string = `/api/v1/price/${productData.id}/${sessionStorage.getItem('user_id')}`;
+        priceData = await fetchHelper(apiUrl);
 
-        fetch(apiUrl)
-            .then(handleErrors)
-            .then(data => {
-                if (! data) return;
-                priceData = data;
-                priceIsAlreadyCreated = true;
-            })
-            .catch(error => {console.error("Failed to fetch data:", error.message)});
+        if (priceData) {
+            priceIsAlreadyCreated = true;
+        }
     }
 </script>
 

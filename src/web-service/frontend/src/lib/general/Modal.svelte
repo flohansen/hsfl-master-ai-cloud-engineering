@@ -1,6 +1,6 @@
 <script lang="ts">
-    import {clickOutside} from "../../assets/helper/clickOutside";
-    import {createEventDispatcher} from 'svelte'
+    import { clickOutside } from "../../assets/helper/clickOutside";
+    import { createEventDispatcher } from 'svelte'
     import SubmitButton from "$lib/forms/SubmitButton.svelte";
     import Close from "../../assets/svg/Close.svelte";
 
