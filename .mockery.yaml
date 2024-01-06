@@ -1,0 +1,12 @@
+with-expecter: true
+packages:
+  hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products:
+    config:
+      dir: "./src/product-service/products/_mock"
+    interfaces:
+      Controller:
+  hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices:
+    config:
+      dir: "./src/product-service/prices/_mock"
+    interfaces:
+      Controller:

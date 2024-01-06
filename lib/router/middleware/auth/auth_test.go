@@ -6,14 +6,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user/_mocks"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/rpc/user/_mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestCreateAuthMiddleware(t *testing.T) {
-	userServiceClient := &_mocks.MockUserServiceClient{}
+	userServiceClient := &_mock.MockUserServiceClient{}
 	authMiddleware := CreateAuthMiddleware(userServiceClient)
 
 	validToken := "valid-token"
