@@ -29,7 +29,8 @@ import (
 func main() {
 	var configuration = loadConfiguration()
 
-	var usersRepository user.Repository = user.NewDemoRepository()
+	var usersRepository user.Repository = user.NewRQLiteRepository(configuration.Database.GetConnectionString())
+	usersRepository = createMockRepository(usersRepository)
 	var usersController user.Controller = user.NewDefaultController(usersRepository)
 
 	var tokenGenerator = createTokenGenerator(configuration)
@@ -120,12 +121,12 @@ func createTokenGenerator(configuration *config.ServiceConfiguration) auth.Token
 }
 
 func createLoginHandler(userRepository user.Repository, tokenGenerator auth.TokenGenerator) *handler.LoginHandler {
-	return handler.NewLoginHandler(createMockRepository(userRepository),
+	return handler.NewLoginHandler(userRepository,
 		crypto.NewBcryptHasher(), tokenGenerator)
 }
 
 func createRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
-	return handler.NewRegisterHandler(createMockRepository(userRepository),
+	return handler.NewRegisterHandler(userRepository,
 		crypto.NewBcryptHasher())
 }
 
