@@ -7,6 +7,9 @@ import (
 	priceModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products"
 	productModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/middleware"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -16,9 +19,14 @@ import (
 func TestRouter(t *testing.T) {
 	var pricesRepo = setupMockPriceRepository()
 	var productsRepo = setupMockProductRepository()
+
 	var productsController products.Controller = products.NewDefaultController(productsRepo)
 	var pricesController prices.Controller = prices.NewDefaultController(pricesRepo)
-	router := New(&productsController, &pricesController)
+
+	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: utils.GenerateRandomECDSAPrivateKeyAsPEM()})
+	authMiddleware := middleware.CreateLocalAuthMiddleware(&userRepo, tokenGenerator)
+
+	router := New(&productsController, &pricesController, authMiddleware)
 
 	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
 		// given
