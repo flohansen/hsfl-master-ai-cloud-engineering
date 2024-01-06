@@ -35,6 +35,59 @@ func TestNewDefaultController(t *testing.T) {
 	}
 }
 
+func TestDefaultController_GetLists(t *testing.T) {
+	t.Run("Retrieve shopping lists for a user (expect 200)", func(t *testing.T) {
+		controller := defaultController{
+			userShoppingListRepository: setupMockListRepository(),
+		}
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+
+		controller.GetLists(writer, request)
+
+		if writer.Code != http.StatusOK {
+			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
+		}
+
+		var response []model.UserShoppingList
+		err := json.NewDecoder(writer.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+	})
+
+	t.Run("Bad non-numeric user ID (expect 400)", func(t *testing.T) {
+		controller := defaultController{
+			userShoppingListRepository: setupMockListRepository(),
+		}
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/abc", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
+
+		controller.GetLists(writer, request)
+
+		if writer.Code != http.StatusBadRequest {
+			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
+		}
+	})
+
+	t.Run("Internal server error (repository error) (expect 500)", func(t *testing.T) {
+		controller := defaultController{
+			userShoppingListRepository: setupMockListRepositoryError(),
+		}
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
+
+		controller.GetLists(writer, request)
+
+		if writer.Code != http.StatusInternalServerError {
+			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
+		}
+	})
+}
+
 func TestDefaultController_GetList(t *testing.T) {
 	t.Run("Get an existing shopping list (expect 200)", func(t *testing.T) {
 		controller := defaultController{
@@ -199,59 +252,6 @@ func TestDefaultController_PostList(t *testing.T) {
 
 		if writer.Code != http.StatusBadRequest {
 			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-}
-
-func TestDefaultController_GetLists(t *testing.T) {
-	t.Run("Retrieve shopping lists for a user (expect 200)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.GetLists(writer, request)
-
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
-
-		var response []model.UserShoppingList
-		err := json.NewDecoder(writer.Body).Decode(&response)
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-	})
-
-	t.Run("Bad non-numeric user ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/abc", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
-
-		controller.GetLists(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Internal server error (repository error) (expect 500)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepositoryError(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.GetLists(writer, request)
-
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
 		}
 	})
 }
