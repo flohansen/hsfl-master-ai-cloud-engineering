@@ -34,16 +34,14 @@ func (controller defaultController) GetUsersByRole(writer http.ResponseWriter, r
 		return
 	}
 
-	userRoleModel := getUserRole(userRole)
-
-	if userRoleModel == nil {
-		http.Error(writer, "Unknown user role", http.StatusNotFound)
+	values, err := controller.userRepository.FindAllByRole(model.Role(userRole))
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	values, err := controller.userRepository.FindAllByRole(userRoleModel)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	if len(values) == 0 {
+		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -156,15 +154,5 @@ func (controller defaultController) DeleteUser(writer http.ResponseWriter, reque
 		}
 	} else {
 		writer.WriteHeader(http.StatusUnauthorized)
-	}
-}
-
-func getUserRole(role uint64) *model.Role {
-	switch model.Role(role) {
-	case model.Customer, model.Merchant, model.Administrator:
-		validRole := model.Role(role)
-		return &validRole
-	default:
-		return nil
 	}
 }
