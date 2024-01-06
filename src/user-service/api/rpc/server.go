@@ -27,6 +27,7 @@ func NewUserServiceServer(userRepository *user.Repository, tokenGenerator auth.T
 
 func (u *UserServiceServer) ValidateUserToken(_ context.Context, request *proto.ValidateUserTokenRequest) (*proto.ValidateUserTokenResponse, error) {
 	claims, err := u.tokenGenerator.VerifyToken(request.Token)
+	println(claims, err)
 	if err != nil {
 		log.Println("Verification failed: ", err.Error())
 		return nil, status.Error(codes.Unauthenticated, err.Error())

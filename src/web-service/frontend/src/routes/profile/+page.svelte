@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { goto } from "$app/navigation";
     import Badge from "$lib/general/Badge.svelte";
     import Add from "../../assets/svg/Add.svelte";
     import DataList from "$lib/profle/DataList.svelte";
@@ -27,6 +28,12 @@
                 return 'Kund:in';
         }
     }
+
+    function logout(): void {
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('user_id');
+        goto('/profile/login');
+    }
 </script>
 
 <header>
@@ -42,6 +49,13 @@
             <p class="text-sm lg:text-base">Zu Startseite</p>
         </a>
     {/if}
+    <button
+        on:click={logout} class="flex gap-x-2 items-center text-gray-dark transition-all duration-300 ease-in-out hover:text-green-dark lg:gap-x-4 flex-row-reverse">
+        <svg class="w-6 h-6 rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
+        </svg>
+        <p class="text-sm lg:text-base">Logout</p>
+    </button>
 </header>
 
 <main>

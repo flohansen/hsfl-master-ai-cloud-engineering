@@ -22,71 +22,6 @@ func TestNewCoalescingController(t *testing.T) {
 	assert.IsType(t, &singleflight.Group{}, controller.group)
 }
 
-func TestCoalescingController_DeletePrice(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Successfully delete existing price (expect 200)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest("DELETE", "/api/v1/price/1/1", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
-					return request
-				}(),
-			},
-
-			wantStatus: http.StatusOK,
-		},
-		{
-			name: "Bad non-numeric request (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer:  httptest.NewRecorder(),
-				request: utils.CreatePriceRequestWithValues("DELETE", "/api/v1/price/abc/abc", "abc", "abc"),
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Unknown product to delete (expect 500)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer:  httptest.NewRecorder(),
-				request: utils.CreatePriceRequestWithValues("DELETE", "/api/v1/price/42/42", "42", "42"),
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.DeletePrice(tt.args.writer, tt.args.request)
-			if tt.args.writer.Code != tt.wantStatus {
-				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
-			}
-		})
-	}
-}
-
 func TestCoalescingController_GetPrices(t *testing.T) {
 	t.Run("should return all prices", func(t *testing.T) {
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
@@ -94,7 +29,6 @@ func TestCoalescingController_GetPrices(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/price", nil)
 
-		// Test request
 		controller.GetPrices(writer, request)
 
 		res := writer.Result()
@@ -257,11 +191,8 @@ func TestCoalescingController_GetPrice(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
-
-		// when
 		controller.GetPrice(writer, request)
 
-		// then
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 		}
@@ -302,14 +233,13 @@ func TestCoalescingController_PostPrice(t *testing.T) {
 		request *http.Request
 	}
 	tests := []struct {
-		name             string
-		fields           fields
-		args             args
-		expectedStatus   int
-		expectedResponse string
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
 	}{
 		{
-			name: "Valid Price",
+			name: "Unauthorized (expect 401)",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -320,16 +250,15 @@ func TestCoalescingController_PostPrice(t *testing.T) {
 						"POST",
 						"/api/v1/price/4/4",
 						strings.NewReader(`{"price": 0.99}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "4"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "4"))
-					return request
+					ctx := context.WithValue(request.Context(), "productId", "4")
+					ctx = context.WithValue(ctx, "userId", "4")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusOK,
-			expectedResponse: "",
+			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "Malformed JSON",
+			name: "Valid create (expect 200)",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -338,18 +267,40 @@ func TestCoalescingController_PostPrice(t *testing.T) {
 				request: func() *http.Request {
 					var request = httptest.NewRequest(
 						"POST",
-						"/api/v1/price/5/5",
+						"/api/v1/price/4/4",
+						strings.NewReader(`{"price": 0.99}`))
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "4")
+					ctx = context.WithValue(ctx, "userId", "4")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Malformed JSON (expect 400)",
+			fields: fields{
+				priceRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/price/4/4",
 						strings.NewReader(`{"price": 0.99`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "5"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "4")
+					ctx = context.WithValue(ctx, "userId", "4")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
+			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name: "Invalid price, incorrect Type for price (Non-numeric)",
+			name: "Invalid price, incorrect Type for price (expect 400))",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -358,15 +309,16 @@ func TestCoalescingController_PostPrice(t *testing.T) {
 				request: func() *http.Request {
 					var request = httptest.NewRequest(
 						"POST",
-						"/api/v1/price/5/5",
+						"/api/v1/price/4/4",
 						strings.NewReader(`{"price": "0.99"}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "5"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "5"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					ctx = context.WithValue(ctx, "productId", "4")
+					ctx = context.WithValue(ctx, "userId", "4")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
+			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
@@ -375,16 +327,8 @@ func TestCoalescingController_PostPrice(t *testing.T) {
 			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.PostPrice(tt.args.writer, tt.args.request)
 
-			// You can then assert the response status and content, and check against your expectations.
 			if tt.args.writer.Code != tt.expectedStatus {
 				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
-			}
-
-			if tt.expectedResponse != "" {
-				actualResponse := tt.args.writer.Body.String()
-				if actualResponse != tt.expectedResponse {
-					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
-				}
 			}
 		})
 	}
@@ -400,14 +344,13 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 	}
 
 	tests := []struct {
-		name             string
-		fields           fields
-		args             args
-		expectedStatus   int
-		expectedResponse string // If you want to check the response content
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
 	}{
 		{
-			name: "Valid Update",
+			name: "Unauthorized (expect 401)",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -417,17 +360,16 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 					var request = httptest.NewRequest(
 						"PUT",
 						"/api/v1/price/1/1",
-						strings.NewReader(`{"userId": 1, "productId": 1, "price": 10.99}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
-					return request
+						strings.NewReader(`{"price": 0.99}`))
+					ctx := context.WithValue(request.Context(), "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusOK,
-			expectedResponse: "",
+			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "Valid Update (Partly Fields)",
+			name: "Valid update (expect 200)",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -436,18 +378,19 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 				request: func() *http.Request {
 					var request = httptest.NewRequest(
 						"PUT",
-						"/api/v1/price/2/2",
-						strings.NewReader(`{"price": 6.50}`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+						"/api/v1/price/1/1",
+						strings.NewReader(`{"price": 10.99}`))
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusOK,
-			expectedResponse: "",
+			expectedStatus: http.StatusOK,
 		},
 		{
-			name: "Malformed JSON",
+			name: "Malformed JSON (expect 400)",
 			fields: fields{
 				priceRepository: GenerateExampleDemoRepository(),
 			},
@@ -458,18 +401,19 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 						"PUT",
 						"/api/v1/price/2/2",
 						strings.NewReader(`{"price": 6.50`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
+			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			name:   "Incorrect Type for Price (Non-numeric)",
+			name: "Incorrect Type for Price (expect 400)",
 			fields: fields{
-				// Set up your repository mock or test double here if needed
+				priceRepository: GenerateExampleDemoRepository(),
 			},
 			args: args{
 				writer: httptest.NewRecorder(),
@@ -478,13 +422,14 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 						"PUT",
 						"/api/v1/price/2/2",
 						strings.NewReader(`{"price": "Wrong Type"`))
-					request = request.WithContext(context.WithValue(request.Context(), "productId", "2"))
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-					return request
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
+			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
@@ -493,16 +438,116 @@ func TestCoalescingController_PutPrice(t *testing.T) {
 			controller := NewCoalescingController(tt.fields.priceRepository)
 			controller.PutPrice(tt.args.writer, tt.args.request)
 
-			// You can then assert the response status and content, and check against your expectations.
 			if tt.args.writer.Code != tt.expectedStatus {
 				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
+		})
+	}
+}
 
-			if tt.expectedResponse != "" {
-				actualResponse := tt.args.writer.Body.String()
-				if actualResponse != tt.expectedResponse {
-					t.Errorf("Expected response: %s, but got: %s", tt.expectedResponse, actualResponse)
-				}
+func TestCoalescingController_DeletePrice(t *testing.T) {
+	type fields struct {
+		priceRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				priceRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/price/1/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid delete (expect 200)",
+			fields: fields{
+				priceRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/price/1/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "1")
+					ctx = context.WithValue(ctx, "userId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Bad non-numeric request (expect 400)",
+			fields: fields{
+				priceRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/price/abc/abc",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "abc")
+					ctx = context.WithValue(ctx, "userId", "abc")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown product to delete (expect 500)",
+			fields: fields{
+				priceRepository: GenerateExampleDemoRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/price/42/42",
+						nil)
+					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					ctx = context.WithValue(ctx, "productId", "42")
+					ctx = context.WithValue(ctx, "userId", "42")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := NewCoalescingController(tt.fields.priceRepository)
+			controller.DeletePrice(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
 			}
 		})
 	}
