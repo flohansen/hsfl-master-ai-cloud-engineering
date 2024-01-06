@@ -1,13 +1,13 @@
 package router
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/test"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
 	userShoppingListMock "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/_mock"
-	shoppingListModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry"
 	userShoppingListEntryMock "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/_mock"
-	entryModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -24,77 +24,76 @@ func TestRouter(t *testing.T) {
 
 	router := New(&shoppingListController, &shoppingListEntryController, authMiddleware)
 
-	t.Run("shoppinglist routes", func(t *testing.T) {
-		t.Run("GET /api/v1/shoppinglist/:userId should call GetLists", func(t *testing.T) {
-			// given
+	t.Run("/api/v1/shoppinglist/:userId", func(t *testing.T) {
+		t.Run("should call GET handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/shoppinglist/1", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListController.EXPECT().GetLists(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
-		t.Run("GET /api/v1/shoppinglist/:listId/:userId should call GetList", func(t *testing.T) {
-			// given
+		t.Run("should call POST handler", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			jsonRequest := `{"description": "Test List", "checked: false}`
+			r := httptest.NewRequest("POST", "/api/v1/shoppinglist/1", strings.NewReader(jsonRequest))
+
+			mockShoppingListController.EXPECT().PostList(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
+
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
+	t.Run("/api/v1/shoppinglist/:userId", func(t *testing.T) {
+		t.Run("should call GET handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/shoppinglist/1/2", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListController.EXPECT().GetList(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
-		t.Run("PUT /api/v1/shoppinglist/:listId/:userId should call PutList", func(t *testing.T) {
-			// given
+		t.Run("should call PUT handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			jsonRequest := `{"name": "Updated List Name"}`
 			r := httptest.NewRequest("PUT", "/api/v1/shoppinglist/1/2", strings.NewReader(jsonRequest))
 
-			// when
+			mockShoppingListController.EXPECT().PutList(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
+
 			router.ServeHTTP(w, r)
-
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
+	})
 
-		t.Run("POST /api/v1/shoppinglist/:userId should call PostList", func(t *testing.T) {
-			// given
-			w := httptest.NewRecorder()
-			jsonRequest := `{"name": "New Shopping List"}`
-			r := httptest.NewRequest("POST", "/api/v1/shoppinglist/3", strings.NewReader(jsonRequest))
-
-			// when
-			router.ServeHTTP(w, r)
-
-			// then
-			if w.Code != http.StatusCreated {
-				t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
-			}
-		})
-
-		t.Run("DELETE /api/v1/shoppinglist/:listId should call DeleteList", func(t *testing.T) {
-			// given
+	t.Run("/api/v1/shoppinglist/:listId", func(t *testing.T) {
+		t.Run("should call DELETE handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("DELETE", "/api/v1/shoppinglist/1", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListController.EXPECT().DeleteList(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 	})
 
@@ -171,51 +170,4 @@ func TestRouter(t *testing.T) {
 			}
 		})
 	})
-
-}
-
-func setupMockEntryRepository() userShoppingListEntry.Repository {
-	repository := userShoppingListEntry.NewDemoRepository()
-	entries := setupDemoEntrySlice()
-	for _, entry := range entries {
-		repository.Create(entry)
-	}
-	return repository
-}
-
-func setupMockListRepository() userShoppingList.Repository {
-	repository := userShoppingList.NewDemoRepository()
-	lists := setupDemoListSlice()
-	for _, list := range lists {
-		repository.Create(list)
-	}
-	return repository
-}
-
-func setupDemoListSlice() []*shoppingListModel.UserShoppingList {
-	return []*shoppingListModel.UserShoppingList{
-		{
-			Id:        1,
-			UserId:    2,
-			Completed: false,
-		},
-		{
-			Id:        2,
-			UserId:    1,
-			Completed: true,
-		},
-		{
-			Id:        3,
-			UserId:    3,
-			Completed: true,
-		},
-	}
-}
-func setupDemoEntrySlice() []*entryModel.UserShoppingListEntry {
-	return []*entryModel.UserShoppingListEntry{
-		{ShoppingListId: 1, ProductId: 1, Count: 3, Note: "Sample entry 1", Checked: false},
-		{ShoppingListId: 1, ProductId: 2, Count: 2, Note: "Sample entry 2", Checked: true},
-		{ShoppingListId: 2, ProductId: 1, Count: 1, Note: "Sample entry 3", Checked: false},
-		{ShoppingListId: 2, ProductId: 2, Count: 4, Note: "Sample entry 3", Checked: false},
-	}
 }
