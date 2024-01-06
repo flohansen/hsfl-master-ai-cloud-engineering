@@ -63,11 +63,11 @@ func (repo *DemoRepository) FindAll() ([]*model.User, error) {
 	return nil, errors.New(ErrorUserList)
 }
 
-func (repo *DemoRepository) FindAllByRole(role *model.Role) ([]*model.User, error) {
+func (repo *DemoRepository) FindAllByRole(role model.Role) ([]*model.User, error) {
 	if repo.users != nil {
-		r := make([]*model.User, 0, len(repo.users))
+		r := make([]*model.User, 0)
 		for _, user := range repo.users {
-			if user.Role == *role {
+			if user.Role == role {
 				r = append(r, user)
 			}
 		}
