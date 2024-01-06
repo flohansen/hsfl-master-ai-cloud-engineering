@@ -10,7 +10,7 @@ export const load: PageLoad = async () : Promise<object> => {
 
     return {
         user: user ?? [],
-        metaTitle: 'Deine Profil-Einstellungen',
+        metaTitle: 'Dein Profil',
         headline: 'Dein Profil',
     };
 };
