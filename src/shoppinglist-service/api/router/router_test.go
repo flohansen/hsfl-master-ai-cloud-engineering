@@ -1,9 +1,12 @@
 package router
 
 import (
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/test"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
+	userShoppingListMock "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/_mock"
 	shoppingListModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry"
+	userShoppingListEntryMock "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/_mock"
 	entryModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 	"net/http"
 	"net/http/httptest"
@@ -12,25 +15,14 @@ import (
 )
 
 func TestRouter(t *testing.T) {
-	listRepo := setupMockListRepository()
-	entryRepo := setupMockEntryRepository()
-	shoppingListController := userShoppingList.NewDefaultController(listRepo)
-	shoppingListEntryController := userShoppingListEntry.NewDefaultController(entryRepo)
-	router := New(shoppingListController, shoppingListEntryController)
+	var mockShoppingListController = userShoppingListMock.NewMockController(t)
+	var mockShoppingListEntryController = userShoppingListEntryMock.NewMockController(t)
 
-	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
-		// given
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/unknown/route", nil)
+	authMiddleware := test.CreateEmptyMiddleware()
+	var shoppingListController userShoppingList.Controller = mockShoppingListController
+	var shoppingListEntryController userShoppingListEntry.Controller = mockShoppingListEntryController
 
-		// when
-		router.ServeHTTP(w, r)
-
-		// then
-		if w.Code != http.StatusNotFound {
-			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, w.Code)
-		}
-	})
+	router := New(&shoppingListController, &shoppingListEntryController, authMiddleware)
 
 	t.Run("shoppinglist routes", func(t *testing.T) {
 		t.Run("GET /api/v1/shoppinglist/:userId should call GetLists", func(t *testing.T) {

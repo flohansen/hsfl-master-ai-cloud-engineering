@@ -156,8 +156,10 @@ func (controller defaultController) DeleteList(writer http.ResponseWriter, reque
 	}
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
+
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusNotFound)
+		return
 	}
 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
