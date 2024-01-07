@@ -24,7 +24,7 @@ func TestRegisterHandler(t *testing.T) {
 		expectedResponse string
 	}{
 		{
-			name: "Valid User",
+			name: "Valid User (expect 200)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -32,7 +32,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0}`),
 				),
 			},
@@ -40,7 +40,7 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid Request - Empty Password",
+			name: "Invalid Request - Empty Password (expect 400)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -48,7 +48,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "grace.hopper2@gmail.com", "password": "", "name": "Grace Hopper", "role": 0}`),
 				),
 			},
@@ -56,7 +56,7 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "User already exists",
+			name: "User already exists (expect 409)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -64,7 +64,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 0}`),
 				),
 			},
@@ -72,7 +72,7 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "User should not be able to register as admin",
+			name: "User should not be able to register as admin (expect 403)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -80,7 +80,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456", "name": "Ada Lovelace", "role": 2}`),
 				),
 			},
@@ -88,7 +88,7 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Malformed JSON",
+			name: "Malformed JSON (expect 400)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -96,7 +96,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": "123456", "name": "Grace Hopper", "role": 0`),
 				),
 			},
@@ -104,7 +104,7 @@ func TestRegisterHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid user data, incorrect Type for Email and Password (expected String)",
+			name: "Invalid user data, incorrect Type for Email and Password (expected String) (expect 400)",
 			fields: fields{
 				registerHandler: setUpRegisterHandler(),
 			},
@@ -112,7 +112,7 @@ func TestRegisterHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/register",
+					"/api/v1/authentication/register",
 					strings.NewReader(`{"email": "grace.hopper@gmail.com", "password": 123456, "name": "Grace Hopper", "role": false}`),
 				),
 			},

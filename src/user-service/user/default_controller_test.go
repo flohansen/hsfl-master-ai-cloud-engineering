@@ -349,7 +349,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Valid Update as user",
+			name: "Valid Update as user (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
 			},
@@ -369,7 +369,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Valid Update as admin",
+			name: "Valid Update as admin (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
 			},
@@ -390,7 +390,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Valid Update (Partly Fields)",
+			name: "Valid Update (Partly Fields) (expect 200)",
 			fields: fields{
 				userRepository: setupMockRepository(),
 			},
@@ -410,7 +410,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Malformed JSON",
+			name: "Malformed JSON (expect 400)",
 			fields: fields{
 				userRepository: setupMockRepository(),
 			},
@@ -430,7 +430,7 @@ func TestDefaultController_PutUser(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name:   "Incorrect Type for email (Non-numeric)",
+			name:   "Incorrect Type for email (Non-numeric) (expect 400)",
 			fields: fields{},
 			args: args{
 				writer: httptest.NewRecorder(),
