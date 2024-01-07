@@ -33,3 +33,5 @@ Config values are set via environment variables. The following environment varia
 | DB_USER | Username of PostgreSQL database |
 | DB_PASSWORD | Password of PostgreSQL database |
 | DB_NAME | Name of PostgreSQL database |
+
+You may also use a `.env` file to set environment variables. See `.env.example` for an example.

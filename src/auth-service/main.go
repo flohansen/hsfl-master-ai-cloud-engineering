@@ -9,14 +9,16 @@ import (
 	"strconv"
 
 	proto "github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
+	"github.com/joho/godotenv"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/http/handler"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/http/router"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/rpc"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/auth"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/config"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/crypto"
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/database"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/user"
+	"github.com/caarlos0/env/v10"
 	"google.golang.org/grpc"
 )
 
@@ -31,15 +33,15 @@ func GetenvInt(key string) int {
 }
 
 func main() {
-	psqlConfig := database.PsqlConfig{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     GetenvInt("DB_PORT"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Dbname:   os.Getenv("DB_NAME"),
+	godotenv.Load()
+
+	cfg := config.Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalf("error while parsing enviroment variables: %s", err.Error())
 	}
 
-	userRepository, err := user.NewPsqlRepository(psqlConfig)
+	userRepository, err := user.NewPsqlRepository(cfg.Database)
 
 	if err != nil {
 		log.Fatalf("error while creating user repository: %s", err.Error())
@@ -51,11 +53,7 @@ func main() {
 
 	hasher := crypto.NewBcryptHasher()
 
-	jwtConfig := auth.JwtConfig{
-		PrivateKey: os.Getenv("JWT_PRIVATE_KEY"),
-	}
-
-	jwtTokenGenerator, err := auth.NewJwtTokenGenerator(jwtConfig)
+	jwtTokenGenerator, err := auth.NewJwtTokenGenerator(cfg.JwtConfig)
 
 	if err != nil {
 		log.Fatalf("error while creating jwt token generator: %s", err.Error())
@@ -67,22 +65,18 @@ func main() {
 	)
 
 	go func() {
-		port := "3000"
+		log.Printf("Starting HTTP server on port %s", cfg.HttpServerPort)
 
-		log.Printf("Starting HTTP server on port %s", port)
-
-		addr := fmt.Sprintf("0.0.0.0:%s", port)
+		addr := fmt.Sprintf("0.0.0.0:%s", cfg.HttpServerPort)
 		if err := http.ListenAndServe(addr, handler); err != nil {
 			log.Fatalf("error while listen and serve: %s", err.Error())
 		}
 	}()
 
 	go func() {
-		port := "50051"
+		log.Printf("Starting gRPC server on port %s", cfg.GrpcServerPort)
 
-		log.Printf("Starting gRPC server on port %s", port)
-
-		listener, err := net.Listen("tcp", ":"+port)
+		listener, err := net.Listen("tcp", ":"+cfg.GrpcServerPort)
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
