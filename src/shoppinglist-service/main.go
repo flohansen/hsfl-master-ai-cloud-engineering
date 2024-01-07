@@ -59,12 +59,10 @@ func startHTTPServer(configuration *config.ServiceConfiguration, shoppingListCon
 	handler := router.New(shoppingListController, shoppingListEntryController, authMiddleware)
 	server := &http.Server{Addr: fmt.Sprintf(":%d", configuration.HttpPort), Handler: handler}
 
-	go func() {
-		log.Println("Starting HTTP server: ", server.Addr)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("Failed to start HTTP server: %v", err)
-		}
-	}()
+	log.Println("Starting HTTP server: ", server.Addr)
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("Failed to start HTTP server: %v", err)
+	}
 
 	if err := server.Shutdown(context.Background()); err != nil {
 		log.Fatalf("HTTP Server Shutdown Failed:%v", err)
