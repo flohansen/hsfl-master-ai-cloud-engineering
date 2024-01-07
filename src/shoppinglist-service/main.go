@@ -118,12 +118,6 @@ func createContentForShoppingLists(shoppingListRepository userShoppingList.Repos
 			Description: "Geburtstagskuchen",
 			Completed:   false,
 		},
-		{
-			Id:          3,
-			UserId:      4,
-			Description: "Einkauf für die Woche",
-			Completed:   true,
-		},
 	}
 
 	for _, price := range shoppingLists {
