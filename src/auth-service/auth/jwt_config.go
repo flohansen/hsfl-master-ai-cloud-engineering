@@ -7,7 +7,7 @@ import (
 )
 
 type JwtConfig struct {
-	PrivateKey string `yaml:"privateKey"`
+	PrivateKey string
 }
 
 func (c JwtConfig) GetPrivateKey() (any, error) {
