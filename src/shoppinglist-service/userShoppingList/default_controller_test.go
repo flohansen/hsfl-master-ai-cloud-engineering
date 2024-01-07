@@ -36,13 +36,144 @@ func TestNewDefaultController(t *testing.T) {
 }
 
 func TestDefaultController_GetLists(t *testing.T) {
-	t.Run("Retrieve shopping lists for a user (expect 200)", func(t *testing.T) {
+	type fields struct {
+		userShoppingListRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Unauthorized, not matching userIds (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid request (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Valid request as admin(expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(3))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid request, non-numeric userId (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/abc",
+						nil)
+					ctx := context.WithValue(request.Context(), "userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userShoppingListRepository: setupMockListRepository(),
+			}
+			controller.GetLists(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+		})
+	}
+
+	t.Run("Successfully get user shopping lists (expect 200 and shopping lists)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		var request = httptest.NewRequest(
+			"GET",
+			"/api/v1/shoppinglist/2",
+			nil)
+		ctx := context.WithValue(request.Context(), "userId", "2")
+		ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+		ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+		request = request.WithContext(ctx)
+
 		controller := defaultController{
 			userShoppingListRepository: setupMockListRepository(),
 		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
 
 		controller.GetLists(writer, request)
 
@@ -50,260 +181,625 @@ func TestDefaultController_GetLists(t *testing.T) {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 		}
 
+		if writer.Header().Get("Content-Type") != "application/json" {
+			t.Errorf("Expected content type %s, got %s",
+				"application/json", writer.Header().Get("Content-Type"))
+		}
+
+		result := writer.Result()
 		var response []model.UserShoppingList
-		err := json.NewDecoder(writer.Body).Decode(&response)
+		err := json.NewDecoder(result.Body).Decode(&response)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
-	})
 
-	t.Run("Bad non-numeric user ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
+		if len(response) != 2 {
+			t.Errorf("Expected count of shopping lists is %d, got %d",
+				2, len(response))
 		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/abc", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
 
-		controller.GetLists(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Internal server error (repository error) (expect 500)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepositoryError(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppingLists/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.GetLists(writer, request)
-
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
+		for i, list := range response {
+			if list.UserId != response[i].UserId {
+				t.Errorf("Expected userId of shopping lists is %d, got %d", list.UserId, response[i].UserId)
+			}
 		}
 	})
 }
 
 func TestDefaultController_GetList(t *testing.T) {
-	t.Run("Get an existing shopping list (expect 200)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglist/1/2", nil)
-		ctx := request.Context()
-		ctx = context.WithValue(ctx, "listId", "1")
-		ctx = context.WithValue(ctx, "userId", "2")
-		request = request.WithContext(ctx)
-
-		controller.GetList(writer, request)
-
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
-
-		var response model.UserShoppingList
-		err := json.NewDecoder(writer.Body).Decode(&response)
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-
-		if response.Id != 1 {
-			t.Errorf("Expected id of shopping list %d, got %d", 1, response.Id)
-		}
-		if response.UserId != 2 {
-			t.Errorf("Expected user id of shopping list %d, got %d", 2, response.UserId)
-		}
-	})
-
-	t.Run("Bad non-numeric list ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglist/1/2", nil)
-		ctx := request.Context()
-		ctx = context.WithValue(ctx, "listId", "abcd")
-		ctx = context.WithValue(ctx, "userId", "2")
-		request = request.WithContext(ctx)
-		controller.GetList(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Unknown shopping list (expect 404)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/shoppinglist/1/2", nil)
-		ctx := request.Context()
-		ctx = context.WithValue(ctx, "listId", "5")
-		ctx = context.WithValue(ctx, "userId", "2")
-		request = request.WithContext(ctx)
-		controller.GetList(writer, request)
-
-		if writer.Code != http.StatusNotFound {
-			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
-		}
-	})
+	type fields struct {
+		userShoppingListRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/1/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Unauthorized, not matching userIds (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/1/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid request (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/1/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Valid request as admin (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/1/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(3))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid request, non-numeric userId (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/abc/abc",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "ab")
+					ctx = context.WithValue(ctx, "userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userRole", "abc")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown shopping list (expect 404)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"GET",
+						"/api/v1/shoppinglist/4/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "4")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(0))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userShoppingListRepository: setupMockListRepository(),
+			}
+			controller.GetList(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+		})
+	}
 }
 
 func TestDefaultController_PutList(t *testing.T) {
-	t.Run("Update an existing shopping list (expect 200)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("PUT", "/api/v1/shoppinglist/1/2", strings.NewReader(`{"checked": true}`))
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "1"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.PutList(writer, request)
-
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
-	})
-
-	t.Run("Bad non-numeric list ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("PUT", "/api/v1/shoppinglist/abc/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "abc"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.PutList(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Malformed JSON request (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-
-		// Create a malformed JSON request by missing a closing brace '}'.
-		request := httptest.NewRequest("PUT", "/api/v1/shoppinglist/1/2", strings.NewReader(`{"checked": true`))
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "1"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.PutList(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Unknown shopping list (expect 500)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepositoryError(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("PUT", "/api/v1/shoppinglist/5/2", strings.NewReader(`{"checked": true}`))
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "5"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.PutList(writer, request)
-
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
-		}
-	})
+	type fields struct {
+		userShoppingListRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/1/2",
+						strings.NewReader(`{"description": "Updated list"}`))
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Unauthorized, not matching userIds (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/1/2",
+						strings.NewReader(`{"description": "Updated list"}`))
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid request (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/1/2",
+						strings.NewReader(`{"description": "Updated list"}`))
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Valid request as admin(expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/1/2",
+						strings.NewReader(`{"description": "Updated list"}`))
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid request, non-numeric userId (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/abc/abc",
+						strings.NewReader(`{"description": "Updated list"}`))
+					ctx := context.WithValue(request.Context(), "listId", "ab")
+					ctx = context.WithValue(ctx, "userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userRole", "abc")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid request, malformed JSON (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"PUT",
+						"/api/v1/shoppinglist/1/2",
+						strings.NewReader(`{"description": "Updated list"`))
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userShoppingListRepository: setupMockListRepository(),
+			}
+			controller.PutList(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+		})
+	}
 }
 
 func TestDefaultController_PostList(t *testing.T) {
-	t.Run("Create a new shopping list (expect 201)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		requestBody := `{"description": "New list"}`
-		request := httptest.NewRequest("POST", "/api/v1/shoppinglist/2", strings.NewReader(requestBody))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.PostList(writer, request)
-
-		if writer.Code != http.StatusCreated {
-			t.Errorf("Expected status code %d, got %d", http.StatusCreated, writer.Code)
-		}
-	})
-
-	t.Run("Bad non-numeric user ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("POST", "/api/v1/shoppinglist/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
-
-		controller.PostList(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
+	type fields struct {
+		userShoppingListRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/2",
+						strings.NewReader(`{"description": "New list", "checked": false}`))
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Unauthorized, not matching userIds (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/2",
+						strings.NewReader(`{"description": "New list", "checked": false}`))
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid request (expect 201)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/2",
+						strings.NewReader(`{"description": "New list", "checked": false}`))
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name: "Valid request as admin (expect 201)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/1",
+						strings.NewReader(`{"description": "New list", "checked": false}`))
+					ctx := context.WithValue(request.Context(), "userId", "1")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name: "Invalid request, non-numeric userId (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/abc",
+						strings.NewReader(`{"description": "New list", "checked": false}`))
+					ctx := context.WithValue(request.Context(), "userId", "abc")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid request, malformed JSON (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"POST",
+						"/api/v1/shoppinglist/2",
+						strings.NewReader(`{"description": "New list", "checked": false`))
+					ctx := context.WithValue(request.Context(), "userId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userShoppingListRepository: setupMockListRepository(),
+			}
+			controller.PostList(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+		})
+	}
 }
 
-func TestDefaultController_DeleteList(t *testing.T) {
-	t.Run("Delete an existing shopping list (expect 200)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("DELETE", "/api/v1/shoppinglist/1/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "1"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.DeleteList(writer, request)
-
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
-	})
-
-	t.Run("Bad non-numeric list ID (expect 400)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepository(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("DELETE", "/api/v1/shoppinglist/abc/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "abc"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.DeleteList(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
-	t.Run("Unknown shopping list (expect 500)", func(t *testing.T) {
-		controller := defaultController{
-			userShoppingListRepository: setupMockListRepositoryError(),
-		}
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("DELETE", "/api/v1/shoppinglist/5/2", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "listId", "5"))
-		request = request.WithContext(context.WithValue(request.Context(), "userId", "2"))
-
-		controller.DeleteList(writer, request)
-
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
-		}
-	})
+func TestDefaultController_Delete(t *testing.T) {
+	type fields struct {
+		userShoppingListRepository Repository
+	}
+	type args struct {
+		writer  *httptest.ResponseRecorder
+		request *http.Request
+	}
+	tests := []struct {
+		name           string
+		fields         fields
+		args           args
+		expectedStatus int
+	}{
+		{
+			name: "Unauthorized (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Unauthorized, not matching userIds (expect 401)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(0))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Valid request (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/1",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "1")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(0))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Valid request as admin (expect 200)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/2",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "2")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(3))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid request, non-numeric listId (expect 400)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/abc",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "abc")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(3))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unknown list (expect 404)",
+			fields: fields{
+				userShoppingListRepository: setupMockListRepository(),
+			},
+			args: args{
+				writer: httptest.NewRecorder(),
+				request: func() *http.Request {
+					var request = httptest.NewRequest(
+						"DELETE",
+						"/api/v1/shoppinglist/10",
+						nil)
+					ctx := context.WithValue(request.Context(), "listId", "10")
+					ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+					return request.WithContext(ctx)
+				}(),
+			},
+			expectedStatus: http.StatusNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := defaultController{
+				userShoppingListRepository: setupMockListRepository(),
+			}
+			controller.DeleteList(tt.args.writer, tt.args.request)
+			if tt.args.writer.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
+			}
+		})
+	}
 }
 
 func setupMockListRepository() Repository {
@@ -315,18 +811,18 @@ func setupMockListRepository() Repository {
 	return repository
 }
 
-func setupMockListRepositoryError() Repository {
-	return &DemoRepository{
-		shoppingLists: map[uint64]*model.UserShoppingList{},
-	}
-}
-
 func setupDemoListSlice() []*model.UserShoppingList {
 	return []*model.UserShoppingList{
 		{
 			Id:          1,
 			UserId:      2,
 			Description: "Frühstück mit Anne",
+			Completed:   false,
+		},
+		{
+			Id:          2,
+			UserId:      2,
+			Description: "Suppe",
 			Completed:   false,
 		},
 		{

@@ -2,16 +2,44 @@ package userShoppingListEntry
 
 import (
 	"context"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
+	listModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList/model"
+	entryModel "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 )
 
+func TestNewDefaultController(t *testing.T) {
+	type args struct {
+		userShoppingListEntryRepository Repository
+		userShoppingListRepository      userShoppingList.Repository
+	}
+	tests := []struct {
+		name string
+		args args
+		want *DefaultController
+	}{
+		{
+			name: "Test construction with DemoRepository",
+			args: args{userShoppingListEntryRepository: NewDemoRepository(), userShoppingListRepository: userShoppingList.NewDemoRepository()},
+			want: &DefaultController{userShoppingListEntryRepository: NewDemoRepository(), userShoppingListRepository: userShoppingList.NewDemoRepository()},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewDefaultController(tt.args.userShoppingListEntryRepository, tt.args.userShoppingListRepository); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewDefaultController() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestDefaultController_GetEntries(t *testing.T) {
 	t.Run("Get entries for a shopping list (expect 200)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -30,7 +58,7 @@ func TestDefaultController_GetEntries(t *testing.T) {
 	})
 
 	t.Run("Malformed request (expect 400)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -49,7 +77,7 @@ func TestDefaultController_GetEntries(t *testing.T) {
 
 func TestDefaultController_GetEntry(t *testing.T) {
 	t.Run("Get an existing shopping list entry (expect 200)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -69,7 +97,7 @@ func TestDefaultController_GetEntry(t *testing.T) {
 
 func TestDefaultController_PostEntry(t *testing.T) {
 	t.Run("Create a shopping list entry (expect 201)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -88,7 +116,7 @@ func TestDefaultController_PostEntry(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON request (expect 400)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -108,7 +136,7 @@ func TestDefaultController_PostEntry(t *testing.T) {
 
 func TestDefaultController_PutEntry(t *testing.T) {
 	t.Run("Update an existing shopping list entry (expect 200)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -126,7 +154,7 @@ func TestDefaultController_PutEntry(t *testing.T) {
 	})
 
 	t.Run("Malformed JSON request (expect 400)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -146,7 +174,7 @@ func TestDefaultController_PutEntry(t *testing.T) {
 
 func TestDefaultController_DeleteEntry(t *testing.T) {
 	t.Run("Delete an existing shopping list entry (expect 200)", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListEntryRepository: setupMockEntryRepository(),
 		}
 		writer := httptest.NewRecorder()
@@ -165,17 +193,34 @@ func TestDefaultController_DeleteEntry(t *testing.T) {
 }
 func setupMockEntryRepository() Repository {
 	repository := NewDemoRepository()
-	entries := setupDemoListSlice()
+	entries := setupMockEntrySlice()
 	for _, entry := range entries {
 		repository.Create(entry)
 	}
 	return repository
 }
 
-func setupDemoListSlice() []*model.UserShoppingListEntry {
-	return []*model.UserShoppingListEntry{
+func setupMockEntrySlice() []*entryModel.UserShoppingListEntry {
+	return []*entryModel.UserShoppingListEntry{
 		{ShoppingListId: 1, ProductId: 1, Count: 3, Note: "Sample entry 1", Checked: false},
 		{ShoppingListId: 1, ProductId: 2, Count: 2, Note: "Sample entry 2", Checked: true},
 		{ShoppingListId: 2, ProductId: 1, Count: 1, Note: "Sample entry 3", Checked: false},
+	}
+}
+
+func setupMockListRepository() Repository {
+	repository := NewDemoRepository()
+	lists := setupMockListSlice()
+	for _, list := range lists {
+		repository.Create(list)
+	}
+	return repository
+}
+
+func setupMockListSlice() []*listModel.UserShoppingList {
+	return []*listModel.UserShoppingList{
+		{Id: 1, UserId: 2, Description: "Frühstück mit Anne", Completed: false},
+		{Id: 2, UserId: 2, Description: "Suppe", Completed: false},
+		{Id: 3, UserId: 4, Description: "Geburtstagskuchen", Completed: false},
 	}
 }
