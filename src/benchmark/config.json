@@ -1,7 +1,20 @@
 {
-  "users": 50,
-  "rampup": 20,
-  "duration": 60,
+  "users": 1,
+  "startSleep": "1000ms",
+  "specs": [
+    {
+      "sleep": "100ms",
+      "duration": "10s"
+    },
+    {
+      "sleep": "100ms",
+      "duration": "10s"
+    },
+    {
+      "sleep": "1000ms",
+      "duration": "10s"
+    }
+  ],
   "targets": [
     "http://localhost:3001/"
   ]
