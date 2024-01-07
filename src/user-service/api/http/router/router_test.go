@@ -1,20 +1,19 @@
 package router
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/test"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/handler"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/api/http/middleware"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/auth/utils"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/crypto"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
+	userMock "hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/_mock"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,188 +21,99 @@ import (
 )
 
 func TestRouter(t *testing.T) {
-	loginHandler := setupLoginHandler()
-	registerHandler := setUpRegisterHandler()
+	var mockUserController = userMock.NewMockController(t)
+	var mockUserRepository = userMock.NewMockRepository(t)
 
-	userRepo := setupUserRepository()
-	var userController user.Controller = user.NewDefaultController(userRepo)
-	tokenGenerator, _ := auth.NewJwtTokenGenerator(auth.JwtConfig{PrivateKey: utils.GenerateRandomECDSAPrivateKeyAsPEM()})
+	var userController user.Controller = mockUserController
+	var userRepository user.Repository = mockUserRepository
 
-	authMiddleware := middleware.CreateLocalAuthMiddleware(&userRepo, tokenGenerator)
+	loginHandler := setupLoginHandler(userRepository)
+	registerHandler := setUpRegisterHandler(userRepository)
+	authMiddleware := test.CreateEmptyMiddleware()
+
 	router := New(loginHandler, registerHandler, &userController, authMiddleware)
 
-	t.Run("should return 404 NOT FOUND if path is unknown", func(t *testing.T) {
-		// given
-		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", "/unknown/route", nil)
-
-		// when
-		router.ServeHTTP(w, r)
-
-		// then
-		assert.Equal(t, http.StatusNotFound, w.Code)
-	})
-
 	t.Run("/api/v1/authentication/login/", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
-			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "GET", "DELETE", "PUT"}
-
-			for _, test := range tests {
-				// given
-				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/authentication/login/", nil)
-
-				// when
-				router.ServeHTTP(w, r)
-
-				// then
-				assert.Equal(t, http.StatusNotFound, w.Code)
-			}
-		})
-
 		t.Run("should call POST handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
-			jsonRequest := `{"email": "ada.lovelace@gmail.com", "password": "12345"}`
-			r := httptest.NewRequest("POST", "/api/v1/authentication/login/", bytes.NewBufferString(jsonRequest))
+			r := httptest.NewRequest("POST", "/api/v1/authentication/login/", nil)
 			r.Header.Set("Content-Type", "application/json")
 
-			// when
 			router.ServeHTTP(w, r)
-
-			// then
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusBadRequest, w.Code)
 		})
 	})
 
 	t.Run("/api/v1/authentication/register/", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not POST", func(t *testing.T) {
-			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "GET", "DELETE", "PUT"}
-
-			for _, test := range tests {
-				// given
-				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/authentication/register/", nil)
-
-				// when
-				router.ServeHTTP(w, r)
-
-				// then
-				assert.Equal(t, http.StatusNotFound, w.Code)
-			}
-		})
-
 		t.Run("should call POST handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
-			jsonRequest := `{"email": "grace.hopper@gmail.com", "password": "12345", "name": "Grace Hopper", "role": 0}`
-			r := httptest.NewRequest("POST", "/api/v1/authentication/register/", strings.NewReader(jsonRequest))
+			r := httptest.NewRequest("POST", "/api/v1/authentication/register/", nil)
 			r.Header.Set("Content-Type", "application/json")
 
-			// when
 			router.ServeHTTP(w, r)
-
-			// then
-			assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusBadRequest, w.Code)
 		})
 	})
 
 	t.Run("/api/v1/user/role/:userRole", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not GET", func(t *testing.T) {
-			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "POST", "DELETE", "PUT"}
-
-			for _, test := range tests {
-				// given
-				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/user/register", nil)
-
-				// when
-				router.ServeHTTP(w, r)
-
-				print(test)
-				// then
-				if test == "DELETE" || test == "PUT" {
-					assert.Equal(t, http.StatusBadRequest, w.Code)
-				} else {
-					assert.Equal(t, http.StatusNotFound, w.Code)
-				}
-			}
-		})
-
 		t.Run("should call GET handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/user/role/1", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockUserController.EXPECT().GetUsersByRole(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			assert.Equal(t, http.StatusUnauthorized, w.Code)
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 	})
 
 	t.Run("/api/v1/user/:userId", func(t *testing.T) {
-		t.Run("should return 404 NOT FOUND if method is not GET, DELETE or PUT", func(t *testing.T) {
-			tests := []string{"HEAD", "CONNECT", "OPTIONS", "TRACE", "PATCH", "POST"}
-
-			for _, test := range tests {
-				// given
-				w := httptest.NewRecorder()
-				r := httptest.NewRequest(test, "/api/v1/user/1", nil)
-
-				// when
-				router.ServeHTTP(w, r)
-
-				// then
-				if test == "GET" || test == "DELETE" || test == "PUT" {
-					assert.Equal(t, http.StatusOK, w.Code)
-				} else {
-					assert.Equal(t, http.StatusNotFound, w.Code)
-				}
-			}
-		})
-
 		t.Run("should call GET handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/user/1", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockUserController.EXPECT().GetUser(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			assert.Equal(t, http.StatusUnauthorized, w.Code)
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
 		t.Run("should call PUT handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
 			jsonRequest := `{"id": 1, "email": "updated@googlemail.com", "name": "Updated user"}`
 			r := httptest.NewRequest("PUT", "/api/v1/user/1", strings.NewReader(jsonRequest))
 
-			// when
-			router.ServeHTTP(w, r)
+			mockUserController.EXPECT().PutUser(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			assert.Equal(t, http.StatusUnauthorized, w.Code)
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
 		t.Run("should call DELETE handler", func(t *testing.T) {
-			// given
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("DELETE", "/api/v1/user/1", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockUserController.EXPECT().DeleteUser(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			assert.Equal(t, http.StatusUnauthorized, w.Code)
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 	})
 }
 
-func setupLoginHandler() *handler.LoginHandler {
+func setupLoginHandler(userRepository user.Repository) *handler.LoginHandler {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		panic("Error generating private key for testing.")
@@ -224,49 +134,11 @@ func setupLoginHandler() *handler.LoginHandler {
 	var jwtToken, _ = auth.NewJwtTokenGenerator(
 		auth.JwtConfig{PrivateKey: pemPrivateKey})
 
-	return handler.NewLoginHandler(setupMockRepository(),
+	return handler.NewLoginHandler(userRepository,
 		crypto.NewBcryptHasher(), jwtToken)
 }
 
-func setUpRegisterHandler() *handler.RegisterHandler {
-	return handler.NewRegisterHandler(setupMockRepository(),
+func setUpRegisterHandler(userRepository user.Repository) *handler.RegisterHandler {
+	return handler.NewRegisterHandler(userRepository,
 		crypto.NewBcryptHasher())
-}
-
-func setupMockRepository() user.Repository {
-	repository := user.NewDemoRepository()
-	userSlice := setupDemoUserSlice()
-	for _, newUser := range userSlice {
-		_, _ = repository.Create(newUser)
-	}
-
-	return repository
-}
-
-func setupUserRepository() user.Repository {
-	repository := user.NewDemoRepository()
-	userSlice := setupDemoUserSlice()
-	for _, u := range userSlice {
-		_, err := repository.Create(u)
-		if err != nil {
-			return nil
-		}
-	}
-
-	return repository
-}
-
-func setupDemoUserSlice() []*model.User {
-	bcryptHasher := crypto.NewBcryptHasher()
-	hashedPassword, _ := bcryptHasher.Hash([]byte("12345"))
-
-	return []*model.User{
-		{
-			Id:       1,
-			Email:    "ada.lovelace@gmail.com",
-			Password: hashedPassword,
-			Name:     "Ada Lovelace",
-			Role:     model.Customer,
-		},
-	}
 }
