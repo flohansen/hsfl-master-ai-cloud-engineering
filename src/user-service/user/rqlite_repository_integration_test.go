@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	CreateTableQuery  = "CREATE TABLE users ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );"
-	CleanUpTableQuery = "DELETE FROM users;"
+	CreateTableQuery  = "CREATE TABLE user ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );"
+	CleanUpTableQuery = "DELETE FROM user;"
 	TestPort          = "7001"
 )
 
@@ -353,10 +353,12 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 		}
 	})
 
-	err = container.Stop(context.Background(), nil)
-	if err != nil {
-		return
-	}
+	t.Cleanup(func() {
+		err = container.Stop(context.Background(), nil)
+		if err != nil {
+			return
+		}
+	})
 }
 
 func createTable(repository *RQLiteRepository) error {
