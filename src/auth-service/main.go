@@ -49,7 +49,7 @@ func main() {
 	hasher := crypto.NewBcryptHasher()
 
 	jwtConfig := auth.JwtConfig{
-		SignKey: os.Getenv("JWT_SIGN_KEY"),
+		PrivateKey: os.Getenv("JWT_PRIVATE_KEY"),
 	}
 
 	jwtTokenGenerator, err := auth.NewJwtTokenGenerator(jwtConfig)

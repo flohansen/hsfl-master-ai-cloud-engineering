@@ -7,11 +7,11 @@ import (
 )
 
 type JwtConfig struct {
-	SignKey string `yaml:"signKey"`
+	PrivateKey string `yaml:"privateKey"`
 }
 
 func (c JwtConfig) GetPrivateKey() (any, error) {
-	bytes, err := os.ReadFile(c.SignKey)
+	bytes, err := os.ReadFile(c.PrivateKey)
 
 	if err != nil {
 		return nil, err

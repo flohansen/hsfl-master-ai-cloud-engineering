@@ -44,7 +44,7 @@ services:
       dockerfile: ./src/auth-service/Dockerfile
     environment:
       - SERVER_PORT=3000
-      - JWT_SIGN_KEY=./key
+      - JWT_PRIVATE_KEY=./key
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres
