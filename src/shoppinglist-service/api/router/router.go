@@ -24,11 +24,11 @@ func New(
 	r.POST("/api/v1/shoppinglist/:userId", (*shoppingListController).PostList, authMiddleware)
 	r.DELETE("/api/v1/shoppinglist/:listId", (*shoppingListController).DeleteList, authMiddleware)
 
-	r.GET("/api/v1/shoppinglistentries/:listId", (*shoppingListEntryController).GetEntries)
-	r.GET("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).GetEntry)
-	r.PUT("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PutEntry)
-	r.POST("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PostEntry)
-	r.DELETE("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).DeleteEntry)
+	r.GET("/api/v1/shoppinglistentries/:listId", (*shoppingListEntryController).GetEntries, authMiddleware)
+	r.GET("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).GetEntry, authMiddleware)
+	r.PUT("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PutEntry, authMiddleware)
+	r.POST("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PostEntry, authMiddleware)
+	r.DELETE("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).DeleteEntry, authMiddleware)
 
 	return &Router{r}
 }

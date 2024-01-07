@@ -28,7 +28,7 @@ func main() {
 	createContentForShoppingLists(shoppingListRepository)
 
 	var shoppingListEntryRepository userShoppingListEntry.Repository = userShoppingListEntry.NewDemoRepository()
-	var shoppingListEntryController userShoppingListEntry.Controller = userShoppingListEntry.NewDefaultController(shoppingListEntryRepository)
+	var shoppingListEntryController userShoppingListEntry.Controller = userShoppingListEntry.NewDefaultController(shoppingListEntryRepository, shoppingListRepository)
 	createContentForShoppingListEntries(shoppingListEntryRepository)
 
 	startHTTPServer(configuration, &shoppingListController, &shoppingListEntryController)

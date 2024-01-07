@@ -97,77 +97,74 @@ func TestRouter(t *testing.T) {
 		})
 	})
 
-	t.Run("shoppinglist entries routes", func(t *testing.T) {
-		t.Run("GET /api/v1/shoppinglistentries/:listId should call GetEntries", func(t *testing.T) {
-			// given
+	t.Run("/api/v1/shoppinglistentries/:listId", func(t *testing.T) {
+		t.Run("should call GET handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/shoppinglistentries/1", nil)
 
-			// when
+			mockShoppingListEntryController.EXPECT().GetEntries(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
+
 			router.ServeHTTP(w, r)
-
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
+	})
 
-		t.Run("GET /api/v1/shoppinglistentries/:listId/:productId should call GetEntry", func(t *testing.T) {
-			// given
+	t.Run("/api/v1/shoppinglistentries/:listId/:productId", func(t *testing.T) {
+		t.Run("should call GET handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/api/v1/shoppinglistentries/1/2", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListEntryController.EXPECT().GetEntry(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
-		t.Run("PUT /api/v1/shoppinglistentries/:listId/:productId should call PutEntry", func(t *testing.T) {
-			// given
+		t.Run("should call PUT handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
-			jsonRequest := `{"count": 2, "note": "Test entry", "checked": false}`
+			jsonRequest := `{"count": 10, "note": "Test entry", "checked": false}`
 			r := httptest.NewRequest("PUT", "/api/v1/shoppinglistentries/1/2", strings.NewReader(jsonRequest))
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListEntryController.EXPECT().PutEntry(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
-		t.Run("POST /api/v1/shoppinglistentries/:listId/:productId should call PostEntry", func(t *testing.T) {
-			// given
+		t.Run("should call POST handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			jsonRequest := `{"count": 2, "note": "Test entry", "checked": false}`
-			r := httptest.NewRequest("POST", "/api/v1/shoppinglistentries/1/4", strings.NewReader(jsonRequest))
+			r := httptest.NewRequest("POST", "/api/v1/shoppinglistentries/1/10", strings.NewReader(jsonRequest))
 
-			// when
+			mockShoppingListEntryController.EXPECT().PostEntry(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
+
 			router.ServeHTTP(w, r)
-
-			// then
-			if w.Code != http.StatusCreated {
-				t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
-			}
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 
-		t.Run("DELETE /api/v1/shoppinglistentries/:listId/:productId should call DeleteEntry", func(t *testing.T) {
-			// given
+		t.Run("should call DELETE handler", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("DELETE", "/api/v1/shoppinglistentries/1/2", nil)
 
-			// when
-			router.ServeHTTP(w, r)
+			mockShoppingListEntryController.EXPECT().DeleteEntry(w, mock.Anything).Run(
+				func(_a0 http.ResponseWriter, _a1 *http.Request) {
+					_a0.WriteHeader(http.StatusOK)
+				})
 
-			// then
-			if w.Code != http.StatusOK {
-				t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-			}
+			router.ServeHTTP(w, r)
+			assert.Equal(t, http.StatusOK, w.Code)
 		})
 	})
 }
