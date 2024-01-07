@@ -34,8 +34,11 @@ func (controller *DefaultController) GetEntries(writer http.ResponseWriter, requ
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
 	if err != nil {
+		if err.Error() == userShoppingList.ErrorListNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	values, err := controller.userShoppingListEntryRepository.FindAll(listId)
@@ -70,8 +73,11 @@ func (controller *DefaultController) GetEntry(writer http.ResponseWriter, reques
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
 	if err != nil {
+		if err.Error() == userShoppingList.ErrorListNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	value, err := controller.userShoppingListEntryRepository.FindByIds(listId, productId)
@@ -114,8 +120,11 @@ func (controller *DefaultController) PostEntry(writer http.ResponseWriter, reque
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
 	if err != nil {
+		if err.Error() == userShoppingList.ErrorListNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
@@ -155,8 +164,11 @@ func (controller *DefaultController) PutEntry(writer http.ResponseWriter, reques
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
 	if err != nil {
+		if err.Error() == userShoppingList.ErrorListNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
@@ -189,8 +201,11 @@ func (controller *DefaultController) DeleteEntry(writer http.ResponseWriter, req
 
 	list, err := controller.userShoppingListRepository.FindById(listId)
 	if err != nil {
+		if err.Error() == userShoppingList.ErrorListNotFound {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
