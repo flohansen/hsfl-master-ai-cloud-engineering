@@ -172,12 +172,26 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 }
 
 func TestCoalescingController_GetProductByEan(t *testing.T) {
-	t.Run("Unknown product (expect 404)", func(t *testing.T) {
+	t.Run("Invalid product ean (expect 400)", func(t *testing.T) {
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=123", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "productEan", "123"))
+
+		controller.GetProductByEan(writer, request)
+
+		if writer.Code != http.StatusBadRequest {
+			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
+		}
+	})
+
+	t.Run("Unknown product (expect 404)", func(t *testing.T) {
+		controller := NewCoalescingController(GenerateExampleDemoRepository())
+
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=12345670", nil)
+		request = request.WithContext(context.WithValue(request.Context(), "productEan", "12345670"))
 
 		controller.GetProductByEan(writer, request)
 
@@ -254,7 +268,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Valid create (expect 200)",
+			name: "Invalid create (expect 400)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
@@ -269,11 +283,11 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusOK,
+			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
 		},
 		{
-			name: "Valid create with subfields (expect 200)",
+			name: "Valid create (expect 200)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
@@ -283,7 +297,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"POST",
 						"/api/v1/product",
-						strings.NewReader(`{"description": "Test Product"}`))
+						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": "12345670"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					return request.WithContext(ctx)
 				}(),
@@ -379,7 +393,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"PUT",
 						"/api/v1/product/1",
-						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": "54321"}`))
+						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": "12345670"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					ctx = context.WithValue(ctx, "productId", "1")
 					return request.WithContext(ctx)
@@ -389,7 +403,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Valid update with subfields (expect 200)",
+			name: "Invalid update (expect 400)",
 			fields: fields{
 				productRepository: GenerateExampleDemoRepository(),
 			},
@@ -399,13 +413,13 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"PUT",
 						"/api/v1/product/2",
-						strings.NewReader(`{"description": "Incomplete Update"}`))
+						strings.NewReader(`{"description": "Suppe", "ean": "12345"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					ctx = context.WithValue(ctx, "productId", "2")
 					return request.WithContext(ctx)
 				}(),
 			},
-			expectedStatus:   http.StatusOK,
+			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: "",
 		},
 		{

@@ -5,6 +5,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/utils"
 	"net/http"
 	"strconv"
 )
@@ -69,7 +70,7 @@ func (controller *coalescingController) GetProductById(writer http.ResponseWrite
 
 func (controller *coalescingController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
 	productEan, exists := request.Context().Value("productEan").(string)
-	if !exists {
+	if !exists || utils.ValidateEAN(productEan) == false {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -95,15 +96,20 @@ func (controller *coalescingController) GetProductByEan(writer http.ResponseWrit
 }
 
 func (controller *coalescingController) PostProduct(writer http.ResponseWriter, request *http.Request) {
-	var requestData JsonFormatCreateProductRequest
-	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
 
 	if authUserRole == auth.Administrator || authUserRole == auth.Merchant {
+		var requestData JsonFormatCreateProductRequest
+		if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if utils.ValidateEAN(requestData.Ean) == false {
+			writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		product, err := controller.productRepository.Create(&model.Product{
 			Description: requestData.Description,
 			Ean:         requestData.Ean,
@@ -126,17 +132,22 @@ func (controller *coalescingController) PostProduct(writer http.ResponseWriter, 
 }
 
 func (controller *coalescingController) PutProduct(writer http.ResponseWriter, request *http.Request) {
-	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
 
 	if authUserRole == auth.Administrator || authUserRole == auth.Merchant {
+		productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		var requestData JsonFormatUpdateProductRequest
 		if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if utils.ValidateEAN(requestData.Ean) == false {
 			writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
