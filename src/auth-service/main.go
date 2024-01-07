@@ -3,16 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
 
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/handler"
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/router"
+	proto "github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
+
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/http/handler"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/http/router"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/rpc"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/auth"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/crypto"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/database"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/user"
+	"google.golang.org/grpc"
 )
 
 func GetenvInt(key string) int {
@@ -26,8 +31,6 @@ func GetenvInt(key string) int {
 }
 
 func main() {
-	port := os.Getenv("SERVER_PORT")
-
 	psqlConfig := database.PsqlConfig{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     GetenvInt("DB_PORT"),
@@ -63,8 +66,34 @@ func main() {
 		handler.NewRegisterHandler(userRepository, hasher),
 	)
 
-	addr := fmt.Sprintf("0.0.0.0:%s", port)
-	if err := http.ListenAndServe(addr, handler); err != nil {
-		log.Fatalf("error while listen and serve: %s", err.Error())
-	}
+	go func() {
+		port := "3000"
+
+		log.Printf("Starting HTTP server on port %s", port)
+
+		addr := fmt.Sprintf("0.0.0.0:%s", port)
+		if err := http.ListenAndServe(addr, handler); err != nil {
+			log.Fatalf("error while listen and serve: %s", err.Error())
+		}
+	}()
+
+	go func() {
+		port := "50051"
+
+		log.Printf("Starting gRPC server on port %s", port)
+
+		listener, err := net.Listen("tcp", ":"+port)
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+		grpcServer := grpc.NewServer()
+		authServiceServer := rpc.NewAuthServiceServer(userRepository, jwtTokenGenerator)
+		proto.RegisterAuthServiceServer(grpcServer, authServiceServer)
+
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatalf("failed to serve: %s", err.Error())
+		}
+	}()
+
+	select {}
 }

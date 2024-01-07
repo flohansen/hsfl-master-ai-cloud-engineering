@@ -51,3 +51,18 @@ func (mr *MockTokenGeneratorMockRecorder) GenerateToken(claims any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockTokenGenerator)(nil).GenerateToken), claims)
 }
+
+// ValidateToken mocks base method.
+func (m *MockTokenGenerator) ValidateToken(token string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateToken", token)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateToken indicates an expected call of ValidateToken.
+func (mr *MockTokenGeneratorMockRecorder) ValidateToken(token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateToken", reflect.TypeOf((*MockTokenGenerator)(nil).ValidateToken), token)
+}

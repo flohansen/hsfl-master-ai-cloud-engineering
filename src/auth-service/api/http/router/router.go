@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/router"
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/handler"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/auth-service/api/http/handler"
 )
 
 type Router struct {
