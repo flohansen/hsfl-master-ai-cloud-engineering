@@ -20,13 +20,57 @@ jobs:
         with:
           go-version: 1.21
 
-      - name: Build
-        working-directory: ./lib
+      - name: Install dependencies for config
+        working-directory: ./lib/config
+        run: go mod tidy
+
+      - name: Install dependencies for router
+        working-directory: ./lib/router
+        run: go mod tidy
+
+      - name: Install dependencies for rpc
+        working-directory: ./lib/rpc
+        run: go mod tidy
+
+      - name: Build config library
+        working-directory: ./lib/config
         run: go build -v ./...
 
-      - name: Test Go Module
+      - name: Build router library
+        working-directory: ./lib/router
+        run: go build -v ./...
+
+      - name: Build rpc library
+        working-directory: ./lib/rpc
+        run: go build -v ./...
+
+      - name: Test Go config Module
         run: |
-          cd lib
+          cd lib/config
+          go test ./...
+          test_exit_code=$? # Capture the exit code of the go test command
+          if [ $test_exit_code -eq 0 ]; then
+            echo "Tests passed successfully."
+          else
+            echo "Tests failed with exit code $test_exit_code."
+            exit 1 # Fail the GitHub Actions workflow
+          fi
+
+      - name: Test Go router Module
+        run: |
+          cd lib/router
+          go test ./...
+          test_exit_code=$? # Capture the exit code of the go test command
+          if [ $test_exit_code -eq 0 ]; then
+            echo "Tests passed successfully."
+          else
+            echo "Tests failed with exit code $test_exit_code."
+            exit 1 # Fail the GitHub Actions workflow
+          fi
+
+      - name: Test Go rpc Module
+        run: |
+          cd lib/rpc
           go test ./...
           test_exit_code=$? # Capture the exit code of the go test command
           if [ $test_exit_code -eq 0 ]; then
