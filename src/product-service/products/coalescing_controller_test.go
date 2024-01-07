@@ -70,7 +70,7 @@ func TestCoalescingController_GetProducts(t *testing.T) {
 			}
 
 			if product.Ean != response[i].Ean {
-				t.Errorf("Expected ean of product %d, got %d", product.Ean, response[i].Ean)
+				t.Errorf("Expected ean of product %s, got %s", product.Ean, response[i].Ean)
 			}
 		}
 
@@ -164,28 +164,14 @@ func TestCoalescingController_GetProductById(t *testing.T) {
 			t.Errorf("Expected description of product %s, got %s", "Strauchtomaten", response.Description)
 		}
 
-		if response.Ean != 4014819040771 {
-			t.Errorf("Expected ean of product %d, got %d", 4014819040771, response.Ean)
+		if response.Ean != "4014819040771" {
+			t.Errorf("Expected ean of product %s, got %s", "4014819040771", response.Ean)
 		}
 
 	})
 }
 
 func TestCoalescingController_GetProductByEan(t *testing.T) {
-	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
-		controller := NewCoalescingController(GenerateExampleDemoRepository())
-
-		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("GET", "/api/v1/products/ean?ean=abc", nil)
-		request = request.WithContext(context.WithValue(request.Context(), "productEan", "abc"))
-
-		controller.GetProductByEan(writer, request)
-
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
-	})
-
 	t.Run("Unknown product (expect 404)", func(t *testing.T) {
 		controller := NewCoalescingController(GenerateExampleDemoRepository())
 
@@ -228,8 +214,8 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 			t.Errorf("Expected description of product %s, got %s", "Strauchtomaten", response.Description)
 		}
 
-		if response.Ean != 4014819040771 {
-			t.Errorf("Expected ean of product %d, got %d", 4014819040771, response.Ean)
+		if response.Ean != "4014819040771" {
+			t.Errorf("Expected ean of product %s, got %s", "4014819040771", response.Ean)
 		}
 	})
 }
@@ -260,7 +246,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"POST",
 						"/api/v1/product",
-						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`))
+						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": "12345"}`))
 					return request
 				}(),
 			},
@@ -278,7 +264,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"POST",
 						"/api/v1/product",
-						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": 12345}`))
+						strings.NewReader(`{"id": 3, "description": "Test Product", "ean": "12345"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					return request.WithContext(ctx)
 				}(),
@@ -317,25 +303,6 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 						"POST",
 						"/api/v1/product",
 						strings.NewReader(`{"description": "Test Product"`))
-					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: "",
-		},
-		{
-			name: "Invalid create, incorrect type for EAN (expect 400)",
-			fields: fields{
-				productRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"POST",
-						"/api/v1/product",
-						strings.NewReader(`{"id": 3, "description": "Invalid EAN", "ean": "abc"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					return request.WithContext(ctx)
 				}(),
@@ -412,7 +379,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 					var request = httptest.NewRequest(
 						"PUT",
 						"/api/v1/product/1",
-						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": 54321}`))
+						strings.NewReader(`{"id": 1, "description": "Updated Product", "ean": "54321"}`))
 					ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
 					ctx = context.WithValue(ctx, "productId", "1")
 					return request.WithContext(ctx)

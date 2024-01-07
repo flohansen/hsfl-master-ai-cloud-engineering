@@ -78,9 +78,9 @@ func (controller *defaultController) GetProductById(writer http.ResponseWriter, 
 }
 
 func (controller *defaultController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
-	productEan, err := strconv.ParseUint(request.Context().Value("productEan").(string), 10, 64)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+	productEan, exists := request.Context().Value("productEan").(string)
+	if !exists {
+		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

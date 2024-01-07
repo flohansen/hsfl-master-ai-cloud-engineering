@@ -6,11 +6,11 @@ import (
 
 type Repository interface {
 	Create(*model.Product) (*model.Product, error)
-	Delete(*model.Product) error
 	FindAll() ([]*model.Product, error)
 	FindById(id uint64) (*model.Product, error)
-	FindByEan(id uint64) (*model.Product, error)
+	FindByEan(ean string) (*model.Product, error)
 	Update(*model.Product) (*model.Product, error)
+	Delete(*model.Product) error
 }
 
 const (
