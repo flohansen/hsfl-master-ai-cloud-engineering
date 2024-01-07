@@ -11,20 +11,24 @@ type Router struct {
 	router http.Handler
 }
 
-func New(shoppingListController userShoppingList.Controller, shoppingListEntryController userShoppingListEntry.Controller) *Router {
+func New(
+	shoppingListController *userShoppingList.Controller,
+	shoppingListEntryController *userShoppingListEntry.Controller,
+	authMiddleware router.Middleware,
+) *Router {
 	r := router.New()
 
-	r.GET("/api/v1/shoppinglist/:userId", shoppingListController.GetLists)
-	r.GET("/api/v1/shoppinglist/:listId/:userId", shoppingListController.GetList)
-	r.PUT("/api/v1/shoppinglist/:listId/:userId", shoppingListController.PutList)
-	r.POST("/api/v1/shoppinglist/:userId", shoppingListController.PostList)
-	r.DELETE("/api/v1/shoppinglist/:listId", shoppingListController.DeleteList)
+	r.GET("/api/v1/shoppinglist/:userId", (*shoppingListController).GetLists, authMiddleware)
+	r.GET("/api/v1/shoppinglist/:listId/:userId", (*shoppingListController).GetList, authMiddleware)
+	r.PUT("/api/v1/shoppinglist/:listId/:userId", (*shoppingListController).PutList, authMiddleware)
+	r.POST("/api/v1/shoppinglist/:userId", (*shoppingListController).PostList, authMiddleware)
+	r.DELETE("/api/v1/shoppinglist/:listId", (*shoppingListController).DeleteList, authMiddleware)
 
-	r.GET("/api/v1/shoppinglistentries/:listId", shoppingListEntryController.GetEntries)
-	r.GET("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.GetEntry)
-	r.PUT("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.PutEntry)
-	r.POST("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.PostEntry)
-	r.DELETE("/api/v1/shoppinglistentries/:listId/:productId", shoppingListEntryController.DeleteEntry)
+	r.GET("/api/v1/shoppinglistentries/:listId", (*shoppingListEntryController).GetEntries, authMiddleware)
+	r.GET("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).GetEntry, authMiddleware)
+	r.PUT("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PutEntry, authMiddleware)
+	r.POST("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).PostEntry, authMiddleware)
+	r.DELETE("/api/v1/shoppinglistentries/:listId/:productId", (*shoppingListEntryController).DeleteEntry, authMiddleware)
 
 	return &Router{r}
 }
