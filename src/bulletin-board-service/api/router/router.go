@@ -19,7 +19,7 @@ func NewRouter(
 	r.GET("/bulletin-board/health", healthHandler.Health)
 	r.GET("/bulletin-board/posts", postHandler.GetPosts)
 	r.GET("/bulletin-board/posts/:id", postHandler.GetPost)
-	r.POST("/bulletin-board/posts", postHandler.CreatePost)
+	r.POST("/bulletin-board/posts", postHandler.CreatePost, router.JWTAuthMiddleware)
 	r.PUT("/bulletin-board/posts/:id", postHandler.UpdatePost)
 	r.DELETE("/bulletin-board/posts/:id", postHandler.DeletePost)
 

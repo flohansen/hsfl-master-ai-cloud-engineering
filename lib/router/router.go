@@ -2,8 +2,10 @@ package router
 
 import (
 	"context"
+	"github.com/golang-jwt/jwt"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type route struct {
@@ -12,6 +14,8 @@ type route struct {
 	handler http.HandlerFunc
 	params  []string
 }
+
+type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
 
 type Router struct {
 	routes []route
@@ -52,7 +56,7 @@ func createRequestContext(r *http.Request, paramKeys []string, paramValues []str
 	return r.WithContext(ctx)
 }
 
-func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc) {
+func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
 	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)")
 	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
 
@@ -66,6 +70,10 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 		}
 	}
 
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+
 	router.routes = append(router.routes, route{
 		method:  method,
 		pattern: regexp.MustCompile("^" + pattern + "$"),
@@ -74,18 +82,47 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 	})
 }
 
-func (router *Router) GET(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodGet, pattern, handler)
+func (router *Router) GET(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodGet, pattern, handler, middlewares...)
 }
 
-func (router *Router) POST(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPost, pattern, handler)
+func (router *Router) POST(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodPost, pattern, handler, middlewares...)
 }
 
-func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPut, pattern, handler)
+func (router *Router) PUT(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodPut, pattern, handler, middlewares...)
 }
 
-func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodDelete, pattern, handler)
+func (router *Router) DELETE(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodDelete, pattern, handler, middlewares...)
+}
+
+func JWTAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		splitToken := strings.Split(authHeader, "Bearer ")
+		if len(splitToken) != 2 {
+			http.Error(w, "Invalid bearer token", http.StatusUnauthorized)
+			return
+		}
+		jwtToken := splitToken[1]
+
+		// Verifying JWT token
+		token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
+			return []byte("publicKeyHere"), nil
+		})
+
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if !token.Valid {
+			http.Error(w, "Token is not valid", http.StatusUnauthorized)
+			return
+		}
+
+		next(w, r)
+	}
 }

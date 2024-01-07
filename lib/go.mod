@@ -2,7 +2,10 @@ module github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib
 
 go 1.21.2
 
-require github.com/stretchr/testify v1.8.4
+require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/stretchr/testify v1.8.4
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
