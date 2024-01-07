@@ -68,15 +68,13 @@ func (controller *coalescingController) GetProductById(writer http.ResponseWrite
 }
 
 func (controller *coalescingController) GetProductByEan(writer http.ResponseWriter, request *http.Request) {
-	productEanAttribute := request.Context().Value("productEan").(string)
+	productEan, exists := request.Context().Value("productEan").(string)
+	if !exists {
+		writer.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	msg, err, _ := controller.group.Do("get_ean_"+productEanAttribute, func() (interface{}, error) {
-		productEan, err := strconv.ParseUint(productEanAttribute, 10, 64)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusBadRequest)
-			return nil, err
-		}
-
+	msg, err, _ := controller.group.Do("get_ean_"+productEan, func() (interface{}, error) {
 		value, err := controller.productRepository.FindByEan(productEan)
 		if err != nil {
 			if err.Error() == ErrorProductNotFound {

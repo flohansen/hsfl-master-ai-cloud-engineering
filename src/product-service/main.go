@@ -159,17 +159,17 @@ func createContentForProducts(productRepository products.Repository) {
 		{
 			Id:          1,
 			Description: "Strauchtomaten",
-			Ean:         4014819040771,
+			Ean:         "4014819040771",
 		},
 		{
 			Id:          2,
 			Description: "Lauchzwiebeln",
-			Ean:         5001819040871,
+			Ean:         "5001819040871",
 		},
 		{
 			Id:          3,
 			Description: "Mehl",
-			Ean:         5001819049871,
+			Ean:         "5001819049871",
 		},
 	}
 

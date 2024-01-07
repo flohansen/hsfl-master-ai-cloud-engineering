@@ -4,12 +4,12 @@ import "net/http"
 
 type JsonFormatUpdateProductRequest struct {
 	Description string `json:"description,omitempty"`
-	Ean         uint64 `json:"ean,omitempty"`
+	Ean         string `json:"ean,omitempty"`
 }
 
 type JsonFormatCreateProductRequest struct {
 	Description string `json:"description,omitempty"`
-	Ean         uint64 `json:"ean,omitempty"`
+	Ean         string `json:"ean,omitempty"`
 }
 
 type Controller interface {
