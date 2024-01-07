@@ -32,7 +32,6 @@ func main() {
 
 	var productRepository products.Repository = products.NewDemoRepository()
 	var productsController products.Controller = products.NewCoalescingController(productRepository)
-
 	createContentForProducts(productRepository)
 
 	var priceRepository prices.Repository = prices.NewDemoRepository()

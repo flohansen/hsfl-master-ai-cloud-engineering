@@ -10,3 +10,13 @@ packages:
       dir: "./src/product-service/prices/_mock"
     interfaces:
       Controller:
+  hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList:
+    config:
+      dir: "./src/shoppinglist-service/userShoppingList/_mock"
+    interfaces:
+      Controller:
+  hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry:
+    config:
+      dir: "./src/shoppinglist-service/userShoppingListEntry/_mock"
+    interfaces:
+      Controller:

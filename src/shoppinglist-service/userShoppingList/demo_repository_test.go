@@ -65,7 +65,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 		}
 
 		// Ensure the list is deleted
-		_, err = repo.findById(list.Id)
+		_, err = repo.FindById(list.Id)
 		if err == nil {
 			t.Error("Expected the shopping list to be deleted")
 		}
@@ -205,6 +205,45 @@ func TestDemoRepository_FindByIds(t *testing.T) {
 
 	t.Run("Find list by IDs with non-existing list", func(t *testing.T) {
 		_, err := repo.FindByIds(1, 42)
+		if err == nil {
+			t.Error("Expected an error for non-existing list")
+		}
+	})
+}
+
+func TestDemoRepository_FindById(t *testing.T) {
+	repo := NewDemoRepository()
+
+	lists := []*model.UserShoppingList{
+		{
+			Id:        1,
+			UserId:    1,
+			Completed: false,
+		},
+		{
+			Id:        2,
+			UserId:    2,
+			Completed: false,
+		},
+	}
+
+	for _, list := range lists {
+		_, _ = repo.Create(list)
+	}
+
+	t.Run("Find list by ID with existing list", func(t *testing.T) {
+		foundList, err := repo.FindById(1)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if foundList.Id != 1 {
+			t.Errorf("Expected list with ID 1, but got list with ID %d", foundList.Id)
+		}
+	})
+
+	t.Run("Find list by ID with non-existing list", func(t *testing.T) {
+		_, err := repo.FindById(42)
 		if err == nil {
 			t.Error("Expected an error for non-existing list")
 		}
