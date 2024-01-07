@@ -216,5 +216,7 @@ func (controller *DefaultController) DeleteEntry(writer http.ResponseWriter, req
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	} else {
+		writer.WriteHeader(http.StatusUnauthorized)
 	}
 }
