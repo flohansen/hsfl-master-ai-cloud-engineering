@@ -7,7 +7,7 @@ option go_package = "./rpc/product";
 message Product {
   uint64 id = 1;
   string description = 2;
-  uint64 ean = 3;
+  string ean = 3;
 }
 
 message Price {

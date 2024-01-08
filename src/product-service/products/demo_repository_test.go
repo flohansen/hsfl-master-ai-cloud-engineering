@@ -23,13 +23,13 @@ func TestDemoRepository_Create(t *testing.T) {
 	product := model.Product{
 		Id:          1,
 		Description: "Strauchtomaten",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
-	productWithDublicateEan := model.Product{
+	productWithDuplicateEan := model.Product{
 		Id:          2,
 		Description: "Dinkelnudeln",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
 	t.Run("Create product with success", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestDemoRepository_Create(t *testing.T) {
 	})
 
 	t.Run("Check if products with duplicate ean can not be created", func(t *testing.T) {
-		_, err := demoRepository.Create(&productWithDublicateEan)
+		_, err := demoRepository.Create(&productWithDuplicateEan)
 		if err.Error() != ErrorEanAlreadyExists {
 			t.Error(err)
 		}
@@ -62,12 +62,12 @@ func TestDemoRepository_FindAll(t *testing.T) {
 		{
 			Id:          1,
 			Description: "Strauchtomaten",
-			Ean:         4014819040771,
+			Ean:         "4014819040771",
 		},
 		{
 			Id:          2,
 			Description: "Lauchzwiebeln",
-			Ean:         5001819040871,
+			Ean:         "5001819040871",
 		},
 	}
 
@@ -123,7 +123,7 @@ func TestDemoRepository_FindById(t *testing.T) {
 	product := model.Product{
 		Id:          1,
 		Description: "Strauchtomaten",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
 	_, err := demoRepository.Create(&product)
@@ -160,7 +160,7 @@ func TestDemoRepository_FindByEan(t *testing.T) {
 	product := model.Product{
 		Id:          1,
 		Description: "Strauchtomaten",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
 	_, err := demoRepository.Create(&product)
@@ -171,7 +171,7 @@ func TestDemoRepository_FindByEan(t *testing.T) {
 	t.Run("Fetch product with existing ean", func(t *testing.T) {
 		_, err := demoRepository.FindByEan(product.Ean)
 		if err != nil {
-			t.Errorf("Can't find expected product with ean %d", product.Ean)
+			t.Errorf("Can't find expected product with ean %s", product.Ean)
 		}
 
 		t.Run("Is fetched product matching with added product?", func(t *testing.T) {
@@ -183,7 +183,7 @@ func TestDemoRepository_FindByEan(t *testing.T) {
 	})
 
 	t.Run("Non-existing product test", func(t *testing.T) {
-		_, err = demoRepository.FindByEan(42)
+		_, err = demoRepository.FindByEan("42")
 		if err.Error() != ErrorProductNotFound {
 			t.Error(err)
 		}
@@ -197,7 +197,7 @@ func TestDemoRepository_Update(t *testing.T) {
 	product := model.Product{
 		Id:          1,
 		Description: "Strauchtomaten",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
 	fetchedProduct, err := demoRepository.Create(&product)
@@ -209,7 +209,7 @@ func TestDemoRepository_Update(t *testing.T) {
 		updateProduct := model.Product{
 			Id:          1,
 			Description: "Wittenseer Mineralwasser",
-			Ean:         4014819040771,
+			Ean:         "4014819040771",
 		}
 		updatedProduct, err := demoRepository.Update(&updateProduct)
 		if err != nil {
@@ -230,7 +230,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 	product := model.Product{
 		Id:          1,
 		Description: "Strauchtomaten",
-		Ean:         4014819040771,
+		Ean:         "4014819040771",
 	}
 
 	fetchedProduct, err := productsRepository.Create(&product)
@@ -256,7 +256,7 @@ func TestDemoRepository_Delete(t *testing.T) {
 		fakeProduct := model.Product{
 			Id:          1,
 			Description: "Lauchzwiebeln",
-			Ean:         5001819040871,
+			Ean:         "5001819040871",
 		}
 
 		err = productsRepository.Delete(&fakeProduct)
@@ -281,12 +281,12 @@ func TestDemoRepository_findNextAvailableID(t *testing.T) {
 				1: {
 					Id:          1,
 					Description: "Strauchtomaten",
-					Ean:         4014819040771,
+					Ean:         "4014819040771",
 				},
 				2: {
 					Id:          2,
 					Description: "Lauchzwiebeln",
-					Ean:         5001819040871,
+					Ean:         "5001819040871",
 				},
 			}},
 			want: 3,
@@ -297,12 +297,12 @@ func TestDemoRepository_findNextAvailableID(t *testing.T) {
 				1: {
 					Id:          1,
 					Description: "Strauchtomaten",
-					Ean:         4014819040771,
+					Ean:         "4014819040771",
 				},
 				3: {
 					Id:          3,
 					Description: "Lauchzwiebeln",
-					Ean:         5001819040871,
+					Ean:         "5001819040871",
 				},
 			}},
 			want: 4,
