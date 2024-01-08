@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	CreateTableQuery  = "CREATE TABLE product ( id INTEGER PRIMARY KEY, description VARCHAR(255), ean VARCHAR(13) UNIQUE );"
-	CleanUpTableQuery = "DELETE FROM product;"
-	TestPort          = "7002"
+	CreateTableQuery  = "CREATE TABLE " + RQLiteTableName + " ( id INTEGER PRIMARY KEY, description VARCHAR(255), ean VARCHAR(13) UNIQUE );"
+	CleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
+	TestPort          = "7003"
 )
 
 func TestIntegrationRQLiteRepository(t *testing.T) {

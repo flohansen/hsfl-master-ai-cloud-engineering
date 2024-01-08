@@ -18,12 +18,12 @@ func TestNewDefaultController(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *defaultController
+		want *DefaultController
 	}{
 		{
 			name: "Test construction with DemoRepository",
 			args: args{userShoppingListRepository: NewDemoRepository()},
-			want: &defaultController{userShoppingListRepository: NewDemoRepository()},
+			want: &DefaultController{userShoppingListRepository: NewDemoRepository()},
 		},
 	}
 	for _, tt := range tests {
@@ -150,7 +150,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				userShoppingListRepository: setupMockListRepository(),
 			}
 			controller.GetLists(tt.args.writer, tt.args.request)
@@ -171,7 +171,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 		ctx = context.WithValue(ctx, "auth_userRole", int64(1))
 		request = request.WithContext(ctx)
 
-		controller := defaultController{
+		controller := DefaultController{
 			userShoppingListRepository: setupMockListRepository(),
 		}
 
@@ -347,7 +347,7 @@ func TestDefaultController_GetList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				userShoppingListRepository: setupMockListRepository(),
 			}
 			controller.GetList(tt.args.writer, tt.args.request)
@@ -499,7 +499,7 @@ func TestDefaultController_PutList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				userShoppingListRepository: setupMockListRepository(),
 			}
 			controller.PutList(tt.args.writer, tt.args.request)
@@ -645,7 +645,7 @@ func TestDefaultController_PostList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				userShoppingListRepository: setupMockListRepository(),
 			}
 			controller.PostList(tt.args.writer, tt.args.request)
@@ -791,7 +791,7 @@ func TestDefaultController_Delete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				userShoppingListRepository: setupMockListRepository(),
 			}
 			controller.DeleteList(tt.args.writer, tt.args.request)

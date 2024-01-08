@@ -107,7 +107,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 	t.Run("Successfully fetch all products", func(t *testing.T) {
 
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %s`, RQLiteTableName)).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}).
 				AddRow(products[0].Id, products[0].Description, products[0].Ean).
 				AddRow(products[1].Id, products[1].Description, products[1].Ean))
@@ -134,7 +134,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %s`, RQLiteTableName)).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
 
@@ -168,7 +168,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Successfully fetch product", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}).
 				AddRow(product.Id, product.Description, product.Ean))
@@ -190,7 +190,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Fail to fetch product (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
 		mock.ExpectRollback()
@@ -207,7 +207,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
 		mock.ExpectRollback()
@@ -242,7 +242,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Successfully fetch product", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}).
 				AddRow(product.Id, product.Description, product.Ean))
@@ -264,7 +264,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Fail to fetch product (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}))
 		mock.ExpectRollback()
@@ -281,7 +281,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}))
 		mock.ExpectRollback()

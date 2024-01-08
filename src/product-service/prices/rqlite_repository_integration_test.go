@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	CreateTableQuery  = "CREATE TABLE price ( userId BIGINT, productId BIGINT, price FLOAT NOT NULL, PRIMARY KEY (userId, productId) );"
-	CleanUpTableQuery = "DELETE FROM price;"
+	CreateTableQuery  = "CREATE TABLE " + RQLiteTableName + " ( userId BIGINT, productId BIGINT, price FLOAT NOT NULL, PRIMARY KEY (userId, productId) );"
+	CleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
 	TestPort          = "7003"
 )
 
