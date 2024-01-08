@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-// CREATE TABLE users ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );
+// CREATE TABLE user ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );
 type RQLiteRepository struct {
 	db          *sql.DB
 	userBuilder *sqlbuilder.Struct
@@ -29,7 +29,7 @@ func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 }
 
 func (r *RQLiteRepository) Create(user *model.User) (*model.User, error) {
-	query, args := r.userBuilder.WithoutTag("pk").InsertInto("users", user).Build()
+	query, args := r.userBuilder.WithoutTag("pk").InsertInto("user", user).Build()
 
 	transaction, err := r.db.Begin()
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *RQLiteRepository) Create(user *model.User) (*model.User, error) {
 }
 
 func (r *RQLiteRepository) FindAll() ([]*model.User, error) {
-	selectBuilder := r.userBuilder.SelectFrom("users")
+	selectBuilder := r.userBuilder.SelectFrom("user")
 	query, _ := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -94,8 +94,8 @@ func (r *RQLiteRepository) FindAll() ([]*model.User, error) {
 }
 
 func (r *RQLiteRepository) FindAllByRole(role model.Role) ([]*model.User, error) {
-	selectBuilder := r.userBuilder.SelectFrom("users")
-	selectBuilder.Where(selectBuilder.Equal("users.role", role))
+	selectBuilder := r.userBuilder.SelectFrom("user")
+	selectBuilder.Where(selectBuilder.Equal("user.role", role))
 	query, args := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -128,8 +128,8 @@ func (r *RQLiteRepository) FindAllByRole(role model.Role) ([]*model.User, error)
 }
 
 func (r *RQLiteRepository) FindByEmail(email string) (*model.User, error) {
-	selectBuilder := r.userBuilder.SelectFrom("users")
-	selectBuilder.Where(selectBuilder.Equal("users.email", email))
+	selectBuilder := r.userBuilder.SelectFrom("user")
+	selectBuilder.Where(selectBuilder.Equal("user.email", email))
 	query, args := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -161,8 +161,8 @@ func (r *RQLiteRepository) FindByEmail(email string) (*model.User, error) {
 }
 
 func (r *RQLiteRepository) FindById(id uint64) (*model.User, error) {
-	selectBuilder := r.userBuilder.SelectFrom("users")
-	selectBuilder.Where(selectBuilder.Equal("users.id", id))
+	selectBuilder := r.userBuilder.SelectFrom("user")
+	selectBuilder.Where(selectBuilder.Equal("user.id", id))
 	query, args := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -185,7 +185,7 @@ func (r *RQLiteRepository) FindById(id uint64) (*model.User, error) {
 
 	err = transaction.Commit()
 	if err != nil {
-		return nil, errors.New(ErrorUserList)
+		return nil, errors.New(ErrorUserNotFound)
 	}
 
 	decodePassword(user)
@@ -194,8 +194,8 @@ func (r *RQLiteRepository) FindById(id uint64) (*model.User, error) {
 }
 
 func (r *RQLiteRepository) Update(user *model.User) (*model.User, error) {
-	updateBuilder := r.userBuilder.Update("users", user)
-	updateBuilder.Where(updateBuilder.Equal("id", user.Id))
+	updateBuilder := r.userBuilder.Update("user", user)
+	updateBuilder.Where(updateBuilder.Equal("user.id", user.Id))
 	query, args := updateBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -223,8 +223,8 @@ func (r *RQLiteRepository) Update(user *model.User) (*model.User, error) {
 }
 
 func (r *RQLiteRepository) Delete(user *model.User) error {
-	deleteBuilder := r.userBuilder.DeleteFrom("users")
-	query, args := deleteBuilder.Where(deleteBuilder.Equal("users.id", user.Id)).Build()
+	deleteBuilder := r.userBuilder.DeleteFrom("user")
+	query, args := deleteBuilder.Where(deleteBuilder.Equal("user.id", user.Id)).Build()
 
 	transaction, err := r.db.Begin()
 	if err != nil {
