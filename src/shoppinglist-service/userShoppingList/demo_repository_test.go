@@ -47,87 +47,6 @@ func TestDemoRepository_Create(t *testing.T) {
 	})
 }
 
-func TestDemoRepository_Delete(t *testing.T) {
-	repo := NewDemoRepository()
-
-	list := &model.UserShoppingList{
-		Id:        1,
-		UserId:    1,
-		Completed: false,
-	}
-
-	_, _ = repo.Create(list)
-
-	t.Run("Delete an existing shopping list", func(t *testing.T) {
-		err := repo.Delete(list)
-		if err != nil {
-			t.Error(err)
-		}
-
-		// Ensure the list is deleted
-		_, err = repo.FindById(list.Id)
-		if err == nil {
-			t.Error("Expected the shopping list to be deleted")
-		}
-	})
-
-	t.Run("Attempt to delete a non-existing shopping list", func(t *testing.T) {
-		fakeList := &model.UserShoppingList{
-			Id:        42,
-			UserId:    2,
-			Completed: false,
-		}
-
-		err := repo.Delete(fakeList)
-		if err == nil {
-			t.Error("Expected an error for deleting a non-existing shopping list")
-		}
-	})
-}
-
-func TestDemoRepository_Update(t *testing.T) {
-	repo := NewDemoRepository()
-
-	list := &model.UserShoppingList{
-		Id:          1,
-		UserId:      1,
-		Description: "Update list description",
-		Completed:   true,
-	}
-
-	_, _ = repo.Create(list)
-
-	t.Run("Update an existing shopping list", func(t *testing.T) {
-		updatedList, err := repo.Update(list)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if updatedList.Description != list.Description {
-			t.Errorf("Expected updated shopping list to have description %s, but got %s",
-				list.Description, updatedList.Description)
-		}
-
-		if updatedList.Completed != list.Completed {
-			t.Errorf("Expected updated shopping list to have completed value %t, but got %t",
-				list.Completed, updatedList.Completed)
-		}
-	})
-
-	t.Run("Attempt to update a non-existing shopping list", func(t *testing.T) {
-		fakeList := &model.UserShoppingList{
-			Id:        42,
-			UserId:    2,
-			Completed: true,
-		}
-
-		_, err := repo.Update(fakeList)
-		if err == nil {
-			t.Error("Expected an error for updating a non-existing shopping list")
-		}
-	})
-}
-
 func TestDemoRepository_FindAllById(t *testing.T) {
 	repo := NewDemoRepository()
 
@@ -246,6 +165,87 @@ func TestDemoRepository_FindById(t *testing.T) {
 		_, err := repo.FindById(42)
 		if err == nil {
 			t.Error("Expected an error for non-existing list")
+		}
+	})
+}
+
+func TestDemoRepository_Update(t *testing.T) {
+	repo := NewDemoRepository()
+
+	list := &model.UserShoppingList{
+		Id:          1,
+		UserId:      1,
+		Description: "Update list description",
+		Completed:   true,
+	}
+
+	_, _ = repo.Create(list)
+
+	t.Run("Update an existing shopping list", func(t *testing.T) {
+		updatedList, err := repo.Update(list)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if updatedList.Description != list.Description {
+			t.Errorf("Expected updated shopping list to have description %s, but got %s",
+				list.Description, updatedList.Description)
+		}
+
+		if updatedList.Completed != list.Completed {
+			t.Errorf("Expected updated shopping list to have completed value %t, but got %t",
+				list.Completed, updatedList.Completed)
+		}
+	})
+
+	t.Run("Attempt to update a non-existing shopping list", func(t *testing.T) {
+		fakeList := &model.UserShoppingList{
+			Id:        42,
+			UserId:    2,
+			Completed: true,
+		}
+
+		_, err := repo.Update(fakeList)
+		if err == nil {
+			t.Error("Expected an error for updating a non-existing shopping list")
+		}
+	})
+}
+
+func TestDemoRepository_Delete(t *testing.T) {
+	repo := NewDemoRepository()
+
+	list := &model.UserShoppingList{
+		Id:        1,
+		UserId:    1,
+		Completed: false,
+	}
+
+	_, _ = repo.Create(list)
+
+	t.Run("Delete an existing shopping list", func(t *testing.T) {
+		err := repo.Delete(list)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// Ensure the list is deleted
+		_, err = repo.FindById(list.Id)
+		if err == nil {
+			t.Error("Expected the shopping list to be deleted")
+		}
+	})
+
+	t.Run("Attempt to delete a non-existing shopping list", func(t *testing.T) {
+		fakeList := &model.UserShoppingList{
+			Id:        42,
+			UserId:    2,
+			Completed: false,
+		}
+
+		err := repo.Delete(fakeList)
+		if err == nil {
+			t.Error("Expected an error for deleting a non-existing shopping list")
 		}
 	})
 }
