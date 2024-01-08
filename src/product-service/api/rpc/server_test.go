@@ -30,7 +30,7 @@ func TestProductServiceServer_CreateProduct(t *testing.T) {
 		Product: &proto.Product{
 			Id:          123,
 			Description: "Test",
-			Ean:         123456789,
+			Ean:         "123456789",
 		},
 	}
 
