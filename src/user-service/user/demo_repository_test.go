@@ -8,7 +8,6 @@ import (
 )
 
 func TestDemoRepository_CreateUser(t *testing.T) {
-	// Prepare test
 	demoRepository := NewDemoRepository()
 
 	user := model.User{
