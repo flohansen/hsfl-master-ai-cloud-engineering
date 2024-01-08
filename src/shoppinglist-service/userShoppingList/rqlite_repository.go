@@ -73,14 +73,14 @@ func (r *RQLiteRepository) FindAllById(userId uint64) ([]*model.UserShoppingList
 		return nil, errors.New(ErrorListNotFound)
 	}
 
-	var users = make([]*model.UserShoppingList, 0)
+	var lists = make([]*model.UserShoppingList, 0)
 	for rows.Next() {
-		user := new(model.UserShoppingList)
-		err := rows.Scan(r.shoppinglistBuilder.Addr(&user)...)
+		list := new(model.UserShoppingList)
+		err := rows.Scan(r.shoppinglistBuilder.Addr(&list)...)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+		lists = append(lists, list)
 	}
 
 	err = transaction.Commit()
@@ -88,7 +88,7 @@ func (r *RQLiteRepository) FindAllById(userId uint64) ([]*model.UserShoppingList
 		return nil, errors.New(ErrorListNotFound)
 	}
 
-	return users, nil
+	return lists, nil
 }
 
 func (r *RQLiteRepository) FindById(listId uint64) (*model.UserShoppingList, error) {
@@ -102,8 +102,8 @@ func (r *RQLiteRepository) FindById(listId uint64) (*model.UserShoppingList, err
 	}
 	row := transaction.QueryRow(query, args...)
 
-	user := &model.UserShoppingList{}
-	err = row.Scan(r.shoppinglistBuilder.Addr(&user)...)
+	list := &model.UserShoppingList{}
+	err = row.Scan(r.shoppinglistBuilder.Addr(&list)...)
 	if err != nil {
 		if rollbackErr := transaction.Rollback(); rollbackErr != nil {
 			log.Println(err)
@@ -119,7 +119,7 @@ func (r *RQLiteRepository) FindById(listId uint64) (*model.UserShoppingList, err
 		return nil, errors.New(ErrorListNotFound)
 	}
 
-	return user, nil
+	return list, nil
 }
 
 func (r *RQLiteRepository) FindByIds(userId uint64, listId uint64) (*model.UserShoppingList, error) {
@@ -135,8 +135,8 @@ func (r *RQLiteRepository) FindByIds(userId uint64, listId uint64) (*model.UserS
 	}
 	row := transaction.QueryRow(query, args...)
 
-	user := &model.UserShoppingList{}
-	err = row.Scan(r.shoppinglistBuilder.Addr(&user)...)
+	list := &model.UserShoppingList{}
+	err = row.Scan(r.shoppinglistBuilder.Addr(&list)...)
 	if err != nil {
 		if rollbackErr := transaction.Rollback(); rollbackErr != nil {
 			log.Println(err)
@@ -152,7 +152,7 @@ func (r *RQLiteRepository) FindByIds(userId uint64, listId uint64) (*model.UserS
 		return nil, errors.New(ErrorListNotFound)
 	}
 
-	return user, nil
+	return list, nil
 }
 
 func (r *RQLiteRepository) Update(list *model.UserShoppingList) (*model.UserShoppingList, error) {
