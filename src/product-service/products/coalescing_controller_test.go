@@ -51,9 +51,7 @@ func TestCoalescingController_GetProducts(t *testing.T) {
 
 		productController.GetProducts(writer, request)
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
+		assert.Equal(t, http.StatusOK, writer.Code)
 
 		if writer.Header().Get("Content-Type") != "application/json" {
 			t.Errorf("Expected content type %s, got %s",
@@ -71,20 +69,6 @@ func TestCoalescingController_GetProducts(t *testing.T) {
 		if len(response) != 2 {
 			t.Errorf("Expected count of product is %d, got %d",
 				2, len(response))
-		}
-
-		for i, product := range response {
-			if product.Id != response[i].Id {
-				t.Errorf("Expected id of product %d, got %d", product.Id, response[i].Id)
-			}
-
-			if product.Description != response[i].Description {
-				t.Errorf("Expected description of product %s, got %s", product.Description, response[i].Description)
-			}
-
-			if product.Ean != response[i].Ean {
-				t.Errorf("Expected ean of product %s, got %s", product.Ean, response[i].Ean)
-			}
 		}
 	})
 }
@@ -179,9 +163,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 
 		productController.GetProductByEan(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Unknown product (expect 404)", func(t *testing.T) {
@@ -193,9 +175,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 
 		productController.GetProductByEan(writer, request)
 
-		if writer.Code != http.StatusNotFound {
-			t.Errorf("Expected status code %d, got %d", http.StatusNotFound, writer.Code)
-		}
+		assert.Equal(t, http.StatusNotFound, writer.Code)
 	})
 
 	t.Run("Should return product by EAN (expect 200 and product)", func(t *testing.T) {
@@ -211,9 +191,7 @@ func TestCoalescingController_GetProductByEan(t *testing.T) {
 
 		productController.GetProductByEan(writer, request)
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
+		assert.Equal(t, http.StatusOK, writer.Code)
 
 		res := writer.Result()
 		var response model.Product
@@ -249,9 +227,7 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 
 		productController.PostProduct(writer, request)
 
-		if writer.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status code %d, got %d", http.StatusUnauthorized, writer.Code)
-		}
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
 	})
 
 	t.Run("Invalid create (expect 400)", func(t *testing.T) {
@@ -264,16 +240,14 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 
 		productController.PostProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Valid create (expect 200)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("POST", "/api/v1/product",
 			strings.NewReader(`{"description": "Test Product", "ean": "12345670"}`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		request = request.WithContext(ctx)
 
@@ -288,24 +262,41 @@ func TestCoalescingController_PostProduct(t *testing.T) {
 
 		productController.PostProduct(writer, request)
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Valid create ad admin(expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/product",
+			strings.NewReader(`{"description": "Test Product", "ean": "12345670"}`))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Administrator)
+		request = request.WithContext(ctx)
+
+		mockProductRepository.EXPECT().Create(&model.Product{
+			Description: "Test Product",
+			Ean:         "12345670",
+		}).Return(&model.Product{
+			Id:          3,
+			Description: "Test Product",
+			Ean:         "12345670",
+		}, nil)
+
+		productController.PostProduct(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
 	})
 
 	t.Run("Malformed JSON (expect 400)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("POST", "/api/v1/product",
 			strings.NewReader(`{"description": "Test Product", "ean": "12345670"`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		request = request.WithContext(ctx)
 
 		productController.PostProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 }
 
@@ -324,16 +315,14 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status code %d, got %d", http.StatusUnauthorized, writer.Code)
-		}
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
 	})
 
 	t.Run("Valid update (expect 200)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("PUT", "/api/v1/product/1",
 			strings.NewReader(`{"description": "Updated Product", "ean": "4001686323397"}`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		ctx = context.WithValue(ctx, "productId", "1")
 		request = request.WithContext(ctx)
@@ -350,64 +339,56 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
+		assert.Equal(t, http.StatusOK, writer.Code)
 	})
 
 	t.Run("Invalid update (expect 400)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("PUT", "/api/v1/product/1",
 			strings.NewReader(`{"description": "Suppe", "ean": "54321"}`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		ctx = context.WithValue(ctx, "productId", "1")
 		request = request.WithContext(ctx)
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Malformed JSON (expect 400)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("PUT", "/api/v1/product/1",
 			strings.NewReader(`{"description": "Suppe", "ean": "12345679"`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		ctx = context.WithValue(ctx, "productId", "1")
 		request = request.WithContext(ctx)
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Bad type for EAN (expect 400)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("PUT", "/api/v1/product/1",
 			strings.NewReader(`{"description": "Suppe", "ean": "test"}`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		ctx = context.WithValue(ctx, "productId", "1")
 		request = request.WithContext(ctx)
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Unknown product (expect 500)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("PUT", "/api/v1/product/10",
 			strings.NewReader(`{"description": "Updated Product", "ean": "4001686323397"}`))
-		ctx := context.WithValue(request.Context(), "auth_userRole", int64(1))
+		ctx := context.WithValue(request.Context(), "auth_userRole", auth.Merchant)
 		ctx = context.WithValue(ctx, "auth_userId", uint(1))
 		ctx = context.WithValue(ctx, "productId", "10")
 		request = request.WithContext(ctx)
@@ -420,9 +401,7 @@ func TestCoalescingController_PutProduct(t *testing.T) {
 
 		productController.PutProduct(writer, request)
 
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
-		}
+		assert.Equal(t, http.StatusInternalServerError, writer.Code)
 	})
 }
 
@@ -434,16 +413,14 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 
 	t.Run("Unauthorized (expect 401)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
-		request := httptest.NewRequest("PUT", "/api/v1/product/1",
+		request := httptest.NewRequest("DELETE", "/api/v1/product/1",
 			strings.NewReader(`{"description": "Suppe", "ean": "54321"}`))
 		ctx := context.WithValue(request.Context(), "productId", "1")
 		request = request.WithContext(ctx)
 
 		productController.DeleteProduct(writer, request)
 
-		if writer.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status code %d, got %d", http.StatusUnauthorized, writer.Code)
-		}
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
 	})
 
 	t.Run("Valid delete as admin (expect 200)", func(t *testing.T) {
@@ -458,9 +435,7 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 
 		productController.DeleteProduct(writer, request)
 
-		if writer.Code != http.StatusOK {
-			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
-		}
+		assert.Equal(t, http.StatusOK, writer.Code)
 	})
 
 	t.Run("Invalid delete, non-numeric request (expect 400)", func(t *testing.T) {
@@ -473,9 +448,7 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 
 		productController.DeleteProduct(writer, request)
 
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, writer.Code)
-		}
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
 	})
 
 	t.Run("Unknown product (expect 500)", func(t *testing.T) {
@@ -490,8 +463,6 @@ func TestCoalescingController_DeleteProduct(t *testing.T) {
 
 		productController.DeleteProduct(writer, request)
 
-		if writer.Code != http.StatusInternalServerError {
-			t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, writer.Code)
-		}
+		assert.Equal(t, http.StatusInternalServerError, writer.Code)
 	})
 }
