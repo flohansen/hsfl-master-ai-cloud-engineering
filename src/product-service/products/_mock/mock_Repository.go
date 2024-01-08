@@ -181,9 +181,9 @@ func (_c *MockRepository_FindAll_Call) RunAndReturn(run func() ([]*model.Product
 	return _c
 }
 
-// FindByEan provides a mock function with given fields: id
-func (_m *MockRepository) FindByEan(id uint64) (*model.Product, error) {
-	ret := _m.Called(id)
+// FindByEan provides a mock function with given fields: ean
+func (_m *MockRepository) FindByEan(ean string) (*model.Product, error) {
+	ret := _m.Called(ean)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindByEan")
@@ -191,19 +191,19 @@ func (_m *MockRepository) FindByEan(id uint64) (*model.Product, error) {
 
 	var r0 *model.Product
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint64) (*model.Product, error)); ok {
-		return rf(id)
+	if rf, ok := ret.Get(0).(func(string) (*model.Product, error)); ok {
+		return rf(ean)
 	}
-	if rf, ok := ret.Get(0).(func(uint64) *model.Product); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(string) *model.Product); ok {
+		r0 = rf(ean)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.Product)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint64) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(ean)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -217,14 +217,14 @@ type MockRepository_FindByEan_Call struct {
 }
 
 // FindByEan is a helper method to define mock.On call
-//   - id uint64
-func (_e *MockRepository_Expecter) FindByEan(id interface{}) *MockRepository_FindByEan_Call {
-	return &MockRepository_FindByEan_Call{Call: _e.mock.On("FindByEan", id)}
+//   - ean string
+func (_e *MockRepository_Expecter) FindByEan(ean interface{}) *MockRepository_FindByEan_Call {
+	return &MockRepository_FindByEan_Call{Call: _e.mock.On("FindByEan", ean)}
 }
 
-func (_c *MockRepository_FindByEan_Call) Run(run func(id uint64)) *MockRepository_FindByEan_Call {
+func (_c *MockRepository_FindByEan_Call) Run(run func(ean string)) *MockRepository_FindByEan_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(uint64))
+		run(args[0].(string))
 	})
 	return _c
 }
@@ -234,7 +234,7 @@ func (_c *MockRepository_FindByEan_Call) Return(_a0 *model.Product, _a1 error) *
 	return _c
 }
 
-func (_c *MockRepository_FindByEan_Call) RunAndReturn(run func(uint64) (*model.Product, error)) *MockRepository_FindByEan_Call {
+func (_c *MockRepository_FindByEan_Call) RunAndReturn(run func(string) (*model.Product, error)) *MockRepository_FindByEan_Call {
 	_c.Call.Return(run)
 	return _c
 }
