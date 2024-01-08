@@ -11,8 +11,11 @@ import (
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/service"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
 	"github.com/caarlos0/env/v10"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -42,7 +45,15 @@ func main() {
 
 	healthHandler := handler.NewHealthHandler()
 
-	r := router.NewRouter(healthHandler, postHandler)
+	grpcConn, err := grpc.Dial(cfg.AuthServiceUrlGrpc, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		log.Fatalf("error while connecting to auth service: %s", err.Error())
+	}
+
+	authServiceClient := auth.NewAuthServiceClient(grpcConn)
+
+	r := router.NewRouter(healthHandler, postHandler, authServiceClient)
 
 	log.Printf("Starting HTTP server on port %s", cfg.HttpServerPort)
 

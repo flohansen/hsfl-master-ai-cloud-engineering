@@ -65,6 +65,7 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=password
       - DB_NAME=postgres
+      - AUTH_SERVICE_URL_GRPC=auth-service:50051
     depends_on:
       postgres:
         condition: service_healthy
