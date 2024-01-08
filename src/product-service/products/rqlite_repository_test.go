@@ -30,7 +30,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Create product with success", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO "+TableName).
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(product.Description, product.Ean).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -47,7 +47,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Can't create products with duplicate ean", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO "+TableName).
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(product.Description, product.Ean).
 			WillReturnError(sql.ErrNoRows)
 		mock.ExpectRollback()
@@ -64,7 +64,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO "+TableName).
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(product.Description, product.Ean).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
@@ -107,7 +107,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 	t.Run("Successfully fetch all products", func(t *testing.T) {
 
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, RQLiteTableName)).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}).
 				AddRow(products[0].Id, products[0].Description, products[0].Ean).
 				AddRow(products[1].Id, products[1].Description, products[1].Ean))
@@ -134,7 +134,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s`, RQLiteTableName)).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
 
@@ -168,7 +168,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Successfully fetch product", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}).
 				AddRow(product.Id, product.Description, product.Ean))
@@ -190,7 +190,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Fail to fetch product (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
 		mock.ExpectRollback()
@@ -207,7 +207,7 @@ func TestRQLiteRepository_FindByEan(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.ean = \?`, RQLiteTableName)).
 			WithArgs(product.Ean).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
 		mock.ExpectRollback()
@@ -242,9 +242,9 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Successfully fetch product", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}).
 				AddRow(product.Id, product.Description, product.Ean))
 		mock.ExpectCommit()
 
@@ -264,9 +264,9 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Fail to fetch product (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}))
 		mock.ExpectRollback()
 
 		_, err := rqliteRepository.FindById(product.Id)
@@ -281,9 +281,9 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.description, %[1]s.ean FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(product.Id).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "password"}))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "description", "ean"}))
 		mock.ExpectRollback()
 
 		_, err := rqliteRepository.FindById(product.Id)
@@ -317,7 +317,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Update product with success", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE `+TableName).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedProduct.Id, changedProduct.Description, changedProduct.Ean, changedProduct.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -335,7 +335,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Update product with fail (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE `+TableName).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedProduct.Id, changedProduct.Description, changedProduct.Ean, changedProduct.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectCommit()
@@ -353,7 +353,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE `+TableName).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedProduct.Id, changedProduct.Description, changedProduct.Ean, changedProduct.Id).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
@@ -389,7 +389,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Delete product with success", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(productToDelete.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -407,7 +407,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Delete product with fail (product not found)", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(productToDelete.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectCommit()
@@ -425,7 +425,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = ?`, TableName)).
+			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(productToDelete.Id).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()

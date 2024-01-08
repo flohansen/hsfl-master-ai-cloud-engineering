@@ -5,6 +5,7 @@ package products
 
 import (
 	"context"
+	_ "github.com/rqlite/gorqlite/stdlib"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/products/model"
@@ -29,7 +30,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 
 	err = createTable(rqliteRepository)
 	if err != nil {
-		return
+		t.Error(err)
 	}
 
 	t.Run("TestIntegrationRQLiteRepository_Create", func(t *testing.T) {
