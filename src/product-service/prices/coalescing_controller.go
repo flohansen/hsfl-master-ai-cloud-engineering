@@ -10,18 +10,18 @@ import (
 	"strconv"
 )
 
-type coalescingController struct {
+type CoalescingController struct {
 	priceRepository Repository
 	group           *singleflight.Group
 }
 
-func NewCoalescingController(priceRepository Repository) *coalescingController {
-	return &coalescingController{
+func NewCoalescingController(priceRepository Repository) *CoalescingController {
+	return &CoalescingController{
 		priceRepository,
 		&singleflight.Group{}}
 }
 
-func (controller *coalescingController) GetPrices(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) GetPrices(writer http.ResponseWriter, request *http.Request) {
 	msg, err, _ := controller.group.Do("get-all", func() (interface{}, error) {
 		return controller.priceRepository.FindAll()
 	})
@@ -38,7 +38,7 @@ func (controller *coalescingController) GetPrices(writer http.ResponseWriter, re
 	}
 }
 
-func (controller *coalescingController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
 	userIdAttribute := request.Context().Value("userId").(string)
 
 	msg, err, _ := controller.group.Do("get_id_"+userIdAttribute, func() (interface{}, error) {
@@ -68,7 +68,7 @@ func (controller *coalescingController) GetPricesByUser(writer http.ResponseWrit
 	}
 }
 
-func (controller *coalescingController) GetPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) GetPrice(writer http.ResponseWriter, request *http.Request) {
 	userIdAttribute := request.Context().Value("userId").(string)
 	productIdAttribute := request.Context().Value("productId").(string)
 
@@ -99,7 +99,7 @@ func (controller *coalescingController) GetPrice(writer http.ResponseWriter, req
 	}
 }
 
-func (controller *coalescingController) PostPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) PostPrice(writer http.ResponseWriter, request *http.Request) {
 	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	userId, userIdErr := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 
@@ -131,7 +131,7 @@ func (controller *coalescingController) PostPrice(writer http.ResponseWriter, re
 	}
 }
 
-func (controller *coalescingController) PutPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) PutPrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
@@ -164,7 +164,7 @@ func (controller *coalescingController) PutPrice(writer http.ResponseWriter, req
 	}
 }
 
-func (controller *coalescingController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *CoalescingController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
