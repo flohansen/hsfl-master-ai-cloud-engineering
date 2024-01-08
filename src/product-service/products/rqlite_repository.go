@@ -10,12 +10,12 @@ import (
 	"log"
 )
 
+const RQLiteTableName = "product"
+
 type RQLiteRepository struct {
 	db             *sql.DB
 	productBuilder *sqlbuilder.Struct
 }
-
-const TableName = "product"
 
 func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 	db, err := sql.Open("rqlite", connectionString)
@@ -29,7 +29,7 @@ func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 }
 
 func (r *RQLiteRepository) Create(product *model.Product) (*model.Product, error) {
-	query, args := r.productBuilder.WithoutTag("pk").InsertInto("product", product).Build()
+	query, args := r.productBuilder.WithoutTag("pk").InsertInto(RQLiteTableName, product).Build()
 
 	transaction, err := r.db.Begin()
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *RQLiteRepository) Create(product *model.Product) (*model.Product, error
 }
 
 func (r *RQLiteRepository) FindAll() ([]*model.Product, error) {
-	selectBuilder := r.productBuilder.SelectFrom(TableName)
+	selectBuilder := r.productBuilder.SelectFrom(RQLiteTableName)
 	query, _ := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -92,8 +92,8 @@ func (r *RQLiteRepository) FindAll() ([]*model.Product, error) {
 }
 
 func (r *RQLiteRepository) FindById(id uint64) (*model.Product, error) {
-	selectBuilder := r.productBuilder.SelectFrom(TableName)
-	selectBuilder.Where(selectBuilder.Equal(TableName+".id", id))
+	selectBuilder := r.productBuilder.SelectFrom(RQLiteTableName)
+	selectBuilder.Where(selectBuilder.Equal(RQLiteTableName+".id", id))
 	query, args := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -123,8 +123,8 @@ func (r *RQLiteRepository) FindById(id uint64) (*model.Product, error) {
 }
 
 func (r *RQLiteRepository) FindByEan(ean string) (*model.Product, error) {
-	selectBuilder := r.productBuilder.SelectFrom(TableName)
-	selectBuilder.Where(selectBuilder.Equal(TableName+".ean", ean))
+	selectBuilder := r.productBuilder.SelectFrom(RQLiteTableName)
+	selectBuilder.Where(selectBuilder.Equal(RQLiteTableName+".ean", ean))
 	query, args := selectBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -154,8 +154,8 @@ func (r *RQLiteRepository) FindByEan(ean string) (*model.Product, error) {
 }
 
 func (r *RQLiteRepository) Update(product *model.Product) (*model.Product, error) {
-	updateBuilder := r.productBuilder.Update(TableName, product)
-	updateBuilder.Where(updateBuilder.Equal(TableName+".id", product.Id))
+	updateBuilder := r.productBuilder.Update(RQLiteTableName, product)
+	updateBuilder.Where(updateBuilder.Equal(RQLiteTableName+".id", product.Id))
 	query, args := updateBuilder.Build()
 
 	transaction, err := r.db.Begin()
@@ -183,8 +183,8 @@ func (r *RQLiteRepository) Update(product *model.Product) (*model.Product, error
 }
 
 func (r *RQLiteRepository) Delete(product *model.Product) error {
-	deleteBuilder := r.productBuilder.DeleteFrom(TableName)
-	query, args := deleteBuilder.Where(deleteBuilder.Equal(TableName+".id", product.Id)).Build()
+	deleteBuilder := r.productBuilder.DeleteFrom(RQLiteTableName)
+	query, args := deleteBuilder.Where(deleteBuilder.Equal(RQLiteTableName+".id", product.Id)).Build()
 
 	transaction, err := r.db.Begin()
 	if err != nil {

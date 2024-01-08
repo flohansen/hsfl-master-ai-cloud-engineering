@@ -36,21 +36,6 @@ func (repo *DemoRepository) Create(price *model.Price) (*model.Price, error) {
 	return price, nil
 }
 
-func (repo *DemoRepository) Delete(price *model.Price) error {
-	key := priceEntryKey{
-		UserId:    price.UserId,
-		ProductId: price.ProductId,
-	}
-
-	_, exists := repo.prices[key]
-	if !exists {
-		return errors.New(ErrorPriceDeletion)
-	}
-
-	delete(repo.prices, key)
-	return nil
-}
-
 func (repo *DemoRepository) FindAll() ([]*model.Price, error) {
 	if repo.prices == nil {
 		return nil, errors.New(ErrorPriceList)
@@ -104,4 +89,19 @@ func (repo *DemoRepository) Update(price *model.Price) (*model.Price, error) {
 	existingPrice.Price = price.Price
 
 	return existingPrice, nil
+}
+
+func (repo *DemoRepository) Delete(price *model.Price) error {
+	key := priceEntryKey{
+		UserId:    price.UserId,
+		ProductId: price.ProductId,
+	}
+
+	_, exists := repo.prices[key]
+	if !exists {
+		return errors.New(ErrorPriceDeletion)
+	}
+
+	delete(repo.prices, key)
+	return nil
 }

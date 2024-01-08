@@ -19,12 +19,12 @@ func TestNewDefaultController(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *defaultController
+		want *DefaultController
 	}{
 		{
 			name: "Test construction with DemoRepository",
 			args: args{priceRepository: NewDemoRepository()},
-			want: &defaultController{priceRepository: NewDemoRepository()},
+			want: &DefaultController{priceRepository: NewDemoRepository()},
 		},
 	}
 	for _, tt := range tests {
@@ -92,7 +92,7 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				priceRepository: tt.fields.priceRepository,
 			}
 			controller.DeletePrice(tt.args.writer, tt.args.request)
@@ -105,7 +105,7 @@ func TestDefaultController_DeletePrice(t *testing.T) {
 
 func TestDefaultController_GetPrices(t *testing.T) {
 	t.Run("should return all prices", func(t *testing.T) {
-		controller := defaultController{
+		controller := DefaultController{
 			priceRepository: GenerateExampleDemoRepository(),
 		}
 
@@ -173,7 +173,7 @@ func TestDefaultController_GetPricesByUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				priceRepository: tt.fields.priceRepository,
 			}
 			controller.GetPricesByUser(tt.args.writer, tt.args.request)
@@ -188,7 +188,7 @@ func TestDefaultController_GetPricesByUser(t *testing.T) {
 		request := httptest.NewRequest("GET", "/api/v1/price/user/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := defaultController{
+		controller := DefaultController{
 			priceRepository: GenerateExampleDemoRepository(),
 		}
 
@@ -264,7 +264,7 @@ func TestDefaultController_GetPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				priceRepository: tt.fields.priceRepository,
 			}
 			controller.GetPrice(tt.args.writer, tt.args.request)
@@ -280,7 +280,7 @@ func TestDefaultController_GetPrice(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := defaultController{
+		controller := DefaultController{
 			priceRepository: GenerateExampleDemoRepository(),
 		}
 
@@ -398,7 +398,7 @@ func TestDefaultController_PostPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				priceRepository: tt.fields.priceRepository,
 			}
 			controller.PostPrice(tt.args.writer, tt.args.request)
@@ -518,7 +518,7 @@ func TestDefaultController_PutPrice(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			controller := defaultController{
+			controller := DefaultController{
 				priceRepository: tt.fields.priceRepository,
 			}
 			controller.PutPrice(tt.args.writer, tt.args.request)

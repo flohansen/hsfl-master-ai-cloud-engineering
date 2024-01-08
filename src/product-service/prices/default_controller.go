@@ -7,15 +7,15 @@ import (
 	"strconv"
 )
 
-type defaultController struct {
+type DefaultController struct {
 	priceRepository Repository
 }
 
-func NewDefaultController(priceRepository Repository) *defaultController {
-	return &defaultController{priceRepository}
+func NewDefaultController(priceRepository Repository) *DefaultController {
+	return &DefaultController{priceRepository}
 }
 
-func (controller *defaultController) GetPrices(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) GetPrices(writer http.ResponseWriter, request *http.Request) {
 	values, err := controller.priceRepository.FindAll()
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -29,7 +29,7 @@ func (controller *defaultController) GetPrices(writer http.ResponseWriter, reque
 	}
 }
 
-func (controller *defaultController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) GetPricesByUser(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func (controller *defaultController) GetPricesByUser(writer http.ResponseWriter,
 	}
 }
 
-func (controller *defaultController) PostPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) PostPrice(writer http.ResponseWriter, request *http.Request) {
 	productId, productIdErr := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 	userId, userIdErr := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 
@@ -73,7 +73,7 @@ func (controller *defaultController) PostPrice(writer http.ResponseWriter, reque
 	}
 }
 
-func (controller *defaultController) GetPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) GetPrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
@@ -98,7 +98,7 @@ func (controller *defaultController) GetPrice(writer http.ResponseWriter, reques
 	}
 }
 
-func (controller *defaultController) PutPrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) PutPrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 
@@ -123,7 +123,7 @@ func (controller *defaultController) PutPrice(writer http.ResponseWriter, reques
 	}
 }
 
-func (controller *defaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
+func (controller *DefaultController) DeletePrice(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	productId, err := strconv.ParseUint(request.Context().Value("productId").(string), 10, 64)
 

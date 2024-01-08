@@ -4,11 +4,11 @@ import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/m
 
 type Repository interface {
 	Create(*model.Price) (*model.Price, error)
-	Delete(*model.Price) error
 	FindAll() ([]*model.Price, error)
 	FindAllByUser(userId uint64) ([]*model.Price, error)
 	FindByIds(productId uint64, userId uint64) (*model.Price, error)
 	Update(*model.Price) (*model.Price, error)
+	Delete(*model.Price) error
 }
 
 const (

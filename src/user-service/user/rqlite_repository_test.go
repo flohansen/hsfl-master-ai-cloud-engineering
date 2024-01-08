@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/huandu/go-sqlbuilder"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
@@ -31,7 +32,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Create user with success", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO user").
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(user.Email, user.Password, user.Name, user.Role).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -48,7 +49,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Can't create user with existing mail address", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO user").
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(user.Email, user.Password, user.Name, user.Role).
 			WillReturnError(sql.ErrNoRows)
 		mock.ExpectRollback()
@@ -65,7 +66,7 @@ func TestRQLiteRepository_Create(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectExec("INSERT INTO user").
+		mock.ExpectExec("INSERT INTO "+RQLiteTableName).
 			WithArgs(user.Email, user.Password, user.Name, user.Role).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
@@ -112,7 +113,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 	t.Run("Successfully fetch all users", func(t *testing.T) {
 
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s`, RQLiteTableName)).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}).
 				AddRow(users[0].Id, users[0].Email, base64.StdEncoding.EncodeToString(users[0].Password), users[0].Name, users[0].Role).
 				AddRow(users[1].Id, users[1].Email, base64.StdEncoding.EncodeToString(users[1].Password), users[1].Name, users[1].Role))
@@ -139,7 +140,7 @@ func TestRQLiteRepository_FindAll(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s`, RQLiteTableName)).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
 
@@ -184,7 +185,7 @@ func TestRQLiteRepository_FindAllByRole(t *testing.T) {
 
 	t.Run("Successfully fetch all merchant users", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.role = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.role = \?`, RQLiteTableName)).
 			WithArgs(model.Merchant).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}).
 				AddRow(users[0].Id, users[0].Email, base64.StdEncoding.EncodeToString(users[0].Password), users[0].Name, users[0].Role).
@@ -212,11 +213,12 @@ func TestRQLiteRepository_FindAllByRole(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.role = \?`, RQLiteTableName)).
+			WithArgs(model.Merchant).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
 
-		_, err := rqliteRepository.FindAll()
+		_, err := rqliteRepository.FindAllByRole(model.Merchant)
 		if err == nil {
 			t.Error("there should be an error")
 		}
@@ -248,7 +250,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Successfully fetch user", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.id = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(user.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}).
 				AddRow(user.Id, user.Email, base64.StdEncoding.EncodeToString(user.Password), user.Name, user.Role))
@@ -270,7 +272,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Fail to fetch user (user not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.id = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(user.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}))
 		mock.ExpectRollback()
@@ -287,7 +289,7 @@ func TestRQLiteRepository_FindById(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.id = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(user.Id).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}))
 		mock.ExpectRollback()
@@ -324,7 +326,7 @@ func TestRQLiteRepository_FindByEmail(t *testing.T) {
 
 	t.Run("Successfully fetch user", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.email = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.email = \?`, RQLiteTableName)).
 			WithArgs(user.Email).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}).
 				AddRow(user.Id, user.Email, base64.StdEncoding.EncodeToString(user.Password), user.Name, user.Role))
@@ -346,7 +348,7 @@ func TestRQLiteRepository_FindByEmail(t *testing.T) {
 
 	t.Run("Fail to fetch user (user not found)", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.email = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.email = \?`, RQLiteTableName)).
 			WithArgs(user.Email).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}))
 		mock.ExpectRollback()
@@ -363,7 +365,7 @@ func TestRQLiteRepository_FindByEmail(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT user.id, user.email, user.password, user.name, user.role FROM user WHERE user.email = ?`).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT %[1]s.id, %[1]s.email, %[1]s.password, %[1]s.name, %[1]s.role FROM %[1]s WHERE %[1]s.email = \?`, RQLiteTableName)).
 			WithArgs(user.Email).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "email", "password", "name", "role"}))
 		mock.ExpectRollback()
@@ -401,7 +403,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Update user with success", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE user`).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedUser.Id, changedUser.Email, changedUser.Password, changedUser.Name, changedUser.Role, changedUser.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -419,7 +421,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Update user with fail (user not found)", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE user`).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedUser.Id, changedUser.Email, changedUser.Password, changedUser.Name, changedUser.Role, changedUser.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectCommit()
@@ -437,7 +439,7 @@ func TestRQLiteRepository_Update(t *testing.T) {
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`UPDATE user`).
+			ExpectExec(`UPDATE `+RQLiteTableName).
 			WithArgs(changedUser.Id, changedUser.Email, changedUser.Password, changedUser.Name, changedUser.Role, changedUser.Id).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
@@ -476,7 +478,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Delete user with success", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`DELETE FROM user WHERE user.id = ?`).
+			ExpectExec(`DELETE FROM user WHERE user.id = \?`).
 			WithArgs(userToDelete.Id).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -494,7 +496,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Delete user with fail (user not found)", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`DELETE FROM user WHERE user.id = ?`).
+			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(userToDelete.Id).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectCommit()
@@ -512,7 +514,7 @@ func TestRQLiteRepository_Delete(t *testing.T) {
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
 		mock.
-			ExpectExec(`DELETE FROM user WHERE user.id = ?`).
+			ExpectExec(fmt.Sprintf(`DELETE FROM %[1]s WHERE %[1]s.id = \?`, RQLiteTableName)).
 			WithArgs(userToDelete.Id).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()
