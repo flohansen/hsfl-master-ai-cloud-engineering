@@ -1,5 +1,5 @@
 # Price Whisper
-![Coverage](https://img.shields.io/badge/Coverage-78.8%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-79.1%25-brightgreen)
 ![GitHub release (by tag)](https://img.shields.io/github/v/tag/onyxmoon/hsfl-master-ai-cloud-engineering.svg?sort=semver&label=Version&color=4ccc93d)
 [![Run tests (lib folder)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-lib-folder.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-lib-folder.yml)
 [![Run tests (http proxy service)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml/badge.svg)](https://github.com/Onyxmoon/hsfl-master-ai-cloud-engineering/actions/workflows/run-tests-http-proxy-service.yml)

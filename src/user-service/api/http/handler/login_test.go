@@ -30,7 +30,7 @@ func TestLoginHandler(t *testing.T) {
 		expectedResponse string
 	}{
 		{
-			name: "Valid User",
+			name: "Valid User (expect 200)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -38,7 +38,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
 				),
 			},
@@ -46,7 +46,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid User Mail",
+			name: "Invalid User Mail (expect 500)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -54,7 +54,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authenticationy/login",
 					strings.NewReader(`{"email": "adaa.lovelace@gmail.com", "password": "123456"}`),
 				),
 			},
@@ -62,7 +62,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid Request - Empty Password",
+			name: "Invalid Request - Empty Password (expect 400)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -70,7 +70,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": ""}`),
 				),
 			},
@@ -78,7 +78,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Wrong password",
+			name: "Wrong password (expect 401)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -86,7 +86,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "98765"}`),
 				),
 			},
@@ -94,7 +94,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Malformed JSON",
+			name: "Malformed JSON (expect 400)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -102,7 +102,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"`),
 				),
 			},
@@ -110,7 +110,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Missing field",
+			name: "Missing field (expect 400)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -118,7 +118,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": "ada.lovelace@gmail.com"`),
 				),
 			},
@@ -126,7 +126,7 @@ func TestLoginHandler(t *testing.T) {
 			expectedResponse: "",
 		},
 		{
-			name: "Invalid user data, incorrect Type for Email and Password (expected String)",
+			name: "Invalid user data, incorrect Type for Email and Password (expected String) (expect 400)",
 			fields: fields{
 				loginHandler: setupLoginHandler(),
 			},
@@ -134,7 +134,7 @@ func TestLoginHandler(t *testing.T) {
 				writer: httptest.NewRecorder(),
 				request: httptest.NewRequest(
 					"POST",
-					"/api/v1/user/login",
+					"/api/v1/authentication/login",
 					strings.NewReader(`{"email": 120, "password": 120`),
 				),
 			},
@@ -167,7 +167,7 @@ func TestLoginHandler(t *testing.T) {
 	writer := httptest.NewRecorder()
 	request := httptest.NewRequest(
 		"POST",
-		"/api/v1/user/login",
+		"/api/v1/authentication/login",
 		strings.NewReader(`{"email": "ada.lovelace@gmail.com", "password": "123456"}`),
 	)
 
