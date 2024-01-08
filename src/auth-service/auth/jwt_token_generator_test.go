@@ -42,4 +42,17 @@ func TestJwtTokenGenerator(t *testing.T) {
 		assert.Equal(t, float64(123), claims["sub"])
 		assert.Equal(t, "email@example.com", claims["email"])
 	})
+
+	t.Run("validate valid token", func(t *testing.T) {
+		token, err := generator.GenerateToken(map[string]interface{}{"test": "data"})
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		claims, err := generator.ValidateToken(token)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "data", claims["test"])
+	})
 }

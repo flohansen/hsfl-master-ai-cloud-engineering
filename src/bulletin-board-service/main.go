@@ -4,41 +4,32 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/api/handler"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/api/router"
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/database"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/config"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/models"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/repository"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/bulletin-board-service/service"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func GetenvInt(key string) int {
-	value := os.Getenv(key)
-	valueInt, err := strconv.Atoi(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return valueInt
-}
-
 func main() {
-	port := os.Getenv("SERVER_PORT")
+	godotenv.Load()
 
-	psqlConfig := database.PsqlConfig{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     GetenvInt("DB_PORT"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Dbname:   os.Getenv("DB_NAME"),
+	cfg := config.Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalf("error while parsing enviroment variables: %s", err.Error())
 	}
 
-	db, err := gorm.Open(postgres.Open(psqlConfig.Dsn()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(cfg.Database.Dsn()), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}
@@ -54,9 +45,19 @@ func main() {
 
 	healthHandler := handler.NewHealthHandler()
 
-	r := router.NewRouter(healthHandler, postHandler)
+	grpcConn, err := grpc.Dial(cfg.AuthServiceUrlGrpc, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	if err != nil {
+		log.Fatalf("error while connecting to auth service: %s", err.Error())
+	}
+
+	authServiceClient := auth.NewAuthServiceClient(grpcConn)
+
+	r := router.NewRouter(healthHandler, postHandler, authServiceClient)
+
+	log.Printf("Starting HTTP server on port %s", cfg.HttpServerPort)
+
+	addr := fmt.Sprintf("0.0.0.0:%s", cfg.HttpServerPort)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatalf("error while listen and serve: %s", err.Error())
 	}
