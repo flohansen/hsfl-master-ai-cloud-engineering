@@ -5,6 +5,7 @@
     import AddEntryModal from "$lib/shopping-list/AddEntryModal.svelte";
     import ViewSelect from "$lib/shopping-list/ViewSelect.svelte";
     import BackLink from "$lib/general/BackLink.svelte";
+    import CheapestMerchantNotice from "$lib/shopping-list/CheapestMerchantNotice.svelte";
 
     interface Entry {
         productId: number,
@@ -99,7 +100,11 @@
             </div>
         </section>
 
-        <ViewSelect bind:view={view}/>
+        <CheapestMerchantNotice
+            showNotice={data.products.length > 0} />
+
+        <ViewSelect
+            bind:view={view} />
 
         <p class="text-gray-dark text-sm">Deine Einkaufsliste</p>
         <ul class="mt-4">

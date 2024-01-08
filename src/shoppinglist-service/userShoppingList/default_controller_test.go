@@ -108,7 +108,7 @@ func TestDefaultController_GetLists(t *testing.T) {
 			expectedStatus: http.StatusOK,
 		},
 		{
-			name: "Valid request as admin(expect 200)",
+			name: "Valid request as admin (expect 200)",
 			fields: fields{
 				userShoppingListRepository: setupMockListRepository(),
 			},
