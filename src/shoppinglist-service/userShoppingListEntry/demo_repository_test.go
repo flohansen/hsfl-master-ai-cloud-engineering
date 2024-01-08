@@ -45,99 +45,6 @@ func TestDemoRepository_Create(t *testing.T) {
 	})
 }
 
-func TestDemoRepository_Delete(t *testing.T) {
-	repo := NewDemoRepository()
-
-	entry := &model.UserShoppingListEntry{
-		ShoppingListId: 1,
-		ProductId:      1,
-		Count:          1,
-		Note:           "This is very important to me",
-		Checked:        false,
-	}
-
-	_, _ = repo.Create(entry)
-
-	t.Run("Delete an existing entry", func(t *testing.T) {
-		err := repo.Delete(entry)
-		if err != nil {
-			t.Error(err)
-		}
-
-		// Ensure the entry is deleted
-		_, err = repo.FindByIds(entry.ShoppingListId, entry.ProductId)
-		if err == nil {
-			t.Error("Expected the entry to be deleted")
-		}
-	})
-
-	t.Run("Attempt to delete a non-existing entry", func(t *testing.T) {
-		fakeEntry := &model.UserShoppingListEntry{
-			ShoppingListId: 2,
-			ProductId:      2,
-			Count:          2,
-			Note:           "This is very important",
-			Checked:        false,
-		}
-
-		err := repo.Delete(fakeEntry)
-		if err == nil {
-			t.Error("Expected an error for deleting a non-existing entry")
-		}
-	})
-}
-
-func TestDemoRepository_Update(t *testing.T) {
-	repo := NewDemoRepository()
-
-	entry := &model.UserShoppingListEntry{
-		ShoppingListId: 1,
-		ProductId:      1,
-		Count:          3,
-		Note:           "I really want this",
-		Checked:        true,
-	}
-
-	_, _ = repo.Create(entry)
-
-	t.Run("Update an existing entry", func(t *testing.T) {
-		updatedEntry, err := repo.Update(entry)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if updatedEntry.Count != entry.Count {
-			t.Errorf("Expected updated shopping list entry to have count %d, but got count %d",
-				entry.Count, updatedEntry.Count)
-		}
-
-		if updatedEntry.Note != entry.Note {
-			t.Errorf("Expected updated shopping list entry to have note %s, but got note %s",
-				entry.Note, updatedEntry.Note)
-		}
-
-		if updatedEntry.Checked != entry.Checked {
-			t.Errorf("Expected updated shopping list entry to have checked value %t, but got note %t",
-				entry.Checked, updatedEntry.Checked)
-		}
-	})
-
-	t.Run("Attempt to update a non-existing entry", func(t *testing.T) {
-		fakeEntry := &model.UserShoppingListEntry{
-			ShoppingListId: 2,
-			ProductId:      2,
-			Count:          2,
-			Note:           "This is very important",
-			Checked:        false,
-		}
-
-		_, err := repo.Update(fakeEntry)
-		if err == nil {
-			t.Error("Expected an error for updating a non-existing entry")
-		}
-	})
-}
-
 func TestDemoRepository_FindAll(t *testing.T) {
 	repo := NewDemoRepository()
 
@@ -227,54 +134,95 @@ func TestDemoRepository_FindByIds(t *testing.T) {
 	})
 }
 
-func TestDemoRepository_FindAllById(t *testing.T) {
+func TestDemoRepository_Update(t *testing.T) {
 	repo := NewDemoRepository()
 
-	entries := []*model.UserShoppingListEntry{
-		{
-			ShoppingListId: 1,
-			ProductId:      1,
-			Count:          2,
-			Note:           "This is very important",
-			Checked:        false,
-		},
-		{
-			ShoppingListId: 1,
-			ProductId:      2,
-			Count:          5,
-			Note:           "I really want this",
-			Checked:        false,
-		},
-		{
-			ShoppingListId: 2,
-			ProductId:      1,
-			Count:          9,
-			Note:           "Please get this",
-			Checked:        false,
-		},
+	entry := &model.UserShoppingListEntry{
+		ShoppingListId: 1,
+		ProductId:      1,
+		Count:          3,
+		Note:           "I really want this",
+		Checked:        true,
 	}
 
-	for _, entry := range entries {
-		_, _ = repo.Create(entry)
-	}
+	_, _ = repo.Create(entry)
 
-	t.Run("Find all entries for a product with existing entries", func(t *testing.T) {
-		productId := uint64(1)
-		foundEntries, err := repo.FindAll(productId)
+	t.Run("Update an existing entry", func(t *testing.T) {
+		updatedEntry, err := repo.Update(entry)
 		if err != nil {
 			t.Error(err)
 		}
 
-		if len(foundEntries) != 2 {
-			t.Errorf("Expected 2 entries for product %d, but got %d", productId, len(foundEntries))
+		if updatedEntry.Count != entry.Count {
+			t.Errorf("Expected updated shopping list entry to have count %d, but got count %d",
+				entry.Count, updatedEntry.Count)
+		}
+
+		if updatedEntry.Note != entry.Note {
+			t.Errorf("Expected updated shopping list entry to have note %s, but got note %s",
+				entry.Note, updatedEntry.Note)
+		}
+
+		if updatedEntry.Checked != entry.Checked {
+			t.Errorf("Expected updated shopping list entry to have checked value %t, but got note %t",
+				entry.Checked, updatedEntry.Checked)
 		}
 	})
 
-	t.Run("Find all entries for a product with no existing entries", func(t *testing.T) {
-		productId := uint64(3)
-		_, err := repo.FindAll(productId)
+	t.Run("Attempt to update a non-existing entry", func(t *testing.T) {
+		fakeEntry := &model.UserShoppingListEntry{
+			ShoppingListId: 2,
+			ProductId:      2,
+			Count:          2,
+			Note:           "This is very important",
+			Checked:        false,
+		}
+
+		_, err := repo.Update(fakeEntry)
 		if err == nil {
-			t.Error("Expected an error for product with no entries")
+			t.Error("Expected an error for updating a non-existing entry")
+		}
+	})
+}
+
+func TestDemoRepository_Delete(t *testing.T) {
+	repo := NewDemoRepository()
+
+	entry := &model.UserShoppingListEntry{
+		ShoppingListId: 1,
+		ProductId:      1,
+		Count:          1,
+		Note:           "This is very important to me",
+		Checked:        false,
+	}
+
+	_, _ = repo.Create(entry)
+
+	t.Run("Delete an existing entry", func(t *testing.T) {
+		err := repo.Delete(entry)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// Ensure the entry is deleted
+		_, err = repo.FindByIds(entry.ShoppingListId, entry.ProductId)
+		if err == nil {
+			t.Error("Expected the entry to be deleted")
+		}
+	})
+
+	t.Run("Attempt to delete a non-existing entry", func(t *testing.T) {
+		fakeEntry := &model.UserShoppingListEntry{
+			ShoppingListId: 2,
+			ProductId:      2,
+			Count:          2,
+			Note:           "This is very important",
+			Checked:        false,
+		}
+
+		err := repo.Delete(fakeEntry)
+		if err == nil {
+			t.Error("Expected an error for deleting a non-existing entry")
 		}
 	})
 }

@@ -4,10 +4,10 @@ import "hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/use
 
 type Repository interface {
 	Create(*model.UserShoppingListEntry) (*model.UserShoppingListEntry, error)
-	Delete(*model.UserShoppingListEntry) error
-	Update(list *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error)
 	FindByIds(shoppingListId uint64, productId uint64) (*model.UserShoppingListEntry, error)
 	FindAll(shoppingListId uint64) ([]*model.UserShoppingListEntry, error)
+	Update(list *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error)
+	Delete(*model.UserShoppingListEntry) error
 }
 
 const (
