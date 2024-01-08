@@ -5,8 +5,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"strconv"
 
 	proto "github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
 	"github.com/joho/godotenv"
@@ -21,16 +19,6 @@ import (
 	"github.com/caarlos0/env/v10"
 	"google.golang.org/grpc"
 )
-
-func GetenvInt(key string) int {
-	value := os.Getenv(key)
-	valueInt, err := strconv.Atoi(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return valueInt
-}
 
 func main() {
 	godotenv.Load()

@@ -6,6 +6,8 @@ toolchain go1.21.3
 
 require (
 	github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib v0.0.0-20240107124310-33ab8ade2c9b
+	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/mock v0.4.0
 	gorm.io/driver/postgres v1.5.4

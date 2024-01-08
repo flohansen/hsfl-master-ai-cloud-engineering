@@ -26,7 +26,8 @@ Config values are set via environment variables. The following environment varia
 
 | Name | Description |
 | ---- | ----------- |
-| PORT | Port the auth service listens on |
+| HTTP_SERVER_PORT | Port the http server listens on |
+| GRPC_SERVER_PORT | Port the grpc server listens on |
 | JWT_PRIVATE_KEY | Path to ECDSA private key used to sign JWTs |
 | DB_HOST | Hostname of PostgreSQL database |
 | DB_PORT | Port of PostgreSQL database |
