@@ -29,7 +29,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 
 	err = createTable(rqliteRepository)
 	if err != nil {
-		return
+		t.Error(err)
 	}
 
 	t.Run("TestIntegrationRQLiteRepository_Create", func(t *testing.T) {
