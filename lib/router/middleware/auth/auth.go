@@ -9,6 +9,8 @@ import (
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/rpc/auth"
 )
 
+type UserIdKey string
+
 func CreateAuthMiddleware(authServiceClient auth.AuthServiceClient) router.MiddlewareFunc {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +39,10 @@ func CreateAuthMiddleware(authServiceClient auth.AuthServiceClient) router.Middl
 				return
 			}
 
+			var user_id_key UserIdKey = "user_id"
+
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, "user_id", resp.User.Id)
+			ctx = context.WithValue(ctx, user_id_key, resp.User.Id)
 			r = r.WithContext(ctx)
 
 			next(w, r)
