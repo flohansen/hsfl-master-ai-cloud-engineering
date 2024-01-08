@@ -8,15 +8,15 @@ import (
 	"strconv"
 )
 
-type defaultController struct {
+type DefaultController struct {
 	userShoppingListRepository Repository
 }
 
-func NewDefaultController(userShoppingListRepository Repository) *defaultController {
-	return &defaultController{userShoppingListRepository}
+func NewDefaultController(userShoppingListRepository Repository) *DefaultController {
+	return &DefaultController{userShoppingListRepository}
 }
 
-func (controller defaultController) GetLists(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) GetLists(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -44,7 +44,7 @@ func (controller defaultController) GetLists(writer http.ResponseWriter, request
 	}
 }
 
-func (controller defaultController) GetList(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) GetList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -80,7 +80,7 @@ func (controller defaultController) GetList(writer http.ResponseWriter, request 
 	}
 }
 
-func (controller defaultController) PutList(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) PutList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -117,7 +117,7 @@ func (controller defaultController) PutList(writer http.ResponseWriter, request 
 	}
 }
 
-func (controller defaultController) PostList(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) PostList(writer http.ResponseWriter, request *http.Request) {
 	userId, err := strconv.ParseUint(request.Context().Value("userId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -148,7 +148,7 @@ func (controller defaultController) PostList(writer http.ResponseWriter, request
 	}
 }
 
-func (controller defaultController) DeleteList(writer http.ResponseWriter, request *http.Request) {
+func (controller DefaultController) DeleteList(writer http.ResponseWriter, request *http.Request) {
 	listId, err := strconv.ParseUint(request.Context().Value("listId").(string), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)

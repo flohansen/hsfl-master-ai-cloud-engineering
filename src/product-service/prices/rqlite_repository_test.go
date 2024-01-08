@@ -178,7 +178,7 @@ func TestRQLiteRepository_FindAllByUser(t *testing.T) {
 	t.Run("Successfully fetch all prices from user", func(t *testing.T) {
 
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.userId = ?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.userId = \?`, RQLiteTableName)).
 			WithArgs(userIdMerchantA).
 			WillReturnRows(sqlmock.NewRows([]string{"userId", "productId", "price"}).
 				AddRow(pricesMerchantA[0].UserId, pricesMerchantA[0].ProductId, pricesMerchantA[0].Price).
@@ -206,7 +206,7 @@ func TestRQLiteRepository_FindAllByUser(t *testing.T) {
 
 	t.Run("Database error should return error", func(t *testing.T) {
 		mock.ExpectBegin()
-		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.userId = ?`, RQLiteTableName)).
+		mock.ExpectQuery(fmt.Sprintf(`SELECT (.+) FROM %[1]s WHERE %[1]s.userId = \?`, RQLiteTableName)).
 			WithArgs(userIdMerchantA).
 			WillReturnError(errors.New("database has failed"))
 		mock.ExpectRollback()

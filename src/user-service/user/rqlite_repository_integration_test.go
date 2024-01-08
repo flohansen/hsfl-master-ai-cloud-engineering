@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	CreateTableQuery  = "CREATE TABLE user ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );"
-	CleanUpTableQuery = "DELETE FROM user;"
+	CreateTableQuery  = "CREATE TABLE " + RQLiteTableName + " ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );"
+	CleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
 	TestPort          = "7001"
 )
 
