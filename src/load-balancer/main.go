@@ -4,37 +4,32 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/round_robin.go"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/balancer"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/config"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/docker_helper"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/model"
+	"github.com/caarlos0/env/v10"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/joho/godotenv"
 )
 
-func GetenvInt(key string) int {
-	value := os.Getenv(key)
-	valueInt, err := strconv.Atoi(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return valueInt
-}
-
 func main() {
-	port := os.Getenv("SERVER_PORT")
-	image := os.Getenv("IMAGE")
-	networkName := os.Getenv("NETWORK_NAME")
-	replicas := GetenvInt("REPLICAS")
-	healthCheckInterval := GetenvInt("HEALTH_CHECK_INTERVAL_SECONDS")
+	godotenv.Load()
+
+	cfg := config.Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalf("error while parsing enviroment variables: %s", err.Error())
+	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -42,29 +37,30 @@ func main() {
 	}
 	defer cli.Close()
 
-	err = docker_helper.CreateNetworkIfNotExists(cli, networkName)
+	err = docker_helper.CreateNetworkIfNotExists(cli, cfg.NetworkName)
 	if err != nil {
 		panic(err)
 	}
 
-	reader, err := cli.ImagePull(context.Background(), image, types.ImagePullOptions{})
+	reader, err := cli.ImagePull(context.Background(), cfg.Image, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
 	io.Copy(os.Stdout, reader)
 
-	containerIds := docker_helper.StartContainers(cli, image, networkName, replicas)
+	containerIds := docker_helper.StartContainers(cli, cfg.Image, cfg.NetworkName, cfg.Replicas)
 	defer docker_helper.RemoveContainers(cli, containerIds)
 
-	targets, err := GetTargets(cli, networkName, containerIds)
+	targets, err := GetTargets(cli, cfg.NetworkName, containerIds)
 	if err != nil {
 		panic(err)
 	}
 
-	loadBalancer := balancer.NewBalancer(round_robin.New(), targets, healthCheckInterval)
+	loadBalancer := balancer.NewBalancer(round_robin.New(), targets, cfg.HealthCheckIntervalSeconds)
 
+	log.Println("Starting HTTP server on port", cfg.HttpServerPort)
 	server := &http.Server{
-		Addr:    fmt.Sprintf("0.0.0.0:%s", port),
+		Addr:    fmt.Sprintf("0.0.0.0:%s", cfg.HttpServerPort),
 		Handler: loadBalancer,
 	}
 
