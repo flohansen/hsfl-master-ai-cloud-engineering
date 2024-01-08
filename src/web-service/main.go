@@ -4,11 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/config"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	port := os.Getenv("SERVER_PORT")
+	godotenv.Load()
+
+	cfg := config.Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalf("error while parsing enviroment variables: %s", err.Error())
+	}
 
 	dir := http.Dir("./public")
 
@@ -18,7 +27,9 @@ func main() {
 
 	mux.Handle("/", fs)
 
-	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	log.Printf("Starting HTTP server on port %s", cfg.HttpServerPort)
+
+	addr := fmt.Sprintf("0.0.0.0:%s", cfg.HttpServerPort)
 	err := http.ListenAndServe(addr, mux)
 	if err != nil {
 		log.Fatal(err)
