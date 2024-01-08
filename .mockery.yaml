@@ -20,3 +20,9 @@ packages:
       dir: "./src/shoppinglist-service/userShoppingListEntry/_mock"
     interfaces:
       Controller:
+  hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user:
+    config:
+      dir: "./src/user-service/user/_mock"
+    interfaces:
+      Controller:
+      Repository:
