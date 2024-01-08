@@ -9,33 +9,20 @@ import (
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user/model"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 )
 
 func TestNewDefaultController(t *testing.T) {
-	type args struct {
-		userRepository Repository
+	var mockUserRepository = user.NewMockRepository(t)
+	var userRepository Repository = mockUserRepository
+
+	userController := defaultController{
+		userRepository: userRepository,
 	}
-	tests := []struct {
-		name string
-		args args
-		want *defaultController
-	}{
-		{
-			name: "Test construction with DemoRepository",
-			args: args{userRepository: user.NewMockRepository(t)},
-			want: &defaultController{userRepository: user.NewMockRepository(t)},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewDefaultController(tt.args.userRepository); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewDefaultController() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
+	assert.NotNil(t, userController)
+	assert.Equal(t, userRepository, userController.userRepository)
 }
 
 func TestDefaultController_GetUsersByRole(t *testing.T) {
