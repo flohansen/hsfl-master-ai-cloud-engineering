@@ -3,10 +3,12 @@ package prices
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/sync/singleflight"
+	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/auth"
+	prices "hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/_mock"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/model"
-	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/product-service/prices/utils"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,22 +16,40 @@ import (
 )
 
 func TestNewCoalescingController(t *testing.T) {
-	demoRepo := NewDemoRepository()
-	controller := NewCoalescingController(demoRepo)
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
 
-	assert.NotNil(t, controller)
-	assert.Equal(t, demoRepo, controller.priceRepository)
-	assert.IsType(t, &singleflight.Group{}, controller.group)
+	priceController := NewCoalescingController(priceRepository)
+
+	assert.NotNil(t, priceController)
+	assert.Equal(t, priceRepository, priceController.priceRepository)
+	assert.IsType(t, &singleflight.Group{}, priceController.group)
 }
 
 func TestCoalescingController_GetPrices(t *testing.T) {
-	t.Run("should return all prices", func(t *testing.T) {
-		controller := NewCoalescingController(GenerateExampleDemoRepository())
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
 
+	priceController := NewCoalescingController(priceRepository)
+
+	t.Run("Successfully return all prices (expect 200 and prices)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/price", nil)
 
-		controller.GetPrices(writer, request)
+		mockPriceRepository.EXPECT().FindAll().Return([]*model.Price{
+			{
+				UserId:    1,
+				ProductId: 1,
+				Price:     2.99,
+			},
+			{
+				UserId:    2,
+				ProductId: 2,
+				Price:     5.99,
+			},
+		}, nil)
+
+		priceController.GetPrices(writer, request)
 
 		res := writer.Result()
 		var response []model.Price
@@ -48,9 +68,7 @@ func TestCoalescingController_GetPrices(t *testing.T) {
 				"application/json", writer.Header().Get("Content-Type"))
 		}
 
-		prices := GenerateExamplePriceSlice()
-
-		if len(response) != len(prices) {
+		if len(response) != 2 {
 			t.Errorf("Expected count of prices is %d, got %d",
 				2, len(response))
 		}
@@ -58,56 +76,50 @@ func TestCoalescingController_GetPrices(t *testing.T) {
 }
 
 func TestCoalescingController_GetPricesByUser(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Bad non-numeric request (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest("GET", "/api/v1/price/user/abc", nil)
-					request = request.WithContext(context.WithValue(request.Context(), "userId", "abc"))
-					return request
-				}(),
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.GetPricesByUser(tt.args.writer, tt.args.request)
-			if tt.args.writer.Code != tt.wantStatus {
-				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
-			}
-		})
-	}
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
+
+	priceController := NewCoalescingController(priceRepository)
+
+	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/price/user/abc", nil)
+		ctx := context.WithValue(request.Context(), "userId", "abc")
+		request = request.WithContext(ctx)
+
+		priceController.GetPricesByUser(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Unknown userId (expect 404)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/price/user/10", nil)
+		ctx := context.WithValue(request.Context(), "userId", "10")
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().FindAllByUser(uint64(10)).Return(nil, errors.New(ErrorPriceNotFound))
+
+		priceController.GetPricesByUser(writer, request)
+
+		assert.Equal(t, http.StatusNotFound, writer.Code)
+	})
 
 	t.Run("Successfully get existing prices by user (expect 200 and prices)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
 		request := httptest.NewRequest("GET", "/api/v1/price/user/1", nil)
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := NewCoalescingController(GenerateExampleDemoRepository())
+		mockPriceRepository.EXPECT().FindAllByUser(uint64(1)).Return([]*model.Price{
+			{
+				UserId:    1,
+				ProductId: 1,
+				Price:     2.99,
+			},
+		}, nil)
 
-		// when
-		controller.GetPricesByUser(writer, request)
+		priceController.GetPricesByUser(writer, request)
 
-		// then
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
 		}
@@ -138,51 +150,36 @@ func TestCoalescingController_GetPricesByUser(t *testing.T) {
 }
 
 func TestCoalescingController_GetPrice(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantStatus int
-	}{
-		{
-			name: "Bad non-numeric request (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer:  httptest.NewRecorder(),
-				request: utils.CreatePriceRequestWithValues("GET", "/api/v1/price/abc/abc", "abc", "abc"),
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Unknown price (expect 404)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer:  httptest.NewRecorder(),
-				request: utils.CreatePriceRequestWithValues("GET", "/api/v1/price/42/42", "42", "42"),
-			},
-			wantStatus: http.StatusNotFound,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.GetPrice(tt.args.writer, tt.args.request)
-			if tt.args.writer.Code != tt.wantStatus {
-				t.Errorf("Expected status code %d, got %d", tt.wantStatus, tt.args.writer.Code)
-			}
-		})
-	}
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
+
+	priceController := NewCoalescingController(priceRepository)
+
+	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/price/abc/abc", nil)
+		ctx := context.WithValue(request.Context(), "userId", "abc")
+		ctx = context.WithValue(ctx, "productId", "abc")
+		request = request.WithContext(ctx)
+
+		priceController.GetPrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Unknown price (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("GET", "/api/v1/price/10/10", nil)
+		ctx := context.WithValue(request.Context(), "userId", "10")
+		ctx = context.WithValue(ctx, "productId", "10")
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().FindByIds(uint64(10), uint64(10)).Return(nil, errors.New(ErrorPriceNotFound))
+
+		priceController.GetPrice(writer, request)
+
+		assert.Equal(t, http.StatusNotFound, writer.Code)
+	})
 
 	t.Run("Successfully get existing price (expect 200 and price)", func(t *testing.T) {
 		writer := httptest.NewRecorder()
@@ -190,8 +187,13 @@ func TestCoalescingController_GetPrice(t *testing.T) {
 		request = request.WithContext(context.WithValue(request.Context(), "productId", "1"))
 		request = request.WithContext(context.WithValue(request.Context(), "userId", "1"))
 
-		controller := NewCoalescingController(GenerateExampleDemoRepository())
-		controller.GetPrice(writer, request)
+		mockPriceRepository.EXPECT().FindByIds(uint64(1), uint64(1)).Return(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+			Price:     2.99,
+		}, nil)
+
+		priceController.GetPrice(writer, request)
 
 		if writer.Code != http.StatusOK {
 			t.Errorf("Expected status code %d, got %d", http.StatusOK, writer.Code)
@@ -225,330 +227,312 @@ func TestCoalescingController_GetPrice(t *testing.T) {
 }
 
 func TestCoalescingController_PostPrice(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		expectedStatus int
-	}{
-		{
-			name: "Unauthorized (expect 401)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"POST",
-						"/api/v1/price/4/4",
-						strings.NewReader(`{"price": 0.99}`))
-					ctx := context.WithValue(request.Context(), "productId", "4")
-					ctx = context.WithValue(ctx, "userId", "4")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "Valid create (expect 200)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"POST",
-						"/api/v1/price/4/4",
-						strings.NewReader(`{"price": 0.99}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
-					ctx = context.WithValue(ctx, "productId", "4")
-					ctx = context.WithValue(ctx, "userId", "4")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name: "Malformed JSON (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"POST",
-						"/api/v1/price/4/4",
-						strings.NewReader(`{"price": 0.99`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
-					ctx = context.WithValue(ctx, "productId", "4")
-					ctx = context.WithValue(ctx, "userId", "4")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Invalid price, incorrect Type for price (expect 400))",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"POST",
-						"/api/v1/price/4/4",
-						strings.NewReader(`{"price": "0.99"}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(4))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(1))
-					ctx = context.WithValue(ctx, "productId", "4")
-					ctx = context.WithValue(ctx, "userId", "4")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-	}
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.PostPrice(tt.args.writer, tt.args.request)
+	priceController := NewCoalescingController(priceRepository)
 
-			if tt.args.writer.Code != tt.expectedStatus {
-				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
-			}
-		})
-	}
+	t.Run("Unauthorized (expect 401)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/price/4/4",
+			strings.NewReader(`{"price": 0.99}`))
+		ctx := context.WithValue(request.Context(), "userId", "4")
+		ctx = context.WithValue(ctx, "productId", "4")
+		request = request.WithContext(ctx)
+
+		priceController.PostPrice(writer, request)
+
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
+	})
+
+	t.Run("Valid create (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/price/4/4",
+			strings.NewReader(`{"price": 0.99}`))
+		ctx := context.WithValue(request.Context(), "userId", "4")
+		ctx = context.WithValue(ctx, "productId", "4")
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		ctx = context.WithValue(ctx, "auth_userId", uint64(4))
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Create(&model.Price{
+			UserId:    4,
+			ProductId: 4,
+			Price:     0.99,
+		}).Return(&model.Price{
+			UserId:    4,
+			ProductId: 4,
+			Price:     0.99,
+		}, nil)
+
+		priceController.PostPrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Valid create as admin (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/price/4/4",
+			strings.NewReader(`{"price": 0.99}`))
+		ctx := context.WithValue(request.Context(), "userId", "4")
+		ctx = context.WithValue(ctx, "productId", "4")
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Administrator)
+		ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Create(&model.Price{
+			UserId:    4,
+			ProductId: 4,
+			Price:     0.99,
+		}).Return(&model.Price{
+			UserId:    4,
+			ProductId: 4,
+			Price:     0.99,
+		}, nil)
+
+		priceController.PostPrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Malformed JSON (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/price/4/4",
+			strings.NewReader(`{"price": 0.99`))
+		ctx := context.WithValue(request.Context(), "userId", "4")
+		ctx = context.WithValue(ctx, "productId", "4")
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		ctx = context.WithValue(ctx, "auth_userId", uint64(4))
+		request = request.WithContext(ctx)
+
+		priceController.PostPrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Invalid price (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("POST", "/api/v1/price/4/4",
+			strings.NewReader(`{"price": "0.99"}`))
+		ctx := context.WithValue(request.Context(), "userId", "4")
+		ctx = context.WithValue(ctx, "productId", "4")
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		ctx = context.WithValue(ctx, "auth_userId", uint64(4))
+		request = request.WithContext(ctx)
+
+		priceController.PostPrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
 }
 
 func TestCoalescingController_PutPrice(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
 
-	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		expectedStatus int
-	}{
-		{
-			name: "Unauthorized (expect 401)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"PUT",
-						"/api/v1/price/1/1",
-						strings.NewReader(`{"price": 0.99}`))
-					ctx := context.WithValue(request.Context(), "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "Valid update (expect 200)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"PUT",
-						"/api/v1/price/1/1",
-						strings.NewReader(`{"price": 10.99}`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name: "Malformed JSON (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"PUT",
-						"/api/v1/price/2/2",
-						strings.NewReader(`{"price": 6.50`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Incorrect Type for Price (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"PUT",
-						"/api/v1/price/2/2",
-						strings.NewReader(`{"price": "Wrong Type"`))
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-	}
+	priceController := NewCoalescingController(priceRepository)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.PutPrice(tt.args.writer, tt.args.request)
+	t.Run("Unauthorized (expect 401)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/1/1",
+			strings.NewReader(`{"price": 10.99}`))
+		ctx := context.WithValue(request.Context(), "userId", "1")
+		ctx = context.WithValue(ctx, "productId", "1")
+		request = request.WithContext(ctx)
 
-			if tt.args.writer.Code != tt.expectedStatus {
-				t.Errorf("Expected status code %d, but got %d", tt.expectedStatus, tt.args.writer.Code)
-			}
-		})
-	}
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
+	})
+
+	t.Run("Valid update (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/1/1",
+			strings.NewReader(`{"price": 10.99}`))
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "userId", "1")
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Update(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+			Price:     10.99,
+		}).Return(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+			Price:     10.99,
+		}, nil)
+
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Valid update as admin (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/1/1",
+			strings.NewReader(`{"price": 10.99}`))
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(10))
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Administrator)
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "userId", "1")
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Update(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+			Price:     10.99,
+		}).Return(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+			Price:     10.99,
+		}, nil)
+
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Malformed JSON (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/1/1",
+			strings.NewReader(`{"price": 10.99`))
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "userId", "1")
+		request = request.WithContext(ctx)
+
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Incorrect Type for Price (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/1/1",
+			strings.NewReader(`{"price": "10.99"}`))
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "userId", "1")
+		request = request.WithContext(ctx)
+
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Unknown price (expect 500)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("PUT", "/api/v1/price/10/10",
+			strings.NewReader(`{"price": 10.99}`))
+		ctx := context.WithValue(request.Context(), "auth_userId", uint64(10))
+		ctx = context.WithValue(ctx, "auth_userRole", int64(2))
+		ctx = context.WithValue(ctx, "productId", "10")
+		ctx = context.WithValue(ctx, "userId", "10")
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Update(&model.Price{
+			UserId:    10,
+			ProductId: 10,
+			Price:     10.99,
+		}).Return(nil, errors.New(ErrorPriceNotFound))
+
+		priceController.PutPrice(writer, request)
+
+		assert.Equal(t, http.StatusInternalServerError, writer.Code)
+	})
 }
 
 func TestCoalescingController_DeletePrice(t *testing.T) {
-	type fields struct {
-		priceRepository Repository
-	}
-	type args struct {
-		writer  *httptest.ResponseRecorder
-		request *http.Request
-	}
-	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		expectedStatus int
-	}{
-		{
-			name: "Unauthorized (expect 401)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"DELETE",
-						"/api/v1/price/1/1",
-						nil)
-					ctx := context.WithValue(request.Context(), "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "Valid delete (expect 200)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"DELETE",
-						"/api/v1/price/1/1",
-						nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "1")
-					ctx = context.WithValue(ctx, "userId", "1")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name: "Bad non-numeric request (expect 400)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"DELETE",
-						"/api/v1/price/abc/abc",
-						nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "abc")
-					ctx = context.WithValue(ctx, "userId", "abc")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Unknown product to delete (expect 500)",
-			fields: fields{
-				priceRepository: GenerateExampleDemoRepository(),
-			},
-			args: args{
-				writer: httptest.NewRecorder(),
-				request: func() *http.Request {
-					var request = httptest.NewRequest(
-						"DELETE",
-						"/api/v1/price/42/42",
-						nil)
-					ctx := context.WithValue(request.Context(), "auth_userId", uint64(1))
-					ctx = context.WithValue(ctx, "auth_userRole", int64(2))
-					ctx = context.WithValue(ctx, "productId", "42")
-					ctx = context.WithValue(ctx, "userId", "42")
-					return request.WithContext(ctx)
-				}(),
-			},
-			expectedStatus: http.StatusInternalServerError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller := NewCoalescingController(tt.fields.priceRepository)
-			controller.DeletePrice(tt.args.writer, tt.args.request)
-			if tt.args.writer.Code != tt.expectedStatus {
-				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, tt.args.writer.Code)
-			}
-		})
-	}
+	var mockPriceRepository = prices.NewMockRepository(t)
+	var priceRepository Repository = mockPriceRepository
+
+	priceController := NewCoalescingController(priceRepository)
+
+	t.Run("Unauthorized (expect 401)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("DELETE", "/api/v1/price/1/1", nil)
+		ctx := context.WithValue(request.Context(), "userId", "1")
+		ctx = context.WithValue(ctx, "productId", "1")
+		request = request.WithContext(ctx)
+
+		priceController.DeletePrice(writer, request)
+
+		assert.Equal(t, http.StatusUnauthorized, writer.Code)
+	})
+
+	t.Run("Valid delete (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("DELETE", "/api/v1/price/1/1", nil)
+		ctx := context.WithValue(request.Context(), "userId", "1")
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Delete(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+		}).Return(nil)
+
+		priceController.DeletePrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Valid delete as admin (expect 200)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("DELETE", "/api/v1/price/1/1", nil)
+		ctx := context.WithValue(request.Context(), "userId", "1")
+		ctx = context.WithValue(ctx, "productId", "1")
+		ctx = context.WithValue(ctx, "auth_userId", uint64(2))
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Administrator)
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Delete(&model.Price{
+			UserId:    1,
+			ProductId: 1,
+		}).Return(nil)
+
+		priceController.DeletePrice(writer, request)
+
+		assert.Equal(t, http.StatusOK, writer.Code)
+	})
+
+	t.Run("Bad non-numeric request (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("DELETE", "/api/v1/price/abc/abc", nil)
+		ctx := context.WithValue(request.Context(), "userId", "abc")
+		ctx = context.WithValue(ctx, "productId", "abc")
+		ctx = context.WithValue(ctx, "auth_userId", uint64(1))
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		request = request.WithContext(ctx)
+
+		priceController.DeletePrice(writer, request)
+
+		assert.Equal(t, http.StatusBadRequest, writer.Code)
+	})
+
+	t.Run("Unknown price (expect 400)", func(t *testing.T) {
+		writer := httptest.NewRecorder()
+		request := httptest.NewRequest("DELETE", "/api/v1/price/10/10", nil)
+		ctx := context.WithValue(request.Context(), "userId", "10")
+		ctx = context.WithValue(ctx, "productId", "10")
+		ctx = context.WithValue(ctx, "auth_userId", uint64(10))
+		ctx = context.WithValue(ctx, "auth_userRole", auth.Merchant)
+		request = request.WithContext(ctx)
+
+		mockPriceRepository.EXPECT().Delete(&model.Price{
+			UserId:    10,
+			ProductId: 10,
+		}).Return(errors.New(ErrorPriceNotFound))
+
+		priceController.DeletePrice(writer, request)
+
+		assert.Equal(t, http.StatusInternalServerError, writer.Code)
+	})
 }
