@@ -23,11 +23,11 @@ import (
 func main() {
 	var configuration = loadConfiguration()
 
-	var shoppingListRepository userShoppingList.Repository = userShoppingList.NewDemoRepository()
+	var shoppingListRepository userShoppingList.Repository = userShoppingList.NewRQLiteRepository(configuration.Database.GetConnectionString())
 	var shoppingListController userShoppingList.Controller = userShoppingList.NewDefaultController(shoppingListRepository)
 	createContentForShoppingLists(shoppingListRepository)
 
-	var shoppingListEntryRepository userShoppingListEntry.Repository = userShoppingListEntry.NewDemoRepository()
+	var shoppingListEntryRepository userShoppingListEntry.Repository = userShoppingListEntry.NewRQLiteRepository(configuration.Database.GetConnectionString())
 	var shoppingListEntryController userShoppingListEntry.Controller = userShoppingListEntry.NewDefaultController(shoppingListEntryRepository, shoppingListRepository)
 	createContentForShoppingListEntries(shoppingListEntryRepository)
 

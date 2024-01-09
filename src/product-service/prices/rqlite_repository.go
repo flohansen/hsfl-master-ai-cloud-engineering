@@ -10,7 +10,11 @@ import (
 	"log"
 )
 
-const RQLiteTableName = "price"
+const (
+	RQLiteTableName         = "price"
+	RQLiteCreateTableQuery  = "CREATE TABLE IF NOT EXISTS " + RQLiteTableName + " ( userId BIGINT, productId BIGINT, price FLOAT NOT NULL, PRIMARY KEY (userId, productId) );"
+	RQLiteCleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
+)
 
 type RQLiteRepository struct {
 	db           *sql.DB
@@ -22,10 +26,18 @@ func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 	if err != nil {
 		panic(fmt.Sprintf("Can't open repository: %v", err))
 	}
-	return &RQLiteRepository{
+
+	repository := &RQLiteRepository{
 		db:           db,
 		priceBuilder: sqlbuilder.NewStruct(new(model.Price)).For(sqlbuilder.SQLite),
 	}
+
+	err = repository.createTable()
+	if err != nil {
+		panic(err)
+	}
+
+	return repository
 }
 
 func (r *RQLiteRepository) Create(price *model.Price) (*model.Price, error) {
@@ -211,5 +223,31 @@ func (r *RQLiteRepository) Delete(price *model.Price) error {
 		return errors.New(ErrorPriceDeletion)
 	}
 
+	return nil
+}
+
+func (r *RQLiteRepository) createTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCreateTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RQLiteRepository) cleanTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCleanUpTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
 	return nil
 }

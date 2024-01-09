@@ -11,7 +11,11 @@ import (
 	"log"
 )
 
-const RQLiteTableName = "user"
+const (
+	RQLiteTableName         = "user"
+	RQLiteCreateTableQuery  = "CREATE TABLE IF NOT EXISTS " + RQLiteTableName + " ( id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE, password BLOB, name VARCHAR(255), role BIGINT );"
+	RQLiteCleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
+)
 
 type RQLiteRepository struct {
 	db          *sql.DB
@@ -23,10 +27,18 @@ func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 	if err != nil {
 		panic(fmt.Sprintf("Can't open repository: %v", err))
 	}
-	return &RQLiteRepository{
+
+	repository := &RQLiteRepository{
 		db:          db,
 		userBuilder: sqlbuilder.NewStruct(new(model.User)).For(sqlbuilder.SQLite),
 	}
+
+	err = repository.createTable()
+	if err != nil {
+		panic(err)
+	}
+
+	return repository
 }
 
 func (r *RQLiteRepository) Create(user *model.User) (*model.User, error) {
@@ -256,4 +268,30 @@ func decodePassword(users ...*model.User) {
 		decodedPassword, _ := base64.StdEncoding.DecodeString(string(user.Password))
 		user.Password = decodedPassword
 	}
+}
+
+func (r *RQLiteRepository) createTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCreateTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RQLiteRepository) cleanTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCleanUpTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
