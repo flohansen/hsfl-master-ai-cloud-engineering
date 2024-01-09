@@ -1,9 +1,11 @@
 package loadtest
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
-	"net/http"
+	"net"
+	"net/url"
 	"sync"
 	"time"
 
@@ -12,11 +14,6 @@ import (
 
 type LoadTest struct {
 	config *config.LoadTestConfig
-}
-
-type responseTimeEntry struct {
-	total time.Duration
-	count int
 }
 
 const MinimumSleepDuration = 10 * time.Millisecond
@@ -30,20 +27,28 @@ func NewLoadTest(config *config.LoadTestConfig) *LoadTest {
 }
 
 func (l *LoadTest) Run() {
-	rampupDuration := time.Duration(l.config.RampUp) * time.Second
-	duration := time.Duration(l.config.Duration) * time.Second
-	overallDuration := rampupDuration + duration
-	targets := l.config.Targets
+	log.Println("Starting load test")
+
+	targets, err := ParseURLs(l.config.Targets)
+
+	if err != nil {
+		log.Println("Error parsing targets: ", err)
+		return
+	}
+
+	if len(targets) == 0 {
+		log.Println("No targets to test")
+		return
+	}
+
 	users := l.config.Users
+	specs := l.config.Specs
+	startSleep := l.config.StartSleep
 
-	log.Println("Starting load test with ", users, " users for ", overallDuration, " seconds")
-
-	httpClient := &http.Client{}
+	targetSleep := specs[0].TargetSleep
+	overallDuration := CalculateOverallDuration(specs)
 
 	var wg sync.WaitGroup
-
-	responseTimesByTarget := make(map[string]responseTimeEntry)
-	var mu sync.Mutex
 
 	for i := 0; i < users; i++ {
 		wg.Add(1)
@@ -54,79 +59,132 @@ func (l *LoadTest) Run() {
 			stop := time.NewTimer(overallDuration)
 			start := time.Now()
 
+			lastStage := 0
+			lastSleepDuration := startSleep
+			targetSleepDuration := targetSleep
+
 			for {
 				select {
 				case <-stop.C:
 					return
 				default:
-					target := PickRandomTarget(targets)
+					t := time.Now()
 
-					go func() {
-						err := MakeRequest(httpClient, target, id, responseTimesByTarget, &mu)
-						if err != nil {
-							log.Println("Error making request: ", err)
-						}
-					}()
+					currentStage := GetCurrentStage(specs, time.Since(start))
+					elapsedStageTime := CalculateStageElapsedTime(specs, currentStage, time.Since(start))
+					currentStageDuration := specs[currentStage].Duration
 
-					elapsed := time.Since(start)
-					sleepDuration := CalculateSleepDuration(elapsed, rampupDuration)
-					time.Sleep(sleepDuration)
+					if currentStage != lastStage {
+						lastSleepDuration = targetSleepDuration
+						targetSleepDuration = specs[currentStage].TargetSleep
+
+						lastStage = currentStage
+					}
+
+					sleepDuration := CalculateSleepDuration(elapsedStageTime, currentStageDuration, lastSleepDuration, targetSleepDuration)
+
+					url := PickRandomURL(targets)
+
+					code, err := DoRequest(url)
+
+					log.Println("User ", id, " made request with status code ", code, " and error ", err)
+
+					time.Sleep(sleepDuration - time.Since(t))
 				}
 			}
 		}(i)
 	}
 
 	wg.Wait()
-
-	log.Println("Finished load test")
-
-	PrintAverageResponseTimes(responseTimesByTarget)
 }
 
-func CalculateSleepDuration(elapsed time.Duration, rampupDuration time.Duration) time.Duration {
-	if elapsed < rampupDuration {
-		// linearly decrease sleep duration from maximum duration to minimumSleepDuration
-		remainingPortion := 1.0 - (float64(elapsed) / float64(rampupDuration))
-		return MinimumSleepDuration + time.Duration(remainingPortion*DecreaseInterval)
-	} else {
-		return MinimumSleepDuration
+func ParseURLs(urls []string) ([]*url.URL, error) {
+	var parsedURLs []*url.URL
+
+	for _, u := range urls {
+		parsedURL, err := url.Parse(u)
+
+		if err != nil {
+			return nil, err
+		}
+
+		parsedURLs = append(parsedURLs, parsedURL)
 	}
+
+	return parsedURLs, nil
 }
 
-func PrintAverageResponseTimes(responseTimesByTarget map[string]responseTimeEntry) {
-	for target, data := range responseTimesByTarget {
-		average := data.total / time.Duration(data.count)
-		log.Println("Average response time for ", target, " was ", average)
-	}
-}
-
-func PickRandomTarget(targets []string) string {
-	return targets[rand.Intn(len(targets))]
-}
-
-func MakeRequest(httpClient *http.Client, target string, id int, responseTimesByTarget map[string]responseTimeEntry, mu *sync.Mutex) error {
-	requestStart := time.Now()
-
-	resp, err := httpClient.Get(target)
+func DoRequest(target *url.URL) (uint64, error) {
+	conn, err := net.Dial("tcp", target.Host)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	resp.Body.Close()
+	defer conn.Close()
 
-	log.Println("User ", id, " made request to ", target, " with status code ", resp.StatusCode)
+	_, err = fmt.Fprintf(conn, "GET %s HTTP/1.1\r\nHost: go\r\n\r\n", target.Path)
+	if err != nil {
+		return 0, err
+	}
 
-	UpdateResponseTimes(target, requestStart, responseTimesByTarget, mu)
+	code := uint64(200)
 
-	return nil
+	return code, nil
 }
 
-func UpdateResponseTimes(target string, requestStart time.Time, responseTimesByTarget map[string]responseTimeEntry, mu *sync.Mutex) {
-	mu.Lock()
-	defer mu.Unlock()
+func GetCurrentStage(specs []config.Spec, elapsed time.Duration) int {
+	var stage int
+	var stageDuration time.Duration
 
-	data := responseTimesByTarget[target]
-	data.total += time.Since(requestStart)
-	data.count++
-	responseTimesByTarget[target] = data
+	for i, spec := range specs {
+		stageDuration += spec.Duration
+
+		if elapsed < stageDuration {
+			stage = i
+			break
+		}
+	}
+	return stage
+}
+
+func CalculateOverallDuration(specs []config.Spec) time.Duration {
+	var duration time.Duration
+
+	for _, spec := range specs {
+		duration += spec.Duration
+	}
+
+	return duration
+}
+
+func CalculateStageElapsedTime(specs []config.Spec, currentStage int, elapsed time.Duration) time.Duration {
+	var stageDuration time.Duration
+
+	if currentStage == 0 {
+		return elapsed
+	}
+
+	for i := 0; i < currentStage; i++ {
+		stageDuration += specs[i].Duration
+	}
+
+	return elapsed - stageDuration
+}
+
+func CalculateSleepDuration(elapsed time.Duration, duration time.Duration, lastSleep time.Duration, targetSleep time.Duration) time.Duration {
+	if lastSleep < targetSleep {
+		interval := float64(targetSleep - lastSleep)
+		remainingPortion := (float64(elapsed) / float64(duration))
+
+		return lastSleep + time.Duration(remainingPortion*interval)
+	} else {
+		interval := float64(lastSleep - targetSleep)
+		remainingPortion := 1.0 - (float64(elapsed) / float64(duration))
+
+		return targetSleep + time.Duration(remainingPortion*interval)
+	}
+}
+
+func PickRandomURL(targets []*url.URL) *url.URL {
+	return targets[rand.Intn(len(targets))]
 }
