@@ -4,15 +4,15 @@
   "specs": [
     {
       "sleep": "100ms",
-      "duration": "10s"
+      "duration": "30s"
     },
     {
       "sleep": "100ms",
-      "duration": "10s"
+      "duration": "30s"
     },
     {
       "sleep": "1000ms",
-      "duration": "10s"
+      "duration": "30s"
     }
   ],
   "targets": [
