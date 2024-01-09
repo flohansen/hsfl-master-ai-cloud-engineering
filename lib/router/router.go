@@ -2,10 +2,8 @@ package router
 
 import (
 	"context"
-	"github.com/golang-jwt/jwt"
 	"net/http"
 	"regexp"
-	"strings"
 )
 
 type route struct {
@@ -96,33 +94,4 @@ func (router *Router) PUT(pattern string, handler http.HandlerFunc, middlewares 
 
 func (router *Router) DELETE(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
 	router.addRoute(http.MethodDelete, pattern, handler, middlewares...)
-}
-
-func JWTAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		splitToken := strings.Split(authHeader, "Bearer ")
-		if len(splitToken) != 2 {
-			http.Error(w, "Invalid bearer token", http.StatusUnauthorized)
-			return
-		}
-		jwtToken := splitToken[1]
-
-		// Verifying JWT token
-		token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
-			return []byte("publicKeyHere"), nil
-		})
-
-		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-
-		if !token.Valid {
-			http.Error(w, "Token is not valid", http.StatusUnauthorized)
-			return
-		}
-
-		next(w, r)
-	}
 }
