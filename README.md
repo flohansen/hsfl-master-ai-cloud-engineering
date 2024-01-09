@@ -14,15 +14,16 @@ BoardHub is an interactive platform that allows users to create and manage bulle
 
 BoardHub may be used to create a bulletin board for a university. Students can post about events, clubs, or other topics. The university can also post about important news, announcements or job opportunities and internships. Students can search for project partners or find supervisors for their thesis.
 
-### Business
+### Businesses
 
 BoardHub can provide an ideal platform for businesses. Whether it's posting important updates, celebrating employee achievements or sharing project opportunities, BoardHub provides a space for company-wide communication.
 
-### Privat Community
+### Private Community
 
 For private communities like neighborhood associations or clubs, BoardHub serves as a common space to share updates, arrange events or discuss community concerns. Residents can post about local issues, lost or found items, neighborhood recommendations or any general inquiries.
 
 ## Authors
+
 Florian Arens\
 florian.arens@stud.hs-flensburg.de\
 Hochschule Flensburg
