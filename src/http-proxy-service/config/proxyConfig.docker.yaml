@@ -22,6 +22,6 @@ proxy:
     - name: Product Service (Prices)
       context: /api/v1/price
       target: http://products:3003/api/v1/price
-    - name: Load Balancer Web Service
+    - name: Web Service
       context: /
-      target: http://lbweb:3000
+      target: http://web:3000

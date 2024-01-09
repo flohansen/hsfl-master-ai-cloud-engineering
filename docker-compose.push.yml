@@ -17,7 +17,6 @@ services:
       dockerfile: ./src/web-service/Dockerfile
     image: onyxmoon/pw-web-service:${RELEASE_VERSION:-latest}
 
-
   products:
     build:
       context: ./
