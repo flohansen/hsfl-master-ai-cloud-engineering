@@ -17,7 +17,7 @@ import (
 const (
 	CreateTableQuery  = "CREATE TABLE " + RQLiteTableName + " ( userId BIGINT, productId BIGINT, price FLOAT NOT NULL, PRIMARY KEY (userId, productId) );"
 	CleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
-	TestPort          = "7003"
+	TestPort          = "7013"
 )
 
 func TestIntegrationRQLiteRepository(t *testing.T) {
