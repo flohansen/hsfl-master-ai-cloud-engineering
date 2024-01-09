@@ -8,9 +8,11 @@ Config values are set via environment variables. The following environment varia
 
 | Name | Description |
 | ---- | ----------- |
-| PORT | Port the bulletin board service listens on |
+| HTTP_SERVER_PORT | Port the http server listens on |
 | DB_HOST | Hostname of PostgreSQL database |
 | DB_PORT | Port of PostgreSQL database |
 | DB_USER | Username of PostgreSQL database |
 | DB_PASSWORD | Password of PostgreSQL database |
 | DB_NAME | Name of PostgreSQL database |
+
+You may also use a `.env` file to set environment variables. See `.env.example` for an example.

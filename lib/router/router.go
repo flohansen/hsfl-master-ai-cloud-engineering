@@ -13,6 +13,8 @@ type route struct {
 	params  []string
 }
 
+type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
+
 type Router struct {
 	routes []route
 }
@@ -52,7 +54,7 @@ func createRequestContext(r *http.Request, paramKeys []string, paramValues []str
 	return r.WithContext(ctx)
 }
 
-func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc) {
+func (router *Router) addRoute(method string, pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
 	paramMatcher := regexp.MustCompile(":([a-zA-Z]+)")
 	paramMatches := paramMatcher.FindAllStringSubmatch(pattern, -1)
 
@@ -66,6 +68,10 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 		}
 	}
 
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+
 	router.routes = append(router.routes, route{
 		method:  method,
 		pattern: regexp.MustCompile("^" + pattern + "$"),
@@ -74,18 +80,18 @@ func (router *Router) addRoute(method string, pattern string, handler http.Handl
 	})
 }
 
-func (router *Router) GET(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodGet, pattern, handler)
+func (router *Router) GET(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodGet, pattern, handler, middlewares...)
 }
 
-func (router *Router) POST(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPost, pattern, handler)
+func (router *Router) POST(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodPost, pattern, handler, middlewares...)
 }
 
-func (router *Router) PUT(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodPut, pattern, handler)
+func (router *Router) PUT(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodPut, pattern, handler, middlewares...)
 }
 
-func (router *Router) DELETE(pattern string, handler http.HandlerFunc) {
-	router.addRoute(http.MethodDelete, pattern, handler)
+func (router *Router) DELETE(pattern string, handler http.HandlerFunc, middlewares ...MiddlewareFunc) {
+	router.addRoute(http.MethodDelete, pattern, handler, middlewares...)
 }

@@ -2,27 +2,31 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/api-gateway/config"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/api-gateway/handler"
+	"github.com/caarlos0/env/v10"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	port := os.Getenv("SERVER_PORT")
+	godotenv.Load()
 
-	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
-	bulletinBoardServiceURL := os.Getenv("BULLETIN_BOARD_SERVICE_URL")
-	feedServiceURL := os.Getenv("FEED_SERVICE_URL")
-	webServiceURL := os.Getenv("WEB_SERVICE_URL")
+	cfg := config.Config{}
+
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalf("error while parsing enviroment variables: %s", err.Error())
+	}
 
 	// Configuration for the Reverse Proxy
 	config := handler.ReverseProxyConfig{
 		Services: []handler.Service{
-			{Name: "frontend", ContextPath: "/", TargetURL: webServiceURL},
-			{Name: "auth", ContextPath: "/auth", TargetURL: authServiceURL},
-			{Name: "bulletin-board", ContextPath: "/bulletin-board", TargetURL: bulletinBoardServiceURL},
-			{Name: "feed", ContextPath: "/feed", TargetURL: feedServiceURL},
+			{Name: "frontend", ContextPath: "/", TargetURL: cfg.WebServiceUrl},
+			{Name: "auth", ContextPath: "/auth", TargetURL: cfg.AuthServiceUrl},
+			{Name: "bulletin-board", ContextPath: "/bulletin-board", TargetURL: cfg.BulletinBoardServiceUrl},
+			{Name: "feed", ContextPath: "/feed", TargetURL: cfg.FeedServiceUrl},
 		},
 	}
 
@@ -33,7 +37,8 @@ func main() {
 	http.Handle("/", reverseProxy)
 
 	// Start the Reverse Proxy
-	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	log.Printf("Starting HTTP server on port %s", cfg.HttpServerPort)
+	addr := fmt.Sprintf("0.0.0.0:%s", cfg.HttpServerPort)
 	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

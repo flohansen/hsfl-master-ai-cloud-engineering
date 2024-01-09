@@ -4,7 +4,9 @@ go 1.21.2
 
 require (
 	github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib v0.0.0-20231018171957-e544728abe7f
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/jinzhu/gorm v1.9.16
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
 )
 

@@ -3,7 +3,9 @@ module github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer
 go 1.21.2
 
 require (
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/docker/docker v24.0.7+incompatible
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
 )
 
