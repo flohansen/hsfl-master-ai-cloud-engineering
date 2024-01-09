@@ -45,7 +45,7 @@ func (l *LoadTest) Run() {
 	specs := l.config.Specs
 	startSleep := l.config.StartSleep
 
-	targetSleep := specs[0].Sleep
+	targetSleep := specs[0].TargetSleep
 	overallDuration := CalculateOverallDuration(specs)
 
 	var wg sync.WaitGroup
@@ -76,7 +76,7 @@ func (l *LoadTest) Run() {
 
 					if currentStage != lastStage {
 						lastSleepDuration = targetSleepDuration
-						targetSleepDuration = specs[currentStage].Sleep
+						targetSleepDuration = specs[currentStage].TargetSleep
 
 						lastStage = currentStage
 					}

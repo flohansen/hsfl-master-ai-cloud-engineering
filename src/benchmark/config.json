@@ -3,15 +3,15 @@
   "startSleep": "1000ms",
   "specs": [
     {
-      "sleep": "100ms",
+      "targetSleep": "100ms",
       "duration": "30s"
     },
     {
-      "sleep": "100ms",
+      "targetSleep": "100ms",
       "duration": "30s"
     },
     {
-      "sleep": "1000ms",
+      "targetSleep": "1000ms",
       "duration": "30s"
     }
   ],

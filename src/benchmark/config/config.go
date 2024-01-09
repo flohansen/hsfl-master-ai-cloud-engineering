@@ -17,10 +17,10 @@ type LoadTestConfig struct {
 }
 
 type Spec struct {
-	Sleep       time.Duration `json:"-"`
-	SleepStr    string        `json:"sleep"`
-	Duration    time.Duration `json:"-"`
-	DurationStr string        `json:"duration"`
+	TargetSleep    time.Duration `json:"-"`
+	TargetSleepStr string        `json:"targetSleep"`
+	Duration       time.Duration `json:"-"`
+	DurationStr    string        `json:"duration"`
 }
 
 func LoadConfig(path string) (*LoadTestConfig, error) {
@@ -49,7 +49,7 @@ func LoadConfig(path string) (*LoadTestConfig, error) {
 		return nil, fmt.Errorf("invalid startSleep: %w", err)
 	}
 	for i, spec := range config.Specs {
-		spec.Sleep, err = time.ParseDuration(spec.SleepStr)
+		spec.TargetSleep, err = time.ParseDuration(spec.TargetSleepStr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid spec index %d: %w", i, err)
 		}
