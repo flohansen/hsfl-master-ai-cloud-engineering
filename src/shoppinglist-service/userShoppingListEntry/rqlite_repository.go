@@ -5,11 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/huandu/go-sqlbuilder"
+	_ "github.com/rqlite/gorqlite/stdlib"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
 	"log"
 )
 
-const RQLiteTableName = "shoppinglist_entry"
+const (
+	RQLiteTableName         = "shoppinglist_entry"
+	RQLiteCreateTableQuery  = "CREATE TABLE IF NOT EXISTS " + RQLiteTableName + " ( shoppingListId BIGINT, productId BIGINT, count INTEGER NOT NULL, note TEXT, checked BOOLEAN NOT NULL, PRIMARY KEY (shoppingListId, productId) );"
+	RQLiteCleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
+)
 
 type RQLiteRepository struct {
 	db           *sql.DB
@@ -21,10 +26,18 @@ func NewRQLiteRepository(connectionString string) *RQLiteRepository {
 	if err != nil {
 		panic(fmt.Sprintf("Can't open repository: %v", err))
 	}
-	return &RQLiteRepository{
+
+	repository := &RQLiteRepository{
 		db:           db,
 		entryBuilder: sqlbuilder.NewStruct(new(model.UserShoppingListEntry)).For(sqlbuilder.SQLite),
 	}
+
+	err = repository.createTable()
+	if err != nil {
+		panic(err)
+	}
+
+	return repository
 }
 
 func (r *RQLiteRepository) Create(entry *model.UserShoppingListEntry) (*model.UserShoppingListEntry, error) {
@@ -175,5 +188,31 @@ func (r *RQLiteRepository) Delete(entry *model.UserShoppingListEntry) error {
 		return errors.New(ErrorEntryDeletion)
 	}
 
+	return nil
+}
+
+func (r *RQLiteRepository) createTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCreateTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RQLiteRepository) cleanTable() error {
+	transaction, err := r.db.Begin()
+	_, err = transaction.Exec(RQLiteCleanUpTableQuery)
+	if err != nil {
+		return err
+	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
 	return nil
 }
