@@ -14,7 +14,7 @@ BoardHub is an interactive platform that allows users to create and manage bulle
 
 BoardHub may be used to create a bulletin board for a university. Students can post about events, clubs, or other topics. The university can also post about important news, announcements or job opportunities and internships. Students can search for project partners or find supervisors for their thesis.
 
-### Businesses
+### Business
 
 BoardHub can provide an ideal platform for businesses. Whether it's posting important updates, celebrating employee achievements or sharing project opportunities, BoardHub provides a space for company-wide communication.
 
