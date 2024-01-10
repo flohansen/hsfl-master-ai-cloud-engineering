@@ -2,7 +2,7 @@
 
 This Go application is used to load test the API. A config file is used to specify the number of users, the duration of the test and the endpoints to test. The application will then send requests to the specified endpoints for the specified duration.
 
-## Usage
+## Run
 
 ```bash
 go run main.go -config <path-to-config-file>
