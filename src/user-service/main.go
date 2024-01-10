@@ -29,7 +29,7 @@ import (
 func main() {
 	var configuration = loadConfiguration()
 
-	var usersRepository user.Repository = user.NewRQLiteRepository(configuration.Database.GetConnectionString())
+	var usersRepository user.Repository = user.NewDemoRepository()
 	usersRepository = createMockRepository(usersRepository)
 	var usersController user.Controller = user.NewDefaultController(usersRepository)
 
