@@ -8,7 +8,7 @@ services:
     volumes:
       - ./src/http-proxy-service/config:/config
     ports:
-      - 8080:8080
+      - "80:8080"
     depends_on:
       - web
     networks:
@@ -17,8 +17,6 @@ services:
 
   web:
     image: onyxmoon/pw-web-service:latest
-    ports:
-      - 3000:3000
     depends_on:
       - products
       - shoppinglists
@@ -30,9 +28,6 @@ services:
     image: onyxmoon/pw-product-service:latest
     env_file:
       - ./src/product-service/.env
-    ports:
-      - 3003:3003
-      - 50053:50053
     networks:
       - internal
     depends_on:
@@ -43,9 +38,6 @@ services:
     image: onyxmoon/pw-user-service:latest
     env_file:
       - ./src/user-service/.env
-    ports:
-      - 3001:3001
-      - 50051:50051
     volumes:
       - ./src/user-service/privateKey.pem:/privateKey.pem
     networks:
@@ -58,8 +50,6 @@ services:
     image: onyxmoon/pw-shoppinglist-service:latest
     env_file:
       - ./src/shoppinglist-service/.env
-    ports:
-      - 3002:3002
     networks:
       - internal
     depends_on:
@@ -68,8 +58,8 @@ services:
 
   database:
     image: rqlite/rqlite:8.15.0
-    ports:
-      - "4001:4001"
+    volumes:
+      - ./var/rqlite:/rqlite/file
     command: [ "-node-id", "1", "-auth", "/run/secrets/config.json", "-http-adv-addr", "database:4001" ]
     configs:
       - source: database
