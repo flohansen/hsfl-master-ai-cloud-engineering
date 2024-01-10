@@ -58,6 +58,7 @@ jobs:
           fail_ci_if_error: false
   build-and-push-image:
     name: Build and push api-gateway image
+    needs: test
     runs-on: ubuntu-latest
 
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
