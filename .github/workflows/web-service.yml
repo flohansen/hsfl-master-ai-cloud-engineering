@@ -59,7 +59,9 @@ jobs:
           fail_ci_if_error: false
   build-frontend:
     name: Build Vite frontend
+    needs: test
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
