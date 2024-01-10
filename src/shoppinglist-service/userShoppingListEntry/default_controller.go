@@ -41,12 +41,12 @@ func (controller *DefaultController) GetEntries(writer http.ResponseWriter, requ
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 	}
 
-	values, err := controller.userShoppingListEntryRepository.FindAll(listId)
-
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
 
 	if authUserId == list.UserId || authUserRole == auth.Administrator {
+		values, err := controller.userShoppingListEntryRepository.FindAll(listId)
+
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusNotFound)
 		}
@@ -80,12 +80,12 @@ func (controller *DefaultController) GetEntry(writer http.ResponseWriter, reques
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 	}
 
-	value, err := controller.userShoppingListEntryRepository.FindByIds(listId, productId)
-
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
 
 	if authUserId == list.UserId || authUserRole == auth.Administrator {
+		value, err := controller.userShoppingListEntryRepository.FindByIds(listId, productId)
+
 		if err != nil {
 			if err.Error() == ErrorEntryNotFound {
 				http.Error(writer, err.Error(), http.StatusNotFound)
