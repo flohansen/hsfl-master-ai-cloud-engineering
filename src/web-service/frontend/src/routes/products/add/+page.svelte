@@ -46,7 +46,7 @@
         const requestOptions = {
             method: method,
             headers: { 'Authorization': `Bearer ${token}` },
-            body: `{"description": "${productDescription}", "ean": ${productEan}}`,
+            body: `{"description": "${productDescription}", "ean": "${productEan}"}`,
         };
 
         fetch(apiUrl, requestOptions)
