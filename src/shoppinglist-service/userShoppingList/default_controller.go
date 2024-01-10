@@ -26,9 +26,9 @@ func (controller DefaultController) GetLists(writer http.ResponseWriter, request
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
 
-	values, err := controller.userShoppingListRepository.FindAllById(userId)
-
 	if authUserId == userId || authUserRole == auth.Administrator {
+		values, err := controller.userShoppingListRepository.FindAllById(userId)
+
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 		}
