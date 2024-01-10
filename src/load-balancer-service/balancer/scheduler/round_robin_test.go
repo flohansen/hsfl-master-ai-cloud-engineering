@@ -12,7 +12,7 @@ func TestRoundRobinScheduler(t *testing.T) {
 	endpoint1 := &endpoint.Endpoint{}
 	endpoint2 := &endpoint.Endpoint{}
 	endpoint3 := &endpoint.Endpoint{}
-	endpoints := []*endpoint.Endpoint{endpoint1, endpoint2}
+	endpoints := []*endpoint.Endpoint{endpoint1, endpoint2, endpoint3}
 
 	// Create a new LeastConnections testScheduler
 	var testScheduler *Scheduler = NewRoundRobin(endpoints)
