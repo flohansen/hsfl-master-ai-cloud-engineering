@@ -17,11 +17,13 @@ packages:
       dir: "./src/shoppinglist-service/userShoppingList/_mock"
     interfaces:
       Controller:
+      Repository:
   hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry:
     config:
       dir: "./src/shoppinglist-service/userShoppingListEntry/_mock"
     interfaces:
       Controller:
+      Repository:
   hsfl.de/group6/hsfl-master-ai-cloud-engineering/user-service/user:
     config:
       dir: "./src/user-service/user/_mock"
