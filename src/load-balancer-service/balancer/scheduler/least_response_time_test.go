@@ -8,22 +8,18 @@ import (
 )
 
 func TestLeastResponseTimeScheduler(t *testing.T) {
-	// Mock endpoints for testing
 	endpoint1 := &endpoint.Endpoint{}
 	endpoint2 := &endpoint.Endpoint{}
 	endpoints := []*endpoint.Endpoint{endpoint1, endpoint2}
 
-	// Create a new LeastConnections testScheduler
-	var testScheduler *Scheduler = NewLeastResponseTime(endpoints)
+	var testScheduler = NewLeastResponseTime(endpoints)
 
-	// Test SetEndpoints method
 	t.Run(("Test SetEndpoints method"), func(t *testing.T) {
 		newEndpoints := []*endpoint.Endpoint{endpoint1, endpoint2}
 		(*testScheduler).SetEndpoints(endpoints)
 		assert.Equal(t, newEndpoints, (*testScheduler).(*leastResponseTime).endpoints, "SetEndpoints method not working as expected")
 	})
 
-	// Test Next method
 	t.Run(("Test next Method"), func(t *testing.T) {
 		nextEndpoint, err := (*testScheduler).Next()
 		assert.NoError(t, err, "Unexpected error in Next method")

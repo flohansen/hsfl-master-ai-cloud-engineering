@@ -8,23 +8,19 @@ import (
 
 func TestRoundRobinScheduler(t *testing.T) {
 
-	// Mock endpoints for testing
 	endpoint1 := &endpoint.Endpoint{}
 	endpoint2 := &endpoint.Endpoint{}
 	endpoint3 := &endpoint.Endpoint{}
 	endpoints := []*endpoint.Endpoint{endpoint1, endpoint2, endpoint3}
 
-	// Create a new LeastConnections testScheduler
-	var testScheduler *Scheduler = NewRoundRobin(endpoints)
+	var testScheduler = NewRoundRobin(endpoints)
 
-	// Test SetEndpoints method
 	t.Run(("Test SetEndpoints method"), func(t *testing.T) {
 		newEndpoints := []*endpoint.Endpoint{endpoint1, endpoint2, endpoint3}
 		(*testScheduler).SetEndpoints(endpoints)
 		assert.Equal(t, newEndpoints, (*testScheduler).(*roundRobin).endpoints, "SetEndpoints method not working as expected")
 	})
 
-	// Test Next method
 	t.Run(("Test next Method"), func(t *testing.T) {
 		nextEndpoint, err := (*testScheduler).Next()
 		assert.NoError(t, err, "Unexpected error in Next method")
