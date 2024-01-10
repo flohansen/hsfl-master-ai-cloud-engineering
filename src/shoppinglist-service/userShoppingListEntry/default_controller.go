@@ -2,7 +2,6 @@ package userShoppingListEntry
 
 import (
 	"encoding/json"
-	"fmt"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/lib/router/middleware/auth"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingList"
 	"hsfl.de/group6/hsfl-master-ai-cloud-engineering/shoppinglist-service/userShoppingListEntry/model"
@@ -83,8 +82,6 @@ func (controller *DefaultController) GetEntry(writer http.ResponseWriter, reques
 
 	authUserId, _ := request.Context().Value("auth_userId").(uint64)
 	authUserRole, _ := request.Context().Value("auth_userRole").(int64)
-
-	fmt.Print(authUserRole)
 
 	if authUserId == list.UserId || authUserRole == auth.Administrator {
 		value, err := controller.userShoppingListEntryRepository.FindByIds(listId, productId)
