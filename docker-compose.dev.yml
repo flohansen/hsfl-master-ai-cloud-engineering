@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   proxy:
     build:
@@ -5,59 +7,90 @@ services:
       dockerfile: ./src/http-proxy-service/Dockerfile
     environment:
       - PROXY_CONFIG_PATH=./config/proxyConfig.docker.yaml
+    volumes:
+      - ./src/http-proxy-service/config:/config
     ports:
-      - 8080:8080
+      - "8080:8080"
     depends_on:
-      - lbweb
-    networks:
-      - dev-network
+      - web
 
-  lbweb:
+  web:
     build:
       context: ./
-      dockerfile: ./src/load-balancer-service/Dockerfile
-    environment:
-      - LOAD_BALANCER_CONFIG_PATH=./config/config.web-service.dev.yaml
+      dockerfile: ./src/web-service/Dockerfile
     ports:
-      - 3000:3000
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "3000:3000"
     depends_on:
       - products
       - shoppinglists
       - users
-    networks:
-      - dev-network
 
   products:
     build:
       context: ./
       dockerfile: ./src/product-service/Dockerfile
     ports:
-      - 3003:3003
-      - 50053:50053
-    networks:
-      - dev-network
+      - "3003:3003"
+      - "50053:50053"
+    env_file:
+      - ./src/product-service/.env
+    depends_on:
+      database:
+        condition: service_healthy
 
   users:
     build:
       context: ./
       dockerfile: ./src/user-service/Dockerfile
     ports:
-      - 3001:3001
-      - 50051:50051
-    networks:
-      - dev-network
+      - "3001:3001"
+      - "50051:50051"
+    env_file:
+      - ./src/user-service/.env
+    volumes:
+      - ./src/user-service/privateKey.pem:/privateKey.pem
+    depends_on:
+      database:
+        condition: service_healthy
 
   shoppinglists:
     build:
       context: ./
       dockerfile: ./src/shoppinglist-service/Dockerfile
     ports:
-      - 3002:3002
-    networks:
-      - dev-network
+      - "3002:3002"
+    env_file:
+      - ./src/shoppinglist-service/.env
+    depends_on:
+      database:
+        condition: service_healthy
 
-networks:
-  dev-network:
-    name: dev-network
+  database:
+    image: rqlite/rqlite:8.15.0
+    ports:
+      - "4001:4001"
+    command: ["-node-id", "1", "-auth", "/run/secrets/config.json", "-http-adv-addr", "database:4001"]
+    configs:
+      - source: database
+        target: config.json
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:4001/readyz || exit 1"]
+      interval: 5s
+      retries: 5
+      start_period: 30s
+      start_interval: 1s
+
+configs:
+  database:
+    content: |
+      [
+        {
+          "username": "user",
+          "password": "password",
+          "perms": [ "all" ]
+        },
+        {
+          "username": "*",
+          "perms": ["ready"]
+        }
+      ]

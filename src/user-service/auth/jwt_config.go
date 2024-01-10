@@ -8,7 +8,7 @@ import (
 )
 
 type JwtConfig struct {
-	PrivateKey string `yaml:"privateKey" env:"PRIVATE_KEY"`
+	PrivateKey string `yaml:"privateKey" env:"PRIVATE_KEY,notEmpty"`
 }
 
 func (config JwtConfig) ReadPrivateKey() (any, error) {

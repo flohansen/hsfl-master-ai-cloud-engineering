@@ -156,7 +156,7 @@ func createDemoUserSlice() []*model.User {
 			Email:    "info-aldi@gmail.com",
 			Password: hashedPassword,
 			Name:     "Aldi",
-			Role:     model.Administrator,
+			Role:     model.Merchant,
 		},
 		{
 			Id:       3,

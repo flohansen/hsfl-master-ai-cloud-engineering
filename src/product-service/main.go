@@ -30,11 +30,11 @@ import (
 func main() {
 	var configuration = loadConfiguration()
 
-	var productRepository products.Repository = products.NewDemoRepository()
+	var productRepository products.Repository = products.NewRQLiteRepository(configuration.Database.GetConnectionString())
 	var productsController products.Controller = products.NewCoalescingController(productRepository)
 	createContentForProducts(productRepository)
 
-	var priceRepository prices.Repository = prices.NewDemoRepository()
+	var priceRepository prices.Repository = prices.NewRQLiteRepository(configuration.Database.GetConnectionString())
 	var pricesController prices.Controller = prices.NewCoalescingController(priceRepository)
 	createContentForPrices(priceRepository)
 

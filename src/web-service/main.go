@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -12,6 +14,7 @@ func main() {
 	http.Handle("/_app", http.FileServer(http.Dir("frontend/static/_app")))
 	http.Handle("/", tryFilesHandler(rootDir, fallbackFile))
 
+	log.Println(fmt.Sprintf("Starting HTTP server: :3000"))
 	http.ListenAndServe(":3000", nil)
 }
 

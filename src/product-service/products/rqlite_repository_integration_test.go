@@ -14,24 +14,15 @@ import (
 	"time"
 )
 
-const (
-	CreateTableQuery  = "CREATE TABLE " + RQLiteTableName + " ( id INTEGER PRIMARY KEY, description VARCHAR(255), ean VARCHAR(13) UNIQUE );"
-	CleanUpTableQuery = "DELETE FROM " + RQLiteTableName + ";"
-	TestPort          = "7003"
-)
+const TestPort = "7003"
 
 func TestIntegrationRQLiteRepository(t *testing.T) {
-	container, err := prepareIntegrationTestRQLiteDatabase()
+	container, err := prepareIntegrationTestRQLiteContainer()
 	if err != nil {
 		t.Error(err)
 	}
 
 	rqliteRepository := NewRQLiteRepository("http://localhost:" + TestPort + "/?disableClusterDiscovery=true")
-
-	err = createTable(rqliteRepository)
-	if err != nil {
-		t.Error(err)
-	}
 
 	t.Run("TestIntegrationRQLiteRepository_Create", func(t *testing.T) {
 		product := model.Product{
@@ -61,7 +52,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err := cleanTable(rqliteRepository)
+		err := rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -104,7 +95,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err := cleanTable(rqliteRepository)
+		err := rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -137,7 +128,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err = cleanTable(rqliteRepository)
+		err = rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -170,7 +161,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err = cleanTable(rqliteRepository)
+		err = rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -211,7 +202,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err = cleanTable(rqliteRepository)
+		err = rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -246,7 +237,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 			}
 		})
 
-		err = cleanTable(rqliteRepository)
+		err = rqliteRepository.cleanTable()
 		if err != nil {
 			t.Error(err)
 		}
@@ -260,33 +251,7 @@ func TestIntegrationRQLiteRepository(t *testing.T) {
 	})
 }
 
-func createTable(repository *RQLiteRepository) error {
-	transaction, err := repository.db.Begin()
-	_, err = transaction.Exec(CreateTableQuery)
-	if err != nil {
-		return err
-	}
-	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func cleanTable(repository *RQLiteRepository) error {
-	transaction, err := repository.db.Begin()
-	_, err = transaction.Exec(CleanUpTableQuery)
-	if err != nil {
-		return err
-	}
-	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func prepareIntegrationTestRQLiteDatabase() (testcontainers.Container, error) {
+func prepareIntegrationTestRQLiteContainer() (testcontainers.Container, error) {
 	request := testcontainers.ContainerRequest{
 		Image:        "rqlite/rqlite:8.15.0",
 		ExposedPorts: []string{TestPort + ":4001/tcp"},
