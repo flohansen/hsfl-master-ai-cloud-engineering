@@ -27,6 +27,7 @@ func New(
 
 	r.GET("/api/v1/price/", (*pricesController).GetPrices)
 	r.GET("/api/v1/price/user/:userId", (*pricesController).GetPricesByUser)
+	r.GET("/api/v1/price/product/:productId", (*pricesController).GetPricesByProduct)
 	r.GET("/api/v1/price/:productId/:userId", (*pricesController).GetPrice)
 	r.PUT("/api/v1/price/:productId/:userId", (*pricesController).PutPrice, authMiddleware)
 	r.POST("/api/v1/price/:productId/:userId", (*pricesController).PostPrice, authMiddleware)

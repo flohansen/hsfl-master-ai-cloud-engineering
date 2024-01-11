@@ -6,6 +6,7 @@ type Repository interface {
 	Create(*model.Price) (*model.Price, error)
 	FindAll() ([]*model.Price, error)
 	FindAllByUser(userId uint64) ([]*model.Price, error)
+	FindAllByProduct(productId uint64) ([]*model.Price, error)
 	FindByIds(productId uint64, userId uint64) (*model.Price, error)
 	Update(*model.Price) (*model.Price, error)
 	Delete(*model.Price) error

@@ -98,38 +98,11 @@ func (r *RQLiteRepository) FindAll() ([]*model.Price, error) {
 }
 
 func (r *RQLiteRepository) FindAllByUser(userId uint64) ([]*model.Price, error) {
-	selectBuilder := r.priceBuilder.SelectFrom(RQLiteTableName)
-	selectBuilder.Where(selectBuilder.Equal(RQLiteTableName+".userId", userId))
-	query, args := selectBuilder.Build()
+	return r.findPricesByField("userId", userId)
+}
 
-	transaction, err := r.db.Begin()
-	if err != nil {
-		return nil, errors.New(ErrorPriceList)
-	}
-	rows, err := transaction.Query(query, args...)
-	if err != nil {
-		if rollbackErr := transaction.Rollback(); rollbackErr != nil {
-			log.Println(err)
-		}
-		return nil, errors.New(ErrorPriceList)
-	}
-
-	var prices = make([]*model.Price, 0)
-	for rows.Next() {
-		price := new(model.Price)
-		err := rows.Scan(r.priceBuilder.Addr(&price)...)
-		if err != nil {
-			return nil, err
-		}
-		prices = append(prices, price)
-	}
-
-	err = transaction.Commit()
-	if err != nil {
-		return nil, errors.New(ErrorPriceList)
-	}
-
-	return prices, nil
+func (r *RQLiteRepository) FindAllByProduct(productId uint64) ([]*model.Price, error) {
+	return r.findPricesByField("productId", productId)
 }
 
 func (r *RQLiteRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {
@@ -250,4 +223,42 @@ func (r *RQLiteRepository) cleanTable() error {
 		return err
 	}
 	return nil
+}
+
+func (r *RQLiteRepository) findPricesByField(fieldName string, fieldValue interface{}) ([]*model.Price, error) {
+	selectBuilder := r.priceBuilder.SelectFrom(RQLiteTableName)
+	selectBuilder.Where(selectBuilder.Equal(RQLiteTableName+"."+fieldName, fieldValue))
+	query, args := selectBuilder.Build()
+
+	transaction, err := r.db.Begin()
+	if err != nil {
+		return nil, errors.New(ErrorPriceList)
+	}
+	defer func() {
+		if rollbackErr := transaction.Rollback(); rollbackErr != nil {
+			log.Println(rollbackErr)
+		}
+	}()
+
+	rows, err := transaction.Query(query, args...)
+	if err != nil {
+		return nil, errors.New(ErrorPriceList)
+	}
+
+	var prices = make([]*model.Price, 0)
+	for rows.Next() {
+		price := new(model.Price)
+		err := rows.Scan(r.priceBuilder.Addr(&price)...)
+		if err != nil {
+			return nil, err
+		}
+		prices = append(prices, price)
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return nil, errors.New(ErrorPriceList)
+	}
+
+	return prices, nil
 }

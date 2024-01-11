@@ -68,6 +68,36 @@ func (controller *CoalescingController) GetPricesByUser(writer http.ResponseWrit
 	}
 }
 
+func (controller *CoalescingController) GetPricesByProduct(writer http.ResponseWriter, request *http.Request) {
+	productIdAttribute := request.Context().Value("productId").(string)
+
+	msg, err, _ := controller.group.Do("get_id_"+productIdAttribute, func() (interface{}, error) {
+		productId, err := strconv.ParseUint(productIdAttribute, 10, 64)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return nil, err
+		}
+
+		value, err := controller.priceRepository.FindAllByProduct(productId)
+		if err != nil {
+			if err.Error() == ErrorPriceNotFound {
+				http.Error(writer, err.Error(), http.StatusNotFound)
+				return nil, err
+			}
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+		}
+
+		return value, nil
+	})
+
+	writer.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(writer).Encode(msg)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (controller *CoalescingController) GetPrice(writer http.ResponseWriter, request *http.Request) {
 	userIdAttribute := request.Context().Value("userId").(string)
 	productIdAttribute := request.Context().Value("productId").(string)

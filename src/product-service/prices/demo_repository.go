@@ -64,6 +64,21 @@ func (repo *DemoRepository) FindAllByUser(userId uint64) ([]*model.Price, error)
 	return userPrices, nil
 }
 
+func (repo *DemoRepository) FindAllByProduct(productId uint64) ([]*model.Price, error) {
+	if repo.prices == nil {
+		return nil, errors.New(ErrorPriceList)
+	}
+
+	var productPrices []*model.Price
+	for _, price := range repo.prices {
+		if price.ProductId == productId {
+			productPrices = append(productPrices, price)
+		}
+	}
+
+	return productPrices, nil
+}
+
 func (repo *DemoRepository) FindByIds(productId uint64, userId uint64) (*model.Price, error) {
 	key := priceEntryKey{
 		UserId:    userId,
