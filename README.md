@@ -6,6 +6,8 @@
 ![](https://github.com/Flo0807/hsfl-master-ai-cloud-engineering/actions/workflows/feed-service.yml/badge.svg)
 ![](https://github.com/Flo0807/hsfl-master-ai-cloud-engineering/actions/workflows/api-gateway.yml/badge.svg)
 
+## Description
+
 BoardHub is an interactive platform that allows users to create and manage bulletin board posts. The platform offers an organized space for people to share news, ideas, or requests. Simple and easy to use, users can create bulletin board posts and comment on other posts. It features a user-friendly interface and different types of feeds to view posts. Whether it's for a business, a community, a club, a school, personal use or more, BoardHub provides a convenient way to communicate and connect.
 
 ## Use Cases
@@ -21,6 +23,49 @@ BoardHub can provide an ideal platform for businesses. Whether it's posting impo
 ### Private Community
 
 For private communities like neighborhood associations or clubs, BoardHub serves as a common space to share updates, arrange events or discuss community concerns. Residents can post about local issues, lost or found items, neighborhood recommendations or any general inquiries.
+
+## Setup
+
+## Local Setup
+
+Docker and Docker Compose must be installed on your machine.
+
+### Starting the application
+
+We provide a `compose.yaml`  file to run the application. To start the application, run the following command in the root directory of the project:
+
+```bash
+docker compose up
+```
+
+### Example Data
+
+The database is automatically populated with example data when the application is started for the first time. We provide two sql files located in the `scripts` directory. The `create.sql` file creates the database and the tables. The `insert.sql` file inserts example data into the database.
+
+An example user is created with the following credentials:
+
+| Email              | Password   |
+| ------------------ | ---------- |
+| `user@example.com` | `password` |
+
+Along with some example posts.
+
+### Accessing the application
+
+The frontend is accessible at `http://localhost:3000`.
+
+The default api gateway config uses the following paths to route requests to the corresponding services:
+
+| Path              | Service       |
+| ----------------- | ------------- |
+| `/`               | frontend      |
+| `/auth`           | auth-service  |
+| `/bulletin-board` | bulletin-feed |
+| `/feed`           | feed-service  |
+
+## Kubernetes Setup
+
+TODO
 
 ## Authors
 
