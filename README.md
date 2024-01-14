@@ -28,27 +28,34 @@ For private communities like neighborhood associations or clubs, BoardHub serves
 
 ## Local Setup
 
+### Prequisites
+
 Docker and Docker Compose must be installed on your machine.
+
+A ECDSA private key is required to sign JWTs. The key can be generated using the following command:
+
+```bash
+ssh-keygen -t ecdsa -f ./src/auth-service/key -m pem
+```
+
+When using the provided `compose.yaml` file, the key must be placed in the `auth-service` directory and named `key`.
+
+You may configure the path to the key and the name using the `JWT_PRIVATE_KEY` environment variable (see `compose.yml`).
+
+Build the frontend using the following commands in the `frontend` directory:
+
+```bash
+npm install
+npm run build
+```
 
 ### Starting the application
 
-We provide a `compose.yaml`  file to run the application. To start the application, run the following command in the root directory of the project:
+We provide a `compose.yaml` file to run the application. To start the application, run the following command in the root directory of the project:
 
 ```bash
 docker compose up
 ```
-
-### Example Data
-
-The database is automatically populated with example data when the application is started for the first time. We provide two sql files located in the `scripts` directory. The `create.sql` file creates the database and the tables. The `insert.sql` file inserts example data into the database.
-
-An example user is created with the following credentials:
-
-| Email              | Password   |
-| ------------------ | ---------- |
-| `user@example.com` | `password` |
-
-Along with some example posts.
 
 ### Accessing the application
 
@@ -62,6 +69,18 @@ The default api gateway config uses the following paths to route requests to the
 | `/auth`           | auth-service  |
 | `/bulletin-board` | bulletin-feed |
 | `/feed`           | feed-service  |
+
+### Example Data
+
+The database is automatically populated with example data when the application is started for the first time. We provide two sql files located in the `scripts` directory. The `create.sql` file creates the database and the tables. The `insert.sql` file inserts example data into the database.
+
+An example user is created with the following credentials:
+
+| Email              | Password   |
+| ------------------ | ---------- |
+| `user@example.com` | `password` |
+
+Along with some example posts.
 
 ## Kubernetes Setup
 
