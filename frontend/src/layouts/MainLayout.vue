@@ -5,17 +5,7 @@
         <q-toolbar-title>
           <span>BoardHub</span>
         </q-toolbar-title>
-
-        <q-btn color="black" label="USERNAME">
-          <q-menu>
-            <q-list style="min-width: 100px">
-              <q-separator />
-              <q-item class="text-red" clickable v-close-popup>
-                <q-item-section @click="logout">Logout</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
+        <q-btn color="red" label="Logout" @click="logout"/>
       </q-toolbar>
     </q-header>
 
