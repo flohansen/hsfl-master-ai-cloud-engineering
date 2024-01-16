@@ -1,15 +1,15 @@
-import {api} from "boot/axios";
-import {Credentials} from "components/models";
+import {api} from 'boot/axios';
+import {Credentials, LoginResponse} from 'components/models';
 
-const authApi = '/auth-service'
+const authApi = '/auth'
 
 export default {
-  login(credentials: Credentials): Promise<void> {
+  login(credentials: Credentials): Promise<LoginResponse> {
     return new Promise((resolve, reject) => {
       api.post(`${authApi}/login`, credentials)
         .then((res) => {
           if (res.status == 200) {
-            resolve();
+            resolve(res.data);
           } else {
             reject(new Error('Something went wrong'));
           }

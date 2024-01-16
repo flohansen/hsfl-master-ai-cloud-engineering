@@ -1,40 +1,72 @@
-<script setup lang="ts">
-import {ref} from "vue";
-import {useRouter} from "vue-router";
+<script lang="ts" setup>
+import {ref} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {useAuthStore} from 'stores/auth-store';
+import {useQuasar} from 'quasar';
 
+const $q = useQuasar()
+const route = useRoute();
 const router = useRouter()
+const authStore = useAuthStore();
 
-  const email = ref('')
-  const password = ref('')
+const email = ref('')
+const password = ref('')
 
-  const goToRegister = () => {
-    router.push({name: 'register'})
-  }
+const goToRegister = () => {
+  router.push({name: 'register'})
+}
+
+const resetInputs = () => {
+  email.value = '';
+  password.value = '';
+}
+
+const login = () => {
+  authStore.login(
+    {
+      email: email.value,
+      password: password.value
+    }
+  ).then(
+    () => {
+      resetInputs();
+      const nextPath = Array.isArray(route.query.next) ? route.query.next[0] : route.query.next;
+      router.push({ path: nextPath ?? '/' });
+    }
+  ).catch(() => {
+    $q.notify({
+      color: 'negative',
+      position: 'top',
+      message: 'Login failed',
+      icon: 'report_problem'
+    })
+  })
+}
 </script>
 
 <template>
-      <q-page class="flex flex-center bg-grey-2">
-        <q-card class="q-pa-md shadow-2 my_card" bordered>
-          <q-card-section class="text-center">
-            <div class="text-grey-9 text-h5 text-weight-bold">Sign in</div>
-            <div class="text-grey-8">Sign in below to access your account</div>
-          </q-card-section>
-          <q-card-section>
-            <q-input dense outlined v-model="email" type="email" label="Email Address"></q-input>
-            <q-input dense outlined class="q-mt-md" v-model="password" type="password" label="Password"></q-input>
-          </q-card-section>
-          <q-card-section>
-            <q-btn style="
-  border-radius: 8px;" color="dark" rounded size="md" label="Sign in" no-caps class="full-width"></q-btn>
-          </q-card-section>
-          <q-card-section class="text-center q-pt-none">
-            <div class="text-grey-8">Don't have an account yet?
-              <a @click="goToRegister" class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer">Sign
-                up.</a></div>
-          </q-card-section>
+  <q-page class="flex flex-center bg-grey-2">
+    <q-card bordered class="q-pa-md shadow-2 my_card">
+      <q-card-section class="text-center">
+        <div class="text-grey-9 text-h5 text-weight-bold">Sign in</div>
+        <div class="text-grey-8">Sign in below to access your account</div>
+      </q-card-section>
+      <q-card-section>
+        <q-input v-model="email" dense label="Email Address" outlined type="email"></q-input>
+        <q-input v-model="password" class="q-mt-md" dense label="Password" outlined type="password"></q-input>
+      </q-card-section>
+      <q-card-section>
+        <q-btn class="full-width" color="dark" label="Sign in" no-caps rounded size="md" style="
+  border-radius: 8px;" @click="login"></q-btn>
+      </q-card-section>
+      <q-card-section class="text-center q-pt-none">
+        <div class="text-grey-8">Don't have an account yet?
+          <a class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer" @click="goToRegister">Sign
+            up.</a></div>
+      </q-card-section>
 
-        </q-card>
-      </q-page>
+    </q-card>
+  </q-page>
 </template>
 
 <style scoped>
