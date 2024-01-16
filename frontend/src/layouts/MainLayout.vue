@@ -83,5 +83,6 @@ function toggleLeftDrawer() {
 
 function logout() {
   authStore.logout();
+  router.push({name: 'login'})
 }
 </script>
