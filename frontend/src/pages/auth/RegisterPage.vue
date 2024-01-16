@@ -51,25 +51,30 @@ const goToLogin = () => {
         <div class="text-grey-9 text-h5 text-weight-bold">Register</div>
         <div class="text-grey-8">Register below to access the application</div>
       </q-card-section>
-      <q-card-section>
-        <q-input v-model="email" dense label="Email Address" outlined type="email"></q-input>
-        <q-input v-model="password" class="q-mt-md" dense label="Password" outlined type="password"></q-input>
-        <q-input v-model="passwordRepeated" class="q-mt-md" dense label="Repeat Password" outlined
-                 type="password"></q-input>
-      </q-card-section>
-      <q-card-section>
-        <q-btn class="full-width" color="dark" label="Register" no-caps rounded size="md" style="
-  border-radius: 8px;" @click="register"></q-btn>
-      </q-card-section>
+
+      <!-- Form start -->
+      <q-form @submit.prevent="register">
+        <q-card-section>
+          <q-input v-model="email" dense label="Email Address" outlined type="email"></q-input>
+          <q-input v-model="password" class="q-mt-md" dense label="Password" outlined type="password"></q-input>
+          <q-input v-model="passwordRepeated" class="q-mt-md" dense label="Repeat Password" outlined type="password"></q-input>
+        </q-card-section>
+
+        <q-card-section>
+          <q-btn class="full-width" color="dark" label="Register" no-caps rounded size="md" style="border-radius: 8px;" type="submit"></q-btn>
+        </q-card-section>
+      </q-form>
+      <!-- Form end -->
+
       <q-card-section class="text-center q-pt-none">
         <div class="text-grey-8">Already have an account?
-          <a class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer" @click="goToLogin">Sign
-            in.</a></div>
+          <a class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer" @click="goToLogin">Sign in.</a>
+        </div>
       </q-card-section>
-
     </q-card>
   </q-page>
 </template>
+
 
 <style scoped>
 .my_card {

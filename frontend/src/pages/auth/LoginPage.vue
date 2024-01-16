@@ -51,20 +51,25 @@ const login = () => {
         <div class="text-grey-9 text-h5 text-weight-bold">Sign in</div>
         <div class="text-grey-8">Sign in below to access your account</div>
       </q-card-section>
-      <q-card-section>
-        <q-input v-model="email" dense label="Email Address" outlined type="email"></q-input>
-        <q-input v-model="password" class="q-mt-md" dense label="Password" outlined type="password"></q-input>
-      </q-card-section>
-      <q-card-section>
-        <q-btn class="full-width" color="dark" label="Sign in" no-caps rounded size="md" style="
-  border-radius: 8px;" @click="login"></q-btn>
-      </q-card-section>
+
+      <!-- Form start -->
+      <q-form @submit.prevent="login">
+        <q-card-section>
+          <q-input v-model="email" dense label="Email Address" outlined type="email"></q-input>
+          <q-input v-model="password" class="q-mt-md" dense label="Password" outlined type="password"></q-input>
+        </q-card-section>
+
+        <q-card-section>
+          <q-btn class="full-width" color="dark" label="Sign in" no-caps rounded size="md" style="border-radius: 8px;" type="submit"></q-btn>
+        </q-card-section>
+      </q-form>
+      <!-- Form end -->
+
       <q-card-section class="text-center q-pt-none">
         <div class="text-grey-8">Don't have an account yet?
-          <a class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer" @click="goToRegister">Sign
-            up.</a></div>
+          <a class="text-dark text-weight-bold" style="text-decoration: none; cursor: pointer" @click="goToRegister">Sign up.</a>
+        </div>
       </q-card-section>
-
     </q-card>
   </q-page>
 </template>
