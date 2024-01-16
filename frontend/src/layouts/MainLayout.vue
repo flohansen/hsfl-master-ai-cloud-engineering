@@ -11,12 +11,9 @@
         <q-btn color="black" label="USERNAME">
           <q-menu>
             <q-list style="min-width: 100px">
-              <q-item clickable v-close-popup>
-                <q-item-section>Account</q-item-section>
-              </q-item>
               <q-separator />
               <q-item class="text-red" clickable v-close-popup>
-                <q-item-section @click="console.warn('LOGOUT')">Logout</q-item-section>
+                <q-item-section @click="logout">Logout</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
@@ -59,7 +56,8 @@
 
 <script setup lang="ts">
 import {ref} from 'vue';
-import {useRouter} from "vue-router";
+import {useRouter} from 'vue-router';
+import {useAuthStore} from 'stores/auth-store';
 
 const menuList = [
   {
@@ -71,6 +69,7 @@ const menuList = [
 ]
 
 const router = useRouter()
+const authStore = useAuthStore()
 const leftDrawerOpen = ref(false)
 
 function goTo(route: string) {
@@ -80,5 +79,9 @@ function goTo(route: string) {
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function logout() {
+  authStore.logout();
 }
 </script>
