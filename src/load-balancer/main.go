@@ -12,6 +12,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/ip_hash"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/least_connections"
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/random.go"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/algorithm/round_robin.go"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/balancer"
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/config"
@@ -59,7 +63,22 @@ func main() {
 		panic(err)
 	}
 
-	loadBalancer := balancer.NewBalancer(round_robin.New(), targets, cfg.HealthCheckIntervalSeconds, cfg.HealthCheckPath)
+	var algorithm algorithm.Algorithm
+
+	switch cfg.Algorithm {
+	case "round_robin":
+		algorithm = round_robin.New()
+	case "random":
+		algorithm = random.New()
+	case "least_connections":
+		algorithm = least_connections.New()
+	case "ip_hash":
+		algorithm = ip_hash.New()
+	default:
+		panic("Algorithm not supported")
+	}
+
+	loadBalancer := balancer.NewBalancer(algorithm, targets, cfg.HealthCheckIntervalSeconds, cfg.HealthCheckPath)
 
 	log.Println("Starting HTTP server on port", cfg.HttpServerPort)
 	server := &http.Server{

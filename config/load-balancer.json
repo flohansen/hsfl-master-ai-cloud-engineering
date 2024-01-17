@@ -4,5 +4,6 @@
     "replicas": 3,
     "healthCheckIntervalSeconds": 5,
     "healthCheckPath": "/",
-    "port": 80
+    "port": 80,
+    "algorithm": "round_robin"
 }
