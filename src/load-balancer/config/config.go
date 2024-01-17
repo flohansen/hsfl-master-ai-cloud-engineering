@@ -15,6 +15,7 @@ type Config struct {
 	HealthCheckIntervalSeconds int    `json:"healthCheckIntervalSeconds"`
 	HealthCheckPath            string `json:"healthCheckPath"`
 	Port                       int    `json:"port"`
+	Algorithm                  string `json:"algorithm"`
 }
 
 func LoadConfig(path string) (*Config, error) {
