@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/load-balancer/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,15 +12,17 @@ func TestLeastConnections(t *testing.T) {
 	// given
 	lc := New()
 
-	lc.adjustConnectionCount("host1", 5)
-	lc.adjustConnectionCount("host2", 3)
-	lc.adjustConnectionCount("host3", 7)
+	targets := []model.Target{{ContainerId: "host1"}, {ContainerId: "host2"}, {ContainerId: "host3"}}
+
+	lc.adjustConnectionCount(targets[0], 5)
+	lc.adjustConnectionCount(targets[1], 3)
+	lc.adjustConnectionCount(targets[2], 7)
 
 	var targetHost string
 
 	// when
-	lc.GetTarget(&http.Request{}, []string{"host1", "host2", "host3"}, func(host string) {
-		targetHost = host
+	lc.GetTarget(&http.Request{}, targets, func(target model.Target) {
+		targetHost = target.ContainerId
 	})
 
 	// test
@@ -30,13 +33,15 @@ func TestAdjustConnectionCount(t *testing.T) {
 	// given
 	lc := New()
 
+	targets := []model.Target{{ContainerId: "host1"}, {ContainerId: "host2"}, {ContainerId: "host3"}}
+
 	// when
-	lc.adjustConnectionCount("host1", 1)
-	lc.adjustConnectionCount("host2", -1)
-	lc.adjustConnectionCount("host3", 3)
+	lc.adjustConnectionCount(targets[0], 1)
+	lc.adjustConnectionCount(targets[1], -1)
+	lc.adjustConnectionCount(targets[2], 3)
 
 	// test
-	assert.Equal(t, 1, lc.count["host1"])
-	assert.Equal(t, -1, lc.count["host2"])
-	assert.Equal(t, 3, lc.count["host3"])
+	assert.Equal(t, 1, lc.count[targets[0]])
+	assert.Equal(t, -1, lc.count[targets[1]])
+	assert.Equal(t, 3, lc.count[targets[2]])
 }
