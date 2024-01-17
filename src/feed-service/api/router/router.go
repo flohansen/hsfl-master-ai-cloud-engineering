@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/lib/router"
-	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/src/feed-service/feed"
+
+	"github.com/Flo0807/hsfl-master-ai-cloud-engineering/feed-service/feed"
 )
 
 type Router struct {
@@ -15,6 +16,7 @@ func New(feedController *feed.DefaultController) *Router {
 	r := router.New()
 
 	r.GET("/feed/feed", feedController.GetFeed)
+	r.GET("/feed/health", feedController.GetHealth)
 
 	return &Router{r}
 }

@@ -1,14 +1,18 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Feed struct {
-	posts []Post
+	Posts []Post `json:"posts"`
 }
 type Post struct {
-	gorm.Model
+	ID        uint       `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `sql:"index"`
+
 	Title   string `json:"title"`
 	Content string `json:"content"`
 }
